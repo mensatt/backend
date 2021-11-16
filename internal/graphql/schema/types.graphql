@@ -1,0 +1,55 @@
+type Dish {
+  id: UUID!
+  name: String!
+  allergies: [Allergy!]!
+}
+
+type Allergy {
+  abbreviation: String!
+  name: String!
+}
+
+type Tag {
+  abbreviation: String!
+  name: String!
+}
+
+type Occurrence {
+  id: UUID!
+  dish: Dish!
+  sideDishes: [Dish!]!
+  date: Date!
+  priceStudent: Float!
+  priceStaff: Float!
+  priceGuest: Float!
+  tags: [Tag!]!
+}
+
+type Review {
+  id: UUID!
+  displayName: String!
+  stars: Int!
+  text: String
+  acceptedAt: DateTime
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  occurrence: Occurrence!
+  votes: Int!
+}
+
+input ReviewInput {
+  displayName: String!
+  stars: Int!
+  text: String
+  occurrenceId: UUID!
+}
+
+type Image {
+  id: UUID!
+  occurrence: Occurrence!
+  acceptedAt: DateTime
+  createdAt: DateTime!
+  votes: Int!
+  description: String
+  displayName: String
+}
