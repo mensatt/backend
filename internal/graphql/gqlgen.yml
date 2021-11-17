@@ -3,8 +3,8 @@ schema:
 
 # Where should the generated server code go?
 exec:
-  filename: server/generated.go
-  package: server
+  filename: gqlserver/generated.go
+  package: gqlserver
 
 # Enable Apollo federation support
 # federation:
@@ -19,8 +19,8 @@ model:
 # Where should the resolver implementations go?
 resolver:
   layout: follow-schema
-  dir: resolvers/generated/
-  package: resolvers_generated
+  dir: resolvers/
+  package: resolvers
   filename_template: "{name}.resolvers.go"
 # resolver:
 #   filename: resolvers/generated/resolver.go
