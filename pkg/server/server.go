@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql"
-	"github.com/neoSigfood/neosigfood-backend/internal/misc"
+	"github.com/mensatt/mensatt-backend/internal/graphql"
+	"github.com/mensatt/mensatt-backend/internal/misc"
 )
 
 func Run(cfg *ServerConfig) error {

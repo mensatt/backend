@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql/gqlserver"
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql/models"
+	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
+	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 )
 
 func (r *queryResolver) GetReviews(ctx context.Context, dishID string) ([]*models.Review, error) {

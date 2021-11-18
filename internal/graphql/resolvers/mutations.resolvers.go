@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql/gqlserver"
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql/models"
+	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
+	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 )
 
 func (r *mutationResolver) AddReview(ctx context.Context, review models.ReviewInput) (*models.Review, error) {
