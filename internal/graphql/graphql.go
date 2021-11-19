@@ -6,8 +6,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql/gqlserver"
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql/resolvers"
+	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
+	"github.com/mensatt/mensatt-backend/internal/graphql/resolvers"
 )
 
 type GraphQL struct {

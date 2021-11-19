@@ -1,4 +1,4 @@
-module github.com/neoSigfood/neosigfood-backend
+module github.com/mensatt/mensatt-backend
 
 go 1.17
 

@@ -12,7 +12,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/neoSigfood/neosigfood-backend/internal/graphql/models"
+	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -509,7 +509,7 @@ func (ec *executionContext) field_Mutation_addReview_args(ctx context.Context, r
 	var arg0 models.ReviewInput
 	if tmp, ok := rawArgs["review"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("review"))
-		arg0, err = ec.unmarshalNReviewInput2githubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewInput(ctx, tmp)
+		arg0, err = ec.unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -758,7 +758,7 @@ func (ec *executionContext) _Dish_allergies(ctx context.Context, field graphql.C
 	}
 	res := resTmp.([]*models.Allergy)
 	fc.Result = res
-	return ec.marshalNAllergy2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergyᚄ(ctx, field.Selections, res)
+	return ec.marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergyᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Image_id(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
@@ -828,7 +828,7 @@ func (ec *executionContext) _Image_occurrence(ctx context.Context, field graphql
 	}
 	res := resTmp.(*models.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Image_acceptedAt(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
@@ -1036,7 +1036,7 @@ func (ec *executionContext) _Mutation_addReview(ctx context.Context, field graph
 	}
 	res := resTmp.(*models.Review)
 	fc.Result = res
-	return ec.marshalNReview2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx, field.Selections, res)
+	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_id(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1106,7 +1106,7 @@ func (ec *executionContext) _Occurrence_dish(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*models.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_sideDishes(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1141,7 +1141,7 @@ func (ec *executionContext) _Occurrence_sideDishes(ctx context.Context, field gr
 	}
 	res := resTmp.([]*models.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_date(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1316,7 +1316,7 @@ func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]*models.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1358,7 +1358,7 @@ func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*models.Review)
 	fc.Result = res
-	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewᚄ(ctx, field.Selections, res)
+	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1703,7 +1703,7 @@ func (ec *executionContext) _Review_occurrence(ctx context.Context, field graphq
 	}
 	res := resTmp.(*models.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Review_votes(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
@@ -3585,7 +3585,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergyᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Allergy) graphql.Marshaler {
+func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergyᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Allergy) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3609,7 +3609,7 @@ func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋneoSigfoodᚋne
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAllergy2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergy(ctx, sel, v[i])
+			ret[i] = ec.marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergy(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3629,7 +3629,7 @@ func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋneoSigfoodᚋne
 	return ret
 }
 
-func (ec *executionContext) marshalNAllergy2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergy(ctx context.Context, sel ast.SelectionSet, v *models.Allergy) graphql.Marshaler {
+func (ec *executionContext) marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergy(ctx context.Context, sel ast.SelectionSet, v *models.Allergy) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3684,7 +3684,7 @@ func (ec *executionContext) marshalNDateTime2string(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Dish) graphql.Marshaler {
+func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Dish) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3708,7 +3708,7 @@ func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosi
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDish2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx, sel, v[i])
+			ret[i] = ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3728,7 +3728,7 @@ func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosi
 	return ret
 }
 
-func (ec *executionContext) marshalNDish2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx context.Context, sel ast.SelectionSet, v *models.Dish) graphql.Marshaler {
+func (ec *executionContext) marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx context.Context, sel ast.SelectionSet, v *models.Dish) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3768,7 +3768,7 @@ func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.Selecti
 	return res
 }
 
-func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v *models.Occurrence) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v *models.Occurrence) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3778,11 +3778,11 @@ func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋneoSigfoodᚋne
 	return ec._Occurrence(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNReview2githubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx context.Context, sel ast.SelectionSet, v models.Review) graphql.Marshaler {
+func (ec *executionContext) marshalNReview2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx context.Context, sel ast.SelectionSet, v models.Review) graphql.Marshaler {
 	return ec._Review(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Review) graphql.Marshaler {
+func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Review) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3806,7 +3806,7 @@ func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneo
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNReview2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx, sel, v[i])
+			ret[i] = ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3826,7 +3826,7 @@ func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneo
 	return ret
 }
 
-func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx context.Context, sel ast.SelectionSet, v *models.Review) graphql.Marshaler {
+func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx context.Context, sel ast.SelectionSet, v *models.Review) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3836,7 +3836,7 @@ func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋneoSigfoodᚋneosig
 	return ec._Review(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNReviewInput2githubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewInput(ctx context.Context, v interface{}) (models.ReviewInput, error) {
+func (ec *executionContext) unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewInput(ctx context.Context, v interface{}) (models.ReviewInput, error) {
 	res, err := ec.unmarshalInputReviewInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -3856,7 +3856,7 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Tag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3880,7 +3880,7 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosig
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3900,7 +3900,7 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋneoSigfoodᚋneosig
 	return ret
 }
 
-func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋneoSigfoodᚋneosigfoodᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v *models.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v *models.Tag) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")

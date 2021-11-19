@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/neoSigfood/neosigfood-backend/pkg/server"
+	"github.com/mensatt/mensatt-backend/pkg/server"
 )
 
 func main() {
