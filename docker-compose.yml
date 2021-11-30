@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  postgresql_database:
+    image: postgres:14.1-alpine
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=mensatt
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+volumes:
+  postgres-data:
