@@ -3,8 +3,7 @@ type Dish {
   name: String!
 }
 
-type Allergy
-@goModel(model: "github.com/mensatt/mensatt-backend/internal/db.Allergy") {
+type Allergy {
   abbreviation: String!
   name: String!
 }

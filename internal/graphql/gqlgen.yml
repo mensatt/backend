@@ -57,3 +57,11 @@ omit_slice_element_pointers: true
 #       - github.com/99designs/gqlgen/graphql.Int
 #       - github.com/99designs/gqlgen/graphql.Int64
 #       - github.com/99designs/gqlgen/graphql.Int32
+
+models:
+  Allergy:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db.Allergy
+  Tag:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db.Tag

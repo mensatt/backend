@@ -31,7 +31,7 @@ type Occurrence struct {
 	PriceStaff   int          `json:"priceStaff"`
 	PriceGuest   int          `json:"priceGuest"`
 	Allergies    []db.Allergy `json:"allergies"`
-	Tags         []Tag        `json:"tags"`
+	Tags         []db.Tag     `json:"tags"`
 }
 
 type Review struct {
@@ -45,9 +45,4 @@ type Review struct {
 	CreatedAt   string      `json:"createdAt"`
 	UpdatedAt   string      `json:"updatedAt"`
 	AcceptedAt  *string     `json:"acceptedAt"`
-}
-
-type Tag struct {
-	Abbreviation string `json:"abbreviation"`
-	Name         string `json:"name"`
 }

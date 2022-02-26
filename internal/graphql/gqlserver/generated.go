@@ -110,7 +110,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	GetAllergies(ctx context.Context) ([]db.Allergy, error)
-	GetTags(ctx context.Context) ([]models.Tag, error)
+	GetTags(ctx context.Context) ([]db.Tag, error)
 }
 
 type executableSchema struct {
@@ -479,8 +479,7 @@ scalar UUID
   name: String!
 }
 
-type Allergy
-@goModel(model: "github.com/mensatt/mensatt-backend/internal/db.Allergy") {
+type Allergy {
   abbreviation: String!
   name: String!
 }
@@ -1376,9 +1375,9 @@ func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]models.Tag)
+	res := resTmp.([]db.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getAllergies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1446,9 +1445,9 @@ func (ec *executionContext) _Query_getTags(ctx context.Context, field graphql.Co
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]models.Tag)
+	res := resTmp.([]db.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1866,7 +1865,7 @@ func (ec *executionContext) _Review_acceptedAt(ctx context.Context, field graphq
 	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Tag_abbreviation(ctx context.Context, field graphql.CollectedField, obj *models.Tag) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tag_abbreviation(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1901,7 +1900,7 @@ func (ec *executionContext) _Tag_abbreviation(ctx context.Context, field graphql
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Tag_name(ctx context.Context, field graphql.CollectedField, obj *models.Tag) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tag_name(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -3410,7 +3409,7 @@ func (ec *executionContext) _Review(ctx context.Context, sel ast.SelectionSet, o
 
 var tagImplementors = []string{"Tag"}
 
-func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *models.Tag) graphql.Marshaler {
+func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *db.Tag) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, tagImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3891,11 +3890,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v models.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTag(ctx context.Context, sel ast.SelectionSet, v db.Tag) graphql.Marshaler {
 	return ec._Tag(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []models.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Tag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3919,7 +3918,7 @@ func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑba
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
