@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"log"
 
+	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mensatt/mensatt-backend/pkg/server"
 )
 
@@ -15,5 +17,10 @@ func main() {
 		DebugEnabled:   true,
 	}
 
-	log.Fatal(server.Run(&sc))
+	pool, err := pgxpool.Connect(context.Background(), "DATABASE_URL")
+	if err != nil {
+		log.Fatalln("Error connecting to database:", err)
+	}
+	
+	log.Fatal(server.Run(&sc, pool))
 }

@@ -12,6 +12,7 @@ import (
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
@@ -49,9 +50,8 @@ type ComplexityRoot struct {
 	}
 
 	Dish struct {
-		Allergies func(childComplexity int) int
-		ID        func(childComplexity int) int
-		Name      func(childComplexity int) int
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
 	}
 
 	Image struct {
@@ -61,14 +61,16 @@ type ComplexityRoot struct {
 		DisplayName func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Occurrence  func(childComplexity int) int
+		UpdatedAt   func(childComplexity int) int
 		Votes       func(childComplexity int) int
 	}
 
 	Mutation struct {
-		AddReview func(childComplexity int, review models.ReviewInput) int
+		AddAllergy func(childComplexity int, abbreviation string, name string) int
 	}
 
 	Occurrence struct {
+		Allergies    func(childComplexity int) int
 		Date         func(childComplexity int) int
 		Dish         func(childComplexity int) int
 		ID           func(childComplexity int) int
@@ -80,19 +82,21 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetReviews func(childComplexity int, dishID string) int
+		GetAllergies func(childComplexity int) int
+		GetTags      func(childComplexity int) int
 	}
 
 	Review struct {
 		AcceptedAt  func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		DisplayName func(childComplexity int) int
+		DownVotes   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Occurrence  func(childComplexity int) int
 		Stars       func(childComplexity int) int
 		Text        func(childComplexity int) int
+		UpVotes     func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
-		Votes       func(childComplexity int) int
 	}
 
 	Tag struct {
@@ -102,10 +106,11 @@ type ComplexityRoot struct {
 }
 
 type MutationResolver interface {
-	AddReview(ctx context.Context, review models.ReviewInput) (*models.Review, error)
+	AddAllergy(ctx context.Context, abbreviation string, name string) (*db.Allergy, error)
 }
 type QueryResolver interface {
-	GetReviews(ctx context.Context, dishID string) ([]*models.Review, error)
+	GetAllergies(ctx context.Context) ([]db.Allergy, error)
+	GetTags(ctx context.Context) ([]models.Tag, error)
 }
 
 type executableSchema struct {
@@ -136,13 +141,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Allergy.Name(childComplexity), true
-
-	case "Dish.allergies":
-		if e.complexity.Dish.Allergies == nil {
-			break
-		}
-
-		return e.complexity.Dish.Allergies(childComplexity), true
 
 	case "Dish.id":
 		if e.complexity.Dish.ID == nil {
@@ -200,6 +198,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.Occurrence(childComplexity), true
 
+	case "Image.updatedAt":
+		if e.complexity.Image.UpdatedAt == nil {
+			break
+		}
+
+		return e.complexity.Image.UpdatedAt(childComplexity), true
+
 	case "Image.votes":
 		if e.complexity.Image.Votes == nil {
 			break
@@ -207,17 +212,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.Votes(childComplexity), true
 
-	case "Mutation.addReview":
-		if e.complexity.Mutation.AddReview == nil {
+	case "Mutation.addAllergy":
+		if e.complexity.Mutation.AddAllergy == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_addReview_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_addAllergy_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddReview(childComplexity, args["review"].(models.ReviewInput)), true
+		return e.complexity.Mutation.AddAllergy(childComplexity, args["abbreviation"].(string), args["name"].(string)), true
+
+	case "Occurrence.allergies":
+		if e.complexity.Occurrence.Allergies == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.Allergies(childComplexity), true
 
 	case "Occurrence.date":
 		if e.complexity.Occurrence.Date == nil {
@@ -275,17 +287,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Occurrence.Tags(childComplexity), true
 
-	case "Query.getReviews":
-		if e.complexity.Query.GetReviews == nil {
+	case "Query.getAllergies":
+		if e.complexity.Query.GetAllergies == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getReviews_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
+		return e.complexity.Query.GetAllergies(childComplexity), true
+
+	case "Query.getTags":
+		if e.complexity.Query.GetTags == nil {
+			break
 		}
 
-		return e.complexity.Query.GetReviews(childComplexity, args["dishId"].(string)), true
+		return e.complexity.Query.GetTags(childComplexity), true
 
 	case "Review.acceptedAt":
 		if e.complexity.Review.AcceptedAt == nil {
@@ -307,6 +321,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Review.DisplayName(childComplexity), true
+
+	case "Review.downVotes":
+		if e.complexity.Review.DownVotes == nil {
+			break
+		}
+
+		return e.complexity.Review.DownVotes(childComplexity), true
 
 	case "Review.id":
 		if e.complexity.Review.ID == nil {
@@ -336,19 +357,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Review.Text(childComplexity), true
 
+	case "Review.upVotes":
+		if e.complexity.Review.UpVotes == nil {
+			break
+		}
+
+		return e.complexity.Review.UpVotes(childComplexity), true
+
 	case "Review.updatedAt":
 		if e.complexity.Review.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Review.UpdatedAt(childComplexity), true
-
-	case "Review.votes":
-		if e.complexity.Review.Votes == nil {
-			break
-		}
-
-		return e.complexity.Review.Votes(childComplexity), true
 
 	case "Tag.abbreviation":
 		if e.complexity.Tag.Abbreviation == nil {
@@ -428,12 +449,25 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
+	{Name: "schema/directives.graphql", Input: `# GQL Directives
+# This part is fairly necessary and is described in the gql documentation
+# https://gqlgen.com/config/
+directive @goModel(
+  model: String
+  models: [String!]
+) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+
+directive @goField(
+  forceResolver: Boolean
+  name: String
+) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION`, BuiltIn: false},
 	{Name: "schema/mutations.graphql", Input: `type Mutation {
-  addReview(review: ReviewInput!): Review!
+  addAllergy(abbreviation: String!, name: String!): Allergy!
 }
 `, BuiltIn: false},
 	{Name: "schema/queries.graphql", Input: `type Query {
-  getReviews(dishId: UUID!): [Review!]!
+  getAllergies: [Allergy!]!
+  getTags: [Tag!]!
 }
 `, BuiltIn: false},
 	{Name: "schema/scalars.graphql", Input: `scalar Date
@@ -443,10 +477,10 @@ scalar UUID
 	{Name: "schema/types.graphql", Input: `type Dish {
   id: UUID!
   name: String!
-  allergies: [Allergy!]!
 }
 
-type Allergy {
+type Allergy
+@goModel(model: "github.com/mensatt/mensatt-backend/internal/db.Allergy") {
   abbreviation: String!
   name: String!
 }
@@ -461,39 +495,35 @@ type Occurrence {
   dish: Dish!
   sideDishes: [Dish!]!
   date: Date!
-  priceStudent: Float!
-  priceStaff: Float!
-  priceGuest: Float!
+  priceStudent: Int!
+  priceStaff: Int!
+  priceGuest: Int!
+  allergies: [Allergy!]!
   tags: [Tag!]!
 }
 
 type Review {
   id: UUID!
+  occurrence: Occurrence!
   displayName: String!
   stars: Int!
   text: String
-  acceptedAt: DateTime
+  upVotes: Int!
+  downVotes: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
-  occurrence: Occurrence!
-  votes: Int!
-}
-
-input ReviewInput {
-  displayName: String!
-  stars: Int!
-  text: String
-  occurrenceId: UUID!
+  acceptedAt: DateTime
 }
 
 type Image {
   id: UUID!
   occurrence: Occurrence!
-  acceptedAt: DateTime
-  createdAt: DateTime!
-  votes: Int!
+  displayName: String!
   description: String
-  displayName: String
+  votes: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  acceptedAt: DateTime
 }
 `, BuiltIn: false},
 }
@@ -503,18 +533,27 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_addReview_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_addAllergy_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.ReviewInput
-	if tmp, ok := rawArgs["review"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("review"))
-		arg0, err = ec.unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewInput(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["abbreviation"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("abbreviation"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["review"] = arg0
+	args["abbreviation"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -530,21 +569,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_getReviews_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["dishId"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dishId"))
-		arg0, err = ec.unmarshalNUUID2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["dishId"] = arg0
 	return args, nil
 }
 
@@ -586,7 +610,7 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _Allergy_abbreviation(ctx context.Context, field graphql.CollectedField, obj *models.Allergy) (ret graphql.Marshaler) {
+func (ec *executionContext) _Allergy_abbreviation(ctx context.Context, field graphql.CollectedField, obj *db.Allergy) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -621,7 +645,7 @@ func (ec *executionContext) _Allergy_abbreviation(ctx context.Context, field gra
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Allergy_name(ctx context.Context, field graphql.CollectedField, obj *models.Allergy) (ret graphql.Marshaler) {
+func (ec *executionContext) _Allergy_name(ctx context.Context, field graphql.CollectedField, obj *db.Allergy) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -726,41 +750,6 @@ func (ec *executionContext) _Dish_name(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Dish_allergies(ctx context.Context, field graphql.CollectedField, obj *models.Dish) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Dish",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Allergies, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*models.Allergy)
-	fc.Result = res
-	return ec.marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergyᚄ(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Image_id(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -831,7 +820,7 @@ func (ec *executionContext) _Image_occurrence(ctx context.Context, field graphql
 	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Image_acceptedAt(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
+func (ec *executionContext) _Image_displayName(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -849,39 +838,7 @@ func (ec *executionContext) _Image_acceptedAt(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AcceptedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(*string)
-	fc.Result = res
-	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Image_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
+		return obj.DisplayName, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -895,7 +852,39 @@ func (ec *executionContext) _Image_createdAt(ctx context.Context, field graphql.
 	}
 	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNDateTime2string(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Image_description(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Image_votes(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
@@ -933,7 +922,7 @@ func (ec *executionContext) _Image_votes(ctx context.Context, field graphql.Coll
 	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Image_description(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
+func (ec *executionContext) _Image_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -951,21 +940,24 @@ func (ec *executionContext) _Image_description(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
+		return obj.CreatedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNDateTime2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Image_displayName(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
+func (ec *executionContext) _Image_updatedAt(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -983,7 +975,42 @@ func (ec *executionContext) _Image_displayName(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.DisplayName, nil
+		return obj.UpdatedAt, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNDateTime2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Image_acceptedAt(ctx context.Context, field graphql.CollectedField, obj *models.Image) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AcceptedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -994,10 +1021,10 @@ func (ec *executionContext) _Image_displayName(ctx context.Context, field graphq
 	}
 	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_addReview(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_addAllergy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1014,7 +1041,7 @@ func (ec *executionContext) _Mutation_addReview(ctx context.Context, field graph
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_addReview_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_addAllergy_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1022,7 +1049,7 @@ func (ec *executionContext) _Mutation_addReview(ctx context.Context, field graph
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddReview(rctx, args["review"].(models.ReviewInput))
+		return ec.resolvers.Mutation().AddAllergy(rctx, args["abbreviation"].(string), args["name"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1034,9 +1061,9 @@ func (ec *executionContext) _Mutation_addReview(ctx context.Context, field graph
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Review)
+	res := resTmp.(*db.Allergy)
 	fc.Result = res
-	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx, field.Selections, res)
+	return ec.marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_id(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1139,9 +1166,9 @@ func (ec *executionContext) _Occurrence_sideDishes(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.Dish)
+	res := resTmp.([]models.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_date(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1209,9 +1236,9 @@ func (ec *executionContext) _Occurrence_priceStudent(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_priceStaff(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1244,9 +1271,9 @@ func (ec *executionContext) _Occurrence_priceStaff(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_priceGuest(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1279,9 +1306,44 @@ func (ec *executionContext) _Occurrence_priceGuest(ctx context.Context, field gr
 		}
 		return graphql.Null
 	}
-	res := resTmp.(float64)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Occurrence_allergies(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Allergies, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]db.Allergy)
+	fc.Result = res
+	return ec.marshalNAllergy2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergyᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.CollectedField, obj *models.Occurrence) (ret graphql.Marshaler) {
@@ -1314,12 +1376,12 @@ func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.Tag)
+	res := resTmp.([]models.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getAllergies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1335,16 +1397,9 @@ func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
-	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Query_getReviews_args(ctx, rawArgs)
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetReviews(rctx, args["dishId"].(string))
+		return ec.resolvers.Query().GetAllergies(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1356,9 +1411,44 @@ func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.([]*models.Review)
+	res := resTmp.([]db.Allergy)
 	fc.Result = res
-	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewᚄ(ctx, field.Selections, res)
+	return ec.marshalNAllergy2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergyᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetTags(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]models.Tag)
+	fc.Result = res
+	return ec.marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1467,6 +1557,41 @@ func (ec *executionContext) _Review_id(ctx context.Context, field graphql.Collec
 	return ec.marshalNUUID2string(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Review_occurrence(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Review",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Occurrence, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.Occurrence)
+	fc.Result = res
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Review_displayName(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1569,7 +1694,7 @@ func (ec *executionContext) _Review_text(ctx context.Context, field graphql.Coll
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Review_acceptedAt(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
+func (ec *executionContext) _Review_upVotes(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1587,18 +1712,56 @@ func (ec *executionContext) _Review_acceptedAt(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AcceptedAt, nil
+		return obj.UpVotes, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(int)
 	fc.Result = res
-	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Review_downVotes(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Review",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DownVotes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Review_createdAt(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
@@ -1671,7 +1834,7 @@ func (ec *executionContext) _Review_updatedAt(ctx context.Context, field graphql
 	return ec.marshalNDateTime2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Review_occurrence(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
+func (ec *executionContext) _Review_acceptedAt(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1689,56 +1852,18 @@ func (ec *executionContext) _Review_occurrence(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Occurrence, nil
+		return obj.AcceptedAt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.Occurrence)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrence(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Review_votes(ctx context.Context, field graphql.CollectedField, obj *models.Review) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Review",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Votes, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int)
-	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalODateTime2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Tag_abbreviation(ctx context.Context, field graphql.CollectedField, obj *models.Tag) (ret graphql.Marshaler) {
@@ -2933,53 +3058,6 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputReviewInput(ctx context.Context, obj interface{}) (models.ReviewInput, error) {
-	var it models.ReviewInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "displayName":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
-			it.DisplayName, err = ec.unmarshalNString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "stars":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stars"))
-			it.Stars, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "text":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
-			it.Text, err = ec.unmarshalOString2ᚖstring(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "occurrenceId":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrenceId"))
-			it.OccurrenceID, err = ec.unmarshalNUUID2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2990,7 +3068,7 @@ func (ec *executionContext) unmarshalInputReviewInput(ctx context.Context, obj i
 
 var allergyImplementors = []string{"Allergy"}
 
-func (ec *executionContext) _Allergy(ctx context.Context, sel ast.SelectionSet, obj *models.Allergy) graphql.Marshaler {
+func (ec *executionContext) _Allergy(ctx context.Context, sel ast.SelectionSet, obj *db.Allergy) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, allergyImplementors)
 
 	out := graphql.NewFieldSet(fields)
@@ -3041,11 +3119,6 @@ func (ec *executionContext) _Dish(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "allergies":
-			out.Values[i] = ec._Dish_allergies(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3078,22 +3151,30 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "acceptedAt":
-			out.Values[i] = ec._Image_acceptedAt(ctx, field, obj)
-		case "createdAt":
-			out.Values[i] = ec._Image_createdAt(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "votes":
-			out.Values[i] = ec._Image_votes(ctx, field, obj)
+		case "displayName":
+			out.Values[i] = ec._Image_displayName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
 		case "description":
 			out.Values[i] = ec._Image_description(ctx, field, obj)
-		case "displayName":
-			out.Values[i] = ec._Image_displayName(ctx, field, obj)
+		case "votes":
+			out.Values[i] = ec._Image_votes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createdAt":
+			out.Values[i] = ec._Image_createdAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updatedAt":
+			out.Values[i] = ec._Image_updatedAt(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "acceptedAt":
+			out.Values[i] = ec._Image_acceptedAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3120,8 +3201,8 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "addReview":
-			out.Values[i] = ec._Mutation_addReview(ctx, field)
+		case "addAllergy":
+			out.Values[i] = ec._Mutation_addAllergy(ctx, field)
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
@@ -3182,6 +3263,11 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "allergies":
+			out.Values[i] = ec._Occurrence_allergies(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "tags":
 			out.Values[i] = ec._Occurrence_tags(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3213,7 +3299,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getReviews":
+		case "getAllergies":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
 				defer func() {
@@ -3221,7 +3307,21 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getReviews(ctx, field)
+				res = ec._Query_getAllergies(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			})
+		case "getTags":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getTags(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3258,6 +3358,11 @@ func (ec *executionContext) _Review(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "occurrence":
+			out.Values[i] = ec._Review_occurrence(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "displayName":
 			out.Values[i] = ec._Review_displayName(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3270,8 +3375,16 @@ func (ec *executionContext) _Review(ctx context.Context, sel ast.SelectionSet, o
 			}
 		case "text":
 			out.Values[i] = ec._Review_text(ctx, field, obj)
-		case "acceptedAt":
-			out.Values[i] = ec._Review_acceptedAt(ctx, field, obj)
+		case "upVotes":
+			out.Values[i] = ec._Review_upVotes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "downVotes":
+			out.Values[i] = ec._Review_downVotes(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createdAt":
 			out.Values[i] = ec._Review_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -3282,16 +3395,8 @@ func (ec *executionContext) _Review(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "occurrence":
-			out.Values[i] = ec._Review_occurrence(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "votes":
-			out.Values[i] = ec._Review_votes(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
+		case "acceptedAt":
+			out.Values[i] = ec._Review_acceptedAt(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -3585,7 +3690,11 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergyᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Allergy) graphql.Marshaler {
+func (ec *executionContext) marshalNAllergy2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx context.Context, sel ast.SelectionSet, v db.Allergy) graphql.Marshaler {
+	return ec._Allergy(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNAllergy2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergyᚄ(ctx context.Context, sel ast.SelectionSet, v []db.Allergy) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3609,7 +3718,7 @@ func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensa
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergy(ctx, sel, v[i])
+			ret[i] = ec.marshalNAllergy2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3629,7 +3738,7 @@ func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensa
 	return ret
 }
 
-func (ec *executionContext) marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐAllergy(ctx context.Context, sel ast.SelectionSet, v *models.Allergy) graphql.Marshaler {
+func (ec *executionContext) marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx context.Context, sel ast.SelectionSet, v *db.Allergy) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "must not be null")
@@ -3684,7 +3793,11 @@ func (ec *executionContext) marshalNDateTime2string(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Dish) graphql.Marshaler {
+func (ec *executionContext) marshalNDish2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx context.Context, sel ast.SelectionSet, v models.Dish) graphql.Marshaler {
+	return ec._Dish(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDish2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDishᚄ(ctx context.Context, sel ast.SelectionSet, v []models.Dish) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3708,7 +3821,7 @@ func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensatt�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx, sel, v[i])
+			ret[i] = ec.marshalNDish2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐDish(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3738,21 +3851,6 @@ func (ec *executionContext) marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑb
 	return ec._Dish(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
-	res, err := graphql.UnmarshalFloat(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
-	res := graphql.MarshalFloat(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3778,69 +3876,6 @@ func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensa
 	return ec._Occurrence(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNReview2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx context.Context, sel ast.SelectionSet, v models.Review) graphql.Marshaler {
-	return ec._Review(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Review) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReview(ctx context.Context, sel ast.SelectionSet, v *models.Review) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Review(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewInput(ctx context.Context, v interface{}) (models.ReviewInput, error) {
-	res, err := ec.unmarshalInputReviewInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3856,7 +3891,11 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*models.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v models.Tag) graphql.Marshaler {
+	return ec._Tag(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNTag2ᚕgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []models.Tag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -3880,7 +3919,7 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensatt�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -3898,16 +3937,6 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensatt�
 	}
 
 	return ret
-}
-
-func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐTag(ctx context.Context, sel ast.SelectionSet, v *models.Tag) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Tag(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNUUID2string(ctx context.Context, v interface{}) (string, error) {
@@ -4228,6 +4257,48 @@ func (ec *executionContext) unmarshalOString2string(ctx context.Context, v inter
 
 func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
 	return graphql.MarshalString(v)
+}
+
+func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		if tmp1, ok := v.([]interface{}); ok {
+			vSlice = tmp1
+		} else {
+			vSlice = []interface{}{v}
+		}
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚖstring(ctx context.Context, v interface{}) (*string, error) {

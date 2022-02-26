@@ -6,12 +6,14 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
+	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/graphql/resolvers"
 )
 
 type GraphQL struct {
 	DebugEnabled bool
+	Database     db.Querier
 }
 
 func (gql *GraphQL) Init(g *gin.RouterGroup) {
@@ -26,7 +28,9 @@ func (gql *GraphQL) graphqlHandler() gin.HandlerFunc {
 	h := handler.NewDefaultServer(
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
-				Resolvers: &resolvers.Resolver{},
+				Resolvers: &resolvers.Resolver{
+					Database: gql.Database,
+				},
 			},
 		),
 	)

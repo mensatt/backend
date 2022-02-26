@@ -7,11 +7,16 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
-	"github.com/mensatt/mensatt-backend/internal/graphql/models"
+	models1 "github.com/mensatt/mensatt-backend/internal/graphql/models"
 )
 
-func (r *queryResolver) GetReviews(ctx context.Context, dishID string) ([]*models.Review, error) {
+func (r *queryResolver) GetAllergies(ctx context.Context) ([]db.Allergy, error) {
+	return r.Database.GetAllergies(ctx)
+}
+
+func (r *queryResolver) GetTags(ctx context.Context) ([]models1.Tag, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

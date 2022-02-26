@@ -7,11 +7,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
-	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 )
 
-func (r *mutationResolver) AddReview(ctx context.Context, review models.ReviewInput) (*models.Review, error) {
+func (r *mutationResolver) AddAllergy(ctx context.Context, abbreviation string, name string) (*db.Allergy, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 

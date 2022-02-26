@@ -2,55 +2,49 @@
 
 package models
 
-type Allergy struct {
-	Abbreviation string `json:"abbreviation"`
-	Name         string `json:"name"`
-}
+import (
+	"github.com/mensatt/mensatt-backend/internal/db"
+)
 
 type Dish struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	Allergies []*Allergy `json:"allergies"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type Image struct {
 	ID          string      `json:"id"`
 	Occurrence  *Occurrence `json:"occurrence"`
-	AcceptedAt  *string     `json:"acceptedAt"`
-	CreatedAt   string      `json:"createdAt"`
-	Votes       int         `json:"votes"`
+	DisplayName string      `json:"displayName"`
 	Description *string     `json:"description"`
-	DisplayName *string     `json:"displayName"`
+	Votes       int         `json:"votes"`
+	CreatedAt   string      `json:"createdAt"`
+	UpdatedAt   string      `json:"updatedAt"`
+	AcceptedAt  *string     `json:"acceptedAt"`
 }
 
 type Occurrence struct {
-	ID           string  `json:"id"`
-	Dish         *Dish   `json:"dish"`
-	SideDishes   []*Dish `json:"sideDishes"`
-	Date         string  `json:"date"`
-	PriceStudent float64 `json:"priceStudent"`
-	PriceStaff   float64 `json:"priceStaff"`
-	PriceGuest   float64 `json:"priceGuest"`
-	Tags         []*Tag  `json:"tags"`
+	ID           string       `json:"id"`
+	Dish         *Dish        `json:"dish"`
+	SideDishes   []Dish       `json:"sideDishes"`
+	Date         string       `json:"date"`
+	PriceStudent int          `json:"priceStudent"`
+	PriceStaff   int          `json:"priceStaff"`
+	PriceGuest   int          `json:"priceGuest"`
+	Allergies    []db.Allergy `json:"allergies"`
+	Tags         []Tag        `json:"tags"`
 }
 
 type Review struct {
 	ID          string      `json:"id"`
+	Occurrence  *Occurrence `json:"occurrence"`
 	DisplayName string      `json:"displayName"`
 	Stars       int         `json:"stars"`
 	Text        *string     `json:"text"`
-	AcceptedAt  *string     `json:"acceptedAt"`
+	UpVotes     int         `json:"upVotes"`
+	DownVotes   int         `json:"downVotes"`
 	CreatedAt   string      `json:"createdAt"`
 	UpdatedAt   string      `json:"updatedAt"`
-	Occurrence  *Occurrence `json:"occurrence"`
-	Votes       int         `json:"votes"`
-}
-
-type ReviewInput struct {
-	DisplayName  string  `json:"displayName"`
-	Stars        int     `json:"stars"`
-	Text         *string `json:"text"`
-	OccurrenceID string  `json:"occurrenceId"`
+	AcceptedAt  *string     `json:"acceptedAt"`
 }
 
 type Tag struct {
