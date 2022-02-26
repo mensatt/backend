@@ -20,7 +20,7 @@ func Run(cfg *ServerConfig, pool *pgxpool.Pool) error {
 	gqlRouterGroup := r.Group(cfg.VersionedPath("/graphql"))
 	gqlServer := graphql.GraphQL{
 		DebugEnabled: cfg.DebugEnabled,
-		Database: database,
+		Database:     database,
 	}
 	gqlServer.Init(gqlRouterGroup)
 

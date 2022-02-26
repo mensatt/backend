@@ -17,10 +17,10 @@ func main() {
 		DebugEnabled:   true,
 	}
 
-	pool, err := pgxpool.Connect(context.Background(), "DATABASE_URL")
+	pool, err := pgxpool.Connect(context.Background(), "postgres://mensatt:admin@localhost:5432/mensatt?pool_max_conns=10")
 	if err != nil {
 		log.Fatalln("Error connecting to database:", err)
 	}
-	
+
 	log.Fatal(server.Run(&sc, pool))
 }
