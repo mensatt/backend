@@ -1,6 +1,6 @@
-# mensatt-backend
+# Mensatt Backend
 
-The backend-repo for "new" sigfood
+The backend repository for Mensatt (neosigfood)
 
 ## Dev Tools
 
@@ -13,7 +13,8 @@ Run everything: `go generate ./...`
 
 ### Database
 
-Install: docker-compose
+Install: docker & docker-compose
+`curl -sSL https://get.docker.com/ | CHANNEL=stable bash`
 
 Run: `docker-compose up -d`  
 Stop: `docker-compose down`
@@ -27,6 +28,6 @@ Downgrade: `dbmate down`
 
 ### Mensatt
 
-Install: `https://github.com/cosmtrek/air`
+Install air: `https://github.com/cosmtrek/air`
 
 Run: `air`
