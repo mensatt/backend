@@ -13,10 +13,10 @@ RUN chmod +x /usr/local/bin/dbmate
 # Run the air command in the directory where our code will live
 WORKDIR /opt/app/mensatt
 
-# download go mod dependencies
+# Download go module dependencies
 RUN go mod download
 
-# start air hot reaload server
+# Start air hot-reload server
 CMD ["air"]
 
 FROM base as built
