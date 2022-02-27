@@ -29,7 +29,7 @@ func MustGetBool(k string) bool {
 }
 
 // MustGetInt32 will return the env as int32 or panic if it is not present
-func MustGetInt32(k string) int {
+func MustGetInt32(k string) int32 {
 	v := os.Getenv(k)
 	if v == "" {
 		log.Panic("ENV missing, key: " + k)
@@ -38,7 +38,7 @@ func MustGetInt32(k string) int {
 	if err != nil {
 		log.Panic("ENV err: [" + k + "]" + err.Error())
 	}
-	return int(i)
+	return int32(i)
 }
 
 // MustGetInt64 will return the env as int64 or panic if it is not present
