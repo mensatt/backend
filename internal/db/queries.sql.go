@@ -5,6 +5,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -168,6 +169,39 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 		&i.PriceGuest,
 	)
 	return &i, err
+}
+
+const getOccurrencesByDate = `-- name: GetOccurrencesByDate :many
+SELECT id, dish, date, price_student, price_staff, price_guest
+FROM occurrence
+WHERE date = $1
+`
+
+func (q *Queries) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*Occurrence, error) {
+	rows, err := q.db.Query(ctx, getOccurrencesByDate, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Occurrence
+	for rows.Next() {
+		var i Occurrence
+		if err := rows.Scan(
+			&i.ID,
+			&i.Dish,
+			&i.Date,
+			&i.PriceStudent,
+			&i.PriceStaff,
+			&i.PriceGuest,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getSideDishesForOccurrence = `-- name: GetSideDishesForOccurrence :many

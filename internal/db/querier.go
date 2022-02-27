@@ -4,6 +4,7 @@ package db
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -15,6 +16,7 @@ type Querier interface {
 	GetAllTags(ctx context.Context) ([]*Tag, error)
 	GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error)
 	GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error)
+	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*Occurrence, error)
 	GetSideDishesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Dish, error)
 	GetTagsForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Tag, error)
 }

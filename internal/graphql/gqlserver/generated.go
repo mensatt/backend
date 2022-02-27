@@ -83,10 +83,11 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetDishes  func(childComplexity int) int
-		GetImages  func(childComplexity int) int
-		GetReviews func(childComplexity int) int
-		GetTags    func(childComplexity int) int
+		GetAllDishes         func(childComplexity int) int
+		GetAllImages         func(childComplexity int) int
+		GetAllReviews        func(childComplexity int) int
+		GetAllTags           func(childComplexity int) int
+		GetOccurrencesByDate func(childComplexity int, date time.Time) int
 	}
 
 	Review struct {
@@ -125,10 +126,11 @@ type OccurrenceResolver interface {
 	Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error)
 }
 type QueryResolver interface {
-	GetTags(ctx context.Context) ([]*db.Tag, error)
-	GetDishes(ctx context.Context) ([]*db.Dish, error)
-	GetImages(ctx context.Context) ([]*db.Image, error)
-	GetReviews(ctx context.Context) ([]*db.Review, error)
+	GetAllTags(ctx context.Context) ([]*db.Tag, error)
+	GetAllDishes(ctx context.Context) ([]*db.Dish, error)
+	GetAllImages(ctx context.Context) ([]*db.Image, error)
+	GetAllReviews(ctx context.Context) ([]*db.Review, error)
+	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*db.Occurrence, error)
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *db.Review) (*db.Occurrence, error)
@@ -294,33 +296,45 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Occurrence.Tags(childComplexity), true
 
-	case "Query.getDishes":
-		if e.complexity.Query.GetDishes == nil {
+	case "Query.getAllDishes":
+		if e.complexity.Query.GetAllDishes == nil {
 			break
 		}
 
-		return e.complexity.Query.GetDishes(childComplexity), true
+		return e.complexity.Query.GetAllDishes(childComplexity), true
 
-	case "Query.getImages":
-		if e.complexity.Query.GetImages == nil {
+	case "Query.getAllImages":
+		if e.complexity.Query.GetAllImages == nil {
 			break
 		}
 
-		return e.complexity.Query.GetImages(childComplexity), true
+		return e.complexity.Query.GetAllImages(childComplexity), true
 
-	case "Query.getReviews":
-		if e.complexity.Query.GetReviews == nil {
+	case "Query.getAllReviews":
+		if e.complexity.Query.GetAllReviews == nil {
 			break
 		}
 
-		return e.complexity.Query.GetReviews(childComplexity), true
+		return e.complexity.Query.GetAllReviews(childComplexity), true
 
-	case "Query.getTags":
-		if e.complexity.Query.GetTags == nil {
+	case "Query.getAllTags":
+		if e.complexity.Query.GetAllTags == nil {
 			break
 		}
 
-		return e.complexity.Query.GetTags(childComplexity), true
+		return e.complexity.Query.GetAllTags(childComplexity), true
+
+	case "Query.getOccurrencesByDate":
+		if e.complexity.Query.GetOccurrencesByDate == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getOccurrencesByDate_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetOccurrencesByDate(childComplexity, args["date"].(time.Time)), true
 
 	case "Review.acceptedAt":
 		if e.complexity.Review.AcceptedAt == nil {
@@ -517,10 +531,11 @@ directive @goTag(
 }
 `, BuiltIn: false},
 	{Name: "schema/queries.graphql", Input: `type Query {
-  getTags: [Tag!]!
-  getDishes: [Dish!]!
-  getImages: [Image!]!
-  getReviews: [Review!]!
+  getAllTags: [Tag!]!
+  getAllDishes: [Dish!]!
+  getAllImages: [Image!]!
+  getAllReviews: [Review!]!
+  getOccurrencesByDate(date: Time!): [Occurrence!]!
 }
 `, BuiltIn: false},
 	{Name: "schema/scalars.graphql", Input: `scalar Time
@@ -660,6 +675,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_getOccurrencesByDate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 time.Time
+	if tmp, ok := rawArgs["date"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+		arg0, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["date"] = arg0
 	return args, nil
 }
 
@@ -1417,7 +1447,7 @@ func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.
 	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getAllTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1435,7 +1465,7 @@ func (ec *executionContext) _Query_getTags(ctx context.Context, field graphql.Co
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetTags(rctx)
+		return ec.resolvers.Query().GetAllTags(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1452,7 +1482,7 @@ func (ec *executionContext) _Query_getTags(ctx context.Context, field graphql.Co
 	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getDishes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getAllDishes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1470,7 +1500,7 @@ func (ec *executionContext) _Query_getDishes(ctx context.Context, field graphql.
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetDishes(rctx)
+		return ec.resolvers.Query().GetAllDishes(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1487,7 +1517,7 @@ func (ec *executionContext) _Query_getDishes(ctx context.Context, field graphql.
 	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐDishᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getImages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getAllImages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1505,7 +1535,7 @@ func (ec *executionContext) _Query_getImages(ctx context.Context, field graphql.
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetImages(rctx)
+		return ec.resolvers.Query().GetAllImages(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1522,7 +1552,7 @@ func (ec *executionContext) _Query_getImages(ctx context.Context, field graphql.
 	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐImageᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_getAllReviews(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1540,7 +1570,7 @@ func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetReviews(rctx)
+		return ec.resolvers.Query().GetAllReviews(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1555,6 +1585,48 @@ func (ec *executionContext) _Query_getReviews(ctx context.Context, field graphql
 	res := resTmp.([]*db.Review)
 	fc.Result = res
 	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐReviewᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_getOccurrencesByDate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_getOccurrencesByDate_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetOccurrencesByDate(rctx, args["date"].(time.Time))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*db.Occurrence)
+	fc.Result = res
+	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐOccurrenceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3659,7 +3731,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getTags":
+		case "getAllTags":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3668,7 +3740,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getTags(ctx, field)
+				res = ec._Query_getAllTags(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3682,7 +3754,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getDishes":
+		case "getAllDishes":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3691,7 +3763,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getDishes(ctx, field)
+				res = ec._Query_getAllDishes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3705,7 +3777,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getImages":
+		case "getAllImages":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3714,7 +3786,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getImages(ctx, field)
+				res = ec._Query_getAllImages(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -3728,7 +3800,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getReviews":
+		case "getAllReviews":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -3737,7 +3809,30 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getReviews(ctx, field)
+				res = ec._Query_getAllReviews(ctx, field)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
+		case "getOccurrencesByDate":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getOccurrencesByDate(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -4529,6 +4624,50 @@ func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.Selec
 
 func (ec *executionContext) marshalNOccurrence2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v db.Occurrence) graphql.Marshaler {
 	return ec._Occurrence(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐOccurrenceᚄ(ctx context.Context, sel ast.SelectionSet, v []*db.Occurrence) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐOccurrence(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v *db.Occurrence) graphql.Marshaler {

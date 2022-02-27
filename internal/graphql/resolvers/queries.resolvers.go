@@ -5,24 +5,30 @@ package resolvers
 
 import (
 	"context"
+	"time"
+
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
 
-func (r *queryResolver) GetTags(ctx context.Context) ([]*db.Tag, error) {
+func (r *queryResolver) GetAllTags(ctx context.Context) ([]*db.Tag, error) {
 	return r.Database.GetAllTags(ctx)
 }
 
-func (r *queryResolver) GetDishes(ctx context.Context) ([]*db.Dish, error) {
+func (r *queryResolver) GetAllDishes(ctx context.Context) ([]*db.Dish, error) {
 	return r.Database.GetAllDishes(ctx)
 }
 
-func (r *queryResolver) GetImages(ctx context.Context) ([]*db.Image, error) {
+func (r *queryResolver) GetAllImages(ctx context.Context) ([]*db.Image, error) {
 	return r.Database.GetAllImages(ctx)
 }
 
-func (r *queryResolver) GetReviews(ctx context.Context) ([]*db.Review, error) {
+func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*db.Review, error) {
 	return r.Database.GetAllReviews(ctx)
+}
+
+func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*db.Occurrence, error) {
+	return r.Database.GetOccurrencesByDate(ctx, date)
 }
 
 // Query returns gqlserver.QueryResolver implementation.
