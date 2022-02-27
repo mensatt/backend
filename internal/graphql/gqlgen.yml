@@ -59,9 +59,32 @@ omit_slice_element_pointers: true
 #       - github.com/99designs/gqlgen/graphql.Int32
 
 models:
+  String:
+    model:
+      - github.com/99designs/gqlgen/graphql.String
+      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullString
+  Time:
+    model:
+      - github.com/99designs/gqlgen/graphql.Time
+      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullTime
+  UUID:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.UUID
   Allergy:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Allergy
+  Dish:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db.Dish
   Tag:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Tag
+  Image:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db.Image
+  Occurrence:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db.Occurrence
+  Review:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db.Review

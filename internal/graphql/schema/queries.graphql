@@ -1,4 +1,5 @@
 type Query {
   getAllergies: [Allergy!]!
   getTags: [Tag!]!
+  getOccurrences: [Occurrence!]!
 }

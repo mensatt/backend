@@ -17,7 +17,7 @@ type Occurrence {
   id: UUID!
   dish: Dish!
   sideDishes: [Dish!]!
-  date: Date!
+  date: Time!
   priceStudent: Int!
   priceStaff: Int!
   priceGuest: Int!
@@ -33,9 +33,9 @@ type Review {
   text: String
   upVotes: Int!
   downVotes: Int!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  acceptedAt: DateTime
+  createdAt: Time!
+  updatedAt: Time!
+  acceptedAt: Time
 }
 
 type Image {
@@ -44,7 +44,7 @@ type Image {
   displayName: String!
   description: String
   votes: Int!
-  createdAt: DateTime!
-  updatedAt: DateTime!
-  acceptedAt: DateTime
+  createdAt: Time!
+  updatedAt: Time!
+  acceptedAt: Time
 }

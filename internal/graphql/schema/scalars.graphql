@@ -1,3 +1,2 @@
-scalar Date
-scalar DateTime
+scalar Time
 scalar UUID
