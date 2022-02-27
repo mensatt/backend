@@ -10,8 +10,12 @@ import (
 )
 
 func main() {
-	// TODO: load from env variables
-	sc := mustGetServerConfig()
+	sc := server.ServerConfig{
+		Host:           utils.MustGet("HOST"),
+		Port:           utils.MustGetInt32("PORT"),
+		ServiceVersion: utils.MustGet("SERVER_PATH_VERSION"),
+		DebugEnabled:   utils.MustGetBool("DEBUG_ENABLED"),
+	}
 
 	pool, err := pgxpool.Connect(context.Background(), utils.MustGet("DATABASE_URL"))
 	if err != nil {
@@ -19,5 +23,5 @@ func main() {
 	}
 	defer pool.Close()
 
-	log.Fatal(server.Run(sc, pool))
+	log.Fatal(server.Run(&sc, pool))
 }
