@@ -65,10 +65,11 @@ type ComplexityRoot struct {
 		CreatedAt   func(childComplexity int) int
 		Description func(childComplexity int) int
 		DisplayName func(childComplexity int) int
+		DownVotes   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Occurrence  func(childComplexity int) int
+		UpVotes     func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
-		Votes       func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -205,6 +206,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.DisplayName(childComplexity), true
 
+	case "Image.downVotes":
+		if e.complexity.Image.DownVotes == nil {
+			break
+		}
+
+		return e.complexity.Image.DownVotes(childComplexity), true
+
 	case "Image.id":
 		if e.complexity.Image.ID == nil {
 			break
@@ -219,19 +227,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.Occurrence(childComplexity), true
 
+	case "Image.upVotes":
+		if e.complexity.Image.UpVotes == nil {
+			break
+		}
+
+		return e.complexity.Image.UpVotes(childComplexity), true
+
 	case "Image.updatedAt":
 		if e.complexity.Image.UpdatedAt == nil {
 			break
 		}
 
 		return e.complexity.Image.UpdatedAt(childComplexity), true
-
-	case "Image.votes":
-		if e.complexity.Image.Votes == nil {
-			break
-		}
-
-		return e.complexity.Image.Votes(childComplexity), true
 
 	case "Mutation.addAllergy":
 		if e.complexity.Mutation.AddAllergy == nil {
@@ -549,7 +557,8 @@ type Image {
   occurrence: Occurrence!
   displayName: String!
   description: String
-  votes: Int!
+  upVotes: Int!
+  downVotes: Int!
   createdAt: Time!
   updatedAt: Time!
   acceptedAt: Time
@@ -931,7 +940,7 @@ func (ec *executionContext) _Image_description(ctx context.Context, field graphq
 	return ec.marshalOString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Image_votes(ctx context.Context, field graphql.CollectedField, obj *db.Image) (ret graphql.Marshaler) {
+func (ec *executionContext) _Image_upVotes(ctx context.Context, field graphql.CollectedField, obj *db.Image) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -949,7 +958,42 @@ func (ec *executionContext) _Image_votes(ctx context.Context, field graphql.Coll
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Votes, nil
+		return obj.UpVotes, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int32)
+	fc.Result = res
+	return ec.marshalNInt2int32(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Image_downVotes(ctx context.Context, field graphql.CollectedField, obj *db.Image) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.DownVotes, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3291,9 +3335,19 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Values[i] = innerFunc(ctx)
 
-		case "votes":
+		case "upVotes":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Image_votes(ctx, field, obj)
+				return ec._Image_upVotes(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "downVotes":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Image_downVotes(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)

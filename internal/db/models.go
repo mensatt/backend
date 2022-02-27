@@ -24,7 +24,8 @@ type Image struct {
 	Occurrence  uuid.UUID      `json:"occurrence"`
 	DisplayName string         `json:"display_name"`
 	Description sql.NullString `json:"description"`
-	Votes       int32          `json:"votes"`
+	UpVotes     int32          `json:"up_votes"`
+	DownVotes   int32          `json:"down_votes"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	AcceptedAt  sql.NullTime   `json:"accepted_at"`

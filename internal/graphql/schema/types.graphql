@@ -43,7 +43,8 @@ type Image {
   occurrence: Occurrence!
   displayName: String!
   description: String
-  votes: Int!
+  upVotes: Int!
+  downVotes: Int!
   createdAt: Time!
   updatedAt: Time!
   acceptedAt: Time
