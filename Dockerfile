@@ -4,7 +4,7 @@ FROM golang:1.17 as base
 FROM base as dev
 
 # Install the air binary so we get live code-reloading when we save files
-RUN curl -sSfL https://raw.githubusercontent.com/cosmtrek/air/master/install.sh | sh -s -- -b $(go env GOPATH)/bin
+RUN go install github.com/cosmtrek/air@latest
 
 # Install dbmate for datbase migrations
 RUN curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
@@ -12,6 +12,11 @@ RUN chmod +x /usr/local/bin/dbmate
 
 # Run the air command in the directory where our code will live
 WORKDIR /opt/app/mensatt
+
+# download go mod dependencies
+RUN go mod download
+
+# start air hot reaload server
 CMD ["air"]
 
 FROM base as built
@@ -21,7 +26,7 @@ COPY . .
 
 ENV CGO_ENABLED=0
 
-RUN go get -d -v ./...
+RUN go mod download
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
 FROM busybox
