@@ -1,5 +1,4 @@
 type Query {
-  getAllergies: [Allergy!]!
   getTags: [Tag!]!
   getDishes: [Dish!]!
   getImages: [Image!]!

@@ -5,30 +5,24 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
-
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
-
-func (r *queryResolver) GetAllergies(ctx context.Context) ([]*db.Allergy, error) {
-	return r.Database.GetAllAllergies(ctx)
-}
 
 func (r *queryResolver) GetTags(ctx context.Context) ([]*db.Tag, error) {
 	return r.Database.GetAllTags(ctx)
 }
 
 func (r *queryResolver) GetDishes(ctx context.Context) ([]*db.Dish, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Database.GetAllDishes(ctx)
 }
 
 func (r *queryResolver) GetImages(ctx context.Context) ([]*db.Image, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Database.GetAllImages(ctx)
 }
 
 func (r *queryResolver) GetReviews(ctx context.Context) ([]*db.Review, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Database.GetAllReviews(ctx)
 }
 
 // Query returns gqlserver.QueryResolver implementation.

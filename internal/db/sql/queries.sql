@@ -1,12 +1,20 @@
--- name: GetAllAllergies :many
-SELECT *
-FROM allergy;
-
 -- name: GetAllTags :many
 SELECT *
 FROM tag;
 
--- name: GetOccurenceByID :one
+-- name: GetAllDishes :many
+SELECT *
+FROM dish;
+
+-- name: GetAllReviews :many
+SELECT *
+FROM review;
+
+-- name: GetAllImages :many
+SELECT *
+FROM image;
+
+-- name: GetOccurrenceByID :one
 SELECT * 
 FROM occurrence
 WHERE id = $1;
@@ -19,12 +27,7 @@ WHERE id = $1;
 -- name: GetSideDishesForOccurrence :many
 SELECT dish.*
 FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish_id = dish.id
-WHERE occurrence_side_dishes.occurrence_id = $1; 
-
--- name: GetAllergiesForOccurrence :many
-SELECT allergy.*
-FROM occurrence_allergy JOIN allergy ON occurrence_allergy.allergy_abbreviation = allergy.abbreviation
-WHERE occurrence_allergy.occurrence_id = $1; 
+WHERE occurrence_side_dishes.occurrence_id = $1;
 
 -- name: GetTagsForOccurrence :many
 SELECT tag.*

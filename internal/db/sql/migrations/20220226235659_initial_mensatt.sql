@@ -7,16 +7,16 @@ CREATE TABLE dish (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE allergy (
-    abbreviation varchar,
-    name varchar NOT NULL,
-    PRIMARY KEY (abbreviation)
-);
+CREATE TYPE priority AS ENUM ('UNSET', 'LOW', 'MEDIUM', 'HIGH');
 
 CREATE TABLE tag (
-    abbreviation varchar,
+    key varchar,
     name varchar NOT NULL,
-    PRIMARY KEY (abbreviation)
+    description varchar NOT NULL,
+    short_name varchar,
+    priority priority DEFAULT 'UNSET' NOT NULL,
+    is_allergy boolean DEFAULT FALSE NOT NULL,
+    PRIMARY KEY (key)
 );
 
 CREATE TABLE occurrence (
@@ -36,18 +36,11 @@ CREATE TABLE occurrence_side_dishes (
     CONSTRAINT fk_dish FOREIGN KEY(dish_id) REFERENCES dish(id)
 );
 
-CREATE TABLE occurrence_allergy (
-    occurrence_id uuid NOT NULL,
-    allergy_abbreviation varchar NOT NULL,
-    CONSTRAINT fk_occurrence FOREIGN KEY(occurrence_id) REFERENCES occurrence(id),
-    CONSTRAINT fk_allergy FOREIGN KEY(allergy_abbreviation) REFERENCES tag(abbreviation)
-);
-
 CREATE TABLE occurrence_tag (
     occurrence_id uuid NOT NULL,
-    tag_abbreviation varchar NOT NULL,
+    tag_key varchar NOT NULL,
     CONSTRAINT fk_occurrence FOREIGN KEY(occurrence_id) REFERENCES occurrence(id),
-    CONSTRAINT fk_tag FOREIGN KEY(tag_abbreviation) REFERENCES tag(abbreviation)
+    CONSTRAINT fk_tag FOREIGN KEY(tag_key) REFERENCES tag(key)
 );
 
 CREATE TABLE review (
@@ -70,7 +63,8 @@ CREATE TABLE image (
     occurrence uuid NOT NULL,
     display_name varchar(32) NOT NULL,
     description text,
-    votes integer DEFAULT 0 NOT NULL,
+    up_votes integer DEFAULT 0 NOT NULL,
+    down_votes integer DEFAULT 0 NOT NULL,
     created_at timestamptz DEFAULT NOW() NOT NULL,
     updated_at timestamptz DEFAULT NOW() NOT NULL,
     accepted_at timestamptz,
@@ -80,6 +74,7 @@ CREATE TABLE image (
 
 -- migrate:down
 DROP TABLE IF EXISTS dish CASCADE;
+DROP TYPE priority CASCADE;
 DROP TABLE IF EXISTS allergy CASCADE;
 DROP TABLE IF EXISTS occurrence CASCADE;
 DROP TABLE IF EXISTS occurrence_side_dishes CASCADE;

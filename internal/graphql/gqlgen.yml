@@ -57,9 +57,9 @@ models:
   UUID:
     model:
       - github.com/mensatt/mensatt-backend/internal/graphql/scalars.UUID
-  Allergy:
+  Priority:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.Allergy
+      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.Priority
   Dish:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Dish

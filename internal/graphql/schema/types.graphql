@@ -3,14 +3,19 @@ type Dish {
   name: String!
 }
 
-type Allergy {
-  abbreviation: String!
-  name: String!
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 type Tag {
-  abbreviation: String!
+  key: String!
   name: String!
+  description: String!
+  shortName: String
+  priority: Priority
+  isAllergy: Boolean!
 }
 
 type Occurrence {
@@ -21,7 +26,6 @@ type Occurrence {
   priceStudent: Int!
   priceStaff: Int!
   priceGuest: Int!
-  allergies: [Allergy!]!
   tags: [Tag!]!
 }
 

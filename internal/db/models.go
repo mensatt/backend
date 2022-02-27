@@ -4,14 +4,31 @@ package db
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 )
 
-type Allergy struct {
-	Abbreviation string `json:"abbreviation"`
-	Name         string `json:"name"`
+type Priority string
+
+const (
+	PriorityUNSET  Priority = "UNSET"
+	PriorityLOW    Priority = "LOW"
+	PriorityMEDIUM Priority = "MEDIUM"
+	PriorityHIGH   Priority = "HIGH"
+)
+
+func (e *Priority) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = Priority(s)
+	case string:
+		*e = Priority(s)
+	default:
+		return fmt.Errorf("unsupported scan type for Priority: %T", src)
+	}
+	return nil
 }
 
 type Dish struct {
@@ -40,19 +57,14 @@ type Occurrence struct {
 	PriceGuest   int32     `json:"price_guest"`
 }
 
-type OccurrenceAllergy struct {
-	OccurrenceID        uuid.UUID `json:"occurrence_id"`
-	AllergyAbbreviation string    `json:"allergy_abbreviation"`
-}
-
 type OccurrenceSideDish struct {
 	OccurrenceID uuid.UUID `json:"occurrence_id"`
 	DishID       uuid.UUID `json:"dish_id"`
 }
 
 type OccurrenceTag struct {
-	OccurrenceID    uuid.UUID `json:"occurrence_id"`
-	TagAbbreviation string    `json:"tag_abbreviation"`
+	OccurrenceID uuid.UUID `json:"occurrence_id"`
+	TagKey       string    `json:"tag_key"`
 }
 
 type Review struct {
@@ -68,7 +80,15 @@ type Review struct {
 	AcceptedAt  sql.NullTime   `json:"accepted_at"`
 }
 
+type SchemaMigration struct {
+	Version string `json:"version"`
+}
+
 type Tag struct {
-	Abbreviation string `json:"abbreviation"`
-	Name         string `json:"name"`
+	Key         string         `json:"key"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	ShortName   sql.NullString `json:"short_name"`
+	Priority    Priority       `json:"priority"`
+	IsAllergy   bool           `json:"is_allergy"`
 }

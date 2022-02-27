@@ -9,21 +9,92 @@ import (
 	"github.com/google/uuid"
 )
 
-const getAllAllergies = `-- name: GetAllAllergies :many
-SELECT abbreviation, name
-FROM allergy
+const getAllDishes = `-- name: GetAllDishes :many
+SELECT id, name
+FROM dish
 `
 
-func (q *Queries) GetAllAllergies(ctx context.Context) ([]*Allergy, error) {
-	rows, err := q.db.Query(ctx, getAllAllergies)
+func (q *Queries) GetAllDishes(ctx context.Context) ([]*Dish, error) {
+	rows, err := q.db.Query(ctx, getAllDishes)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []*Allergy
+	var items []*Dish
 	for rows.Next() {
-		var i Allergy
-		if err := rows.Scan(&i.Abbreviation, &i.Name); err != nil {
+		var i Dish
+		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllImages = `-- name: GetAllImages :many
+SELECT id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+FROM image
+`
+
+func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getAllImages)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Image
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(
+			&i.ID,
+			&i.Occurrence,
+			&i.DisplayName,
+			&i.Description,
+			&i.UpVotes,
+			&i.DownVotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AcceptedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllReviews = `-- name: GetAllReviews :many
+SELECT id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+FROM review
+`
+
+func (q *Queries) GetAllReviews(ctx context.Context) ([]*Review, error) {
+	rows, err := q.db.Query(ctx, getAllReviews)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Review
+	for rows.Next() {
+		var i Review
+		if err := rows.Scan(
+			&i.ID,
+			&i.Occurrence,
+			&i.DisplayName,
+			&i.Stars,
+			&i.Text,
+			&i.UpVotes,
+			&i.DownVotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AcceptedAt,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -35,7 +106,7 @@ func (q *Queries) GetAllAllergies(ctx context.Context) ([]*Allergy, error) {
 }
 
 const getAllTags = `-- name: GetAllTags :many
-SELECT abbreviation, name
+SELECT key, name, description, short_name, priority, is_allergy
 FROM tag
 `
 
@@ -48,33 +119,14 @@ func (q *Queries) GetAllTags(ctx context.Context) ([]*Tag, error) {
 	var items []*Tag
 	for rows.Next() {
 		var i Tag
-		if err := rows.Scan(&i.Abbreviation, &i.Name); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getAllergiesForOccurrence = `-- name: GetAllergiesForOccurrence :many
-SELECT allergy.abbreviation, allergy.name
-FROM occurrence_allergy JOIN allergy ON occurrence_allergy.allergy_abbreviation = allergy.abbreviation
-WHERE occurrence_allergy.occurrence_id = $1
-`
-
-func (q *Queries) GetAllergiesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Allergy, error) {
-	rows, err := q.db.Query(ctx, getAllergiesForOccurrence, occurrenceID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Allergy
-	for rows.Next() {
-		var i Allergy
-		if err := rows.Scan(&i.Abbreviation, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.Key,
+			&i.Name,
+			&i.Description,
+			&i.ShortName,
+			&i.Priority,
+			&i.IsAllergy,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -98,14 +150,14 @@ func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) 
 	return &i, err
 }
 
-const getOccurenceByID = `-- name: GetOccurenceByID :one
+const getOccurrenceByID = `-- name: GetOccurrenceByID :one
 SELECT id, dish, date, price_student, price_staff, price_guest 
 FROM occurrence
 WHERE id = $1
 `
 
-func (q *Queries) GetOccurenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error) {
-	row := q.db.QueryRow(ctx, getOccurenceByID, id)
+func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error) {
+	row := q.db.QueryRow(ctx, getOccurrenceByID, id)
 	var i Occurrence
 	err := row.Scan(
 		&i.ID,
@@ -145,7 +197,7 @@ func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrenceID u
 }
 
 const getTagsForOccurrence = `-- name: GetTagsForOccurrence :many
-SELECT tag.abbreviation, tag.name
+SELECT tag.key, tag.name, tag.description, tag.short_name, tag.priority, tag.is_allergy
 FROM occurrence_tag JOIN tag ON occurrence_tag.tag_abbreviation = tag.abbreviation
 WHERE occurrence_tag.occurrence_id = $1
 `
@@ -159,7 +211,14 @@ func (q *Queries) GetTagsForOccurrence(ctx context.Context, occurrenceID uuid.UU
 	var items []*Tag
 	for rows.Next() {
 		var i Tag
-		if err := rows.Scan(&i.Abbreviation, &i.Name); err != nil {
+		if err := rows.Scan(
+			&i.Key,
+			&i.Name,
+			&i.Description,
+			&i.ShortName,
+			&i.Priority,
+			&i.IsAllergy,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)

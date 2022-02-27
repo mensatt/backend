@@ -9,11 +9,12 @@ import (
 )
 
 type Querier interface {
-	GetAllAllergies(ctx context.Context) ([]*Allergy, error)
+	GetAllDishes(ctx context.Context) ([]*Dish, error)
+	GetAllImages(ctx context.Context) ([]*Image, error)
+	GetAllReviews(ctx context.Context) ([]*Review, error)
 	GetAllTags(ctx context.Context) ([]*Tag, error)
-	GetAllergiesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Allergy, error)
 	GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error)
-	GetOccurenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error)
+	GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	GetSideDishesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Dish, error)
 	GetTagsForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Tag, error)
 }

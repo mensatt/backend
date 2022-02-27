@@ -11,7 +11,7 @@ import (
 )
 
 func (r *imageResolver) Occurrence(ctx context.Context, obj *db.Image) (*db.Occurrence, error) {
-	return r.Database.GetOccurenceByID(ctx, obj.Occurrence)
+	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
 func (r *occurrenceResolver) Dish(ctx context.Context, obj *db.Occurrence) (*db.Dish, error) {
@@ -22,16 +22,12 @@ func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *db.Occurrence)
 	return r.Database.GetSideDishesForOccurrence(ctx, obj.ID)
 }
 
-func (r *occurrenceResolver) Allergies(ctx context.Context, obj *db.Occurrence) ([]*db.Allergy, error) {
-	return r.Database.GetAllergiesForOccurrence(ctx, obj.ID)
-}
-
 func (r *occurrenceResolver) Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error) {
 	return r.Database.GetTagsForOccurrence(ctx, obj.ID)
 }
 
 func (r *reviewResolver) Occurrence(ctx context.Context, obj *db.Review) (*db.Occurrence, error) {
-	return r.Database.GetOccurenceByID(ctx, obj.Occurrence)
+	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
 // Image returns gqlserver.ImageResolver implementation.

@@ -50,11 +50,6 @@ type DirectiveRoot struct {
 }
 
 type ComplexityRoot struct {
-	Allergy struct {
-		Abbreviation func(childComplexity int) int
-		Name         func(childComplexity int) int
-	}
-
 	Dish struct {
 		ID   func(childComplexity int) int
 		Name func(childComplexity int) int
@@ -73,11 +68,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddAllergy func(childComplexity int, abbreviation string, name string) int
+		AddTag func(childComplexity int, abbreviation string, name string, description string, shortName *string, priority *db.Priority, isAllergy bool) int
 	}
 
 	Occurrence struct {
-		Allergies    func(childComplexity int) int
 		Date         func(childComplexity int) int
 		Dish         func(childComplexity int) int
 		ID           func(childComplexity int) int
@@ -89,11 +83,10 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAllergies func(childComplexity int) int
-		GetDishes    func(childComplexity int) int
-		GetImages    func(childComplexity int) int
-		GetReviews   func(childComplexity int) int
-		GetTags      func(childComplexity int) int
+		GetDishes  func(childComplexity int) int
+		GetImages  func(childComplexity int) int
+		GetReviews func(childComplexity int) int
+		GetTags    func(childComplexity int) int
 	}
 
 	Review struct {
@@ -110,8 +103,12 @@ type ComplexityRoot struct {
 	}
 
 	Tag struct {
-		Abbreviation func(childComplexity int) int
-		Name         func(childComplexity int) int
+		Description func(childComplexity int) int
+		IsAllergy   func(childComplexity int) int
+		Key         func(childComplexity int) int
+		Name        func(childComplexity int) int
+		Priority    func(childComplexity int) int
+		ShortName   func(childComplexity int) int
 	}
 }
 
@@ -119,17 +116,15 @@ type ImageResolver interface {
 	Occurrence(ctx context.Context, obj *db.Image) (*db.Occurrence, error)
 }
 type MutationResolver interface {
-	AddAllergy(ctx context.Context, abbreviation string, name string) (*db.Allergy, error)
+	AddTag(ctx context.Context, abbreviation string, name string, description string, shortName *string, priority *db.Priority, isAllergy bool) (*db.Tag, error)
 }
 type OccurrenceResolver interface {
 	Dish(ctx context.Context, obj *db.Occurrence) (*db.Dish, error)
 	SideDishes(ctx context.Context, obj *db.Occurrence) ([]*db.Dish, error)
 
-	Allergies(ctx context.Context, obj *db.Occurrence) ([]*db.Allergy, error)
 	Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error)
 }
 type QueryResolver interface {
-	GetAllergies(ctx context.Context) ([]*db.Allergy, error)
 	GetTags(ctx context.Context) ([]*db.Tag, error)
 	GetDishes(ctx context.Context) ([]*db.Dish, error)
 	GetImages(ctx context.Context) ([]*db.Image, error)
@@ -153,20 +148,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "Allergy.abbreviation":
-		if e.complexity.Allergy.Abbreviation == nil {
-			break
-		}
-
-		return e.complexity.Allergy.Abbreviation(childComplexity), true
-
-	case "Allergy.name":
-		if e.complexity.Allergy.Name == nil {
-			break
-		}
-
-		return e.complexity.Allergy.Name(childComplexity), true
 
 	case "Dish.id":
 		if e.complexity.Dish.ID == nil {
@@ -245,24 +226,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.UpdatedAt(childComplexity), true
 
-	case "Mutation.addAllergy":
-		if e.complexity.Mutation.AddAllergy == nil {
+	case "Mutation.addTag":
+		if e.complexity.Mutation.AddTag == nil {
 			break
 		}
 
-		args, err := ec.field_Mutation_addAllergy_args(context.TODO(), rawArgs)
+		args, err := ec.field_Mutation_addTag_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Mutation.AddAllergy(childComplexity, args["abbreviation"].(string), args["name"].(string)), true
-
-	case "Occurrence.allergies":
-		if e.complexity.Occurrence.Allergies == nil {
-			break
-		}
-
-		return e.complexity.Occurrence.Allergies(childComplexity), true
+		return e.complexity.Mutation.AddTag(childComplexity, args["abbreviation"].(string), args["name"].(string), args["description"].(string), args["shortName"].(*string), args["priority"].(*db.Priority), args["isAllergy"].(bool)), true
 
 	case "Occurrence.date":
 		if e.complexity.Occurrence.Date == nil {
@@ -319,13 +293,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Occurrence.Tags(childComplexity), true
-
-	case "Query.getAllergies":
-		if e.complexity.Query.GetAllergies == nil {
-			break
-		}
-
-		return e.complexity.Query.GetAllergies(childComplexity), true
 
 	case "Query.getDishes":
 		if e.complexity.Query.GetDishes == nil {
@@ -425,12 +392,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Review.UpdatedAt(childComplexity), true
 
-	case "Tag.abbreviation":
-		if e.complexity.Tag.Abbreviation == nil {
+	case "Tag.description":
+		if e.complexity.Tag.Description == nil {
 			break
 		}
 
-		return e.complexity.Tag.Abbreviation(childComplexity), true
+		return e.complexity.Tag.Description(childComplexity), true
+
+	case "Tag.isAllergy":
+		if e.complexity.Tag.IsAllergy == nil {
+			break
+		}
+
+		return e.complexity.Tag.IsAllergy(childComplexity), true
+
+	case "Tag.key":
+		if e.complexity.Tag.Key == nil {
+			break
+		}
+
+		return e.complexity.Tag.Key(childComplexity), true
 
 	case "Tag.name":
 		if e.complexity.Tag.Name == nil {
@@ -438,6 +419,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tag.Name(childComplexity), true
+
+	case "Tag.priority":
+		if e.complexity.Tag.Priority == nil {
+			break
+		}
+
+		return e.complexity.Tag.Priority(childComplexity), true
+
+	case "Tag.shortName":
+		if e.complexity.Tag.ShortName == nil {
+			break
+		}
+
+		return e.complexity.Tag.ShortName(childComplexity), true
 
 	}
 	return 0, false
@@ -518,11 +513,10 @@ directive @goTag(
 	value: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION`, BuiltIn: false},
 	{Name: "schema/mutations.graphql", Input: `type Mutation {
-  addAllergy(abbreviation: String!, name: String!): Allergy!
+  addTag(abbreviation: String!, name: String!, description: String!, shortName: String, priority: Priority, isAllergy: Boolean!): Tag!
 }
 `, BuiltIn: false},
 	{Name: "schema/queries.graphql", Input: `type Query {
-  getAllergies: [Allergy!]!
   getTags: [Tag!]!
   getDishes: [Dish!]!
   getImages: [Image!]!
@@ -530,21 +524,25 @@ directive @goTag(
 }
 `, BuiltIn: false},
 	{Name: "schema/scalars.graphql", Input: `scalar Time
-scalar UUID
-`, BuiltIn: false},
+scalar UUID`, BuiltIn: false},
 	{Name: "schema/types.graphql", Input: `type Dish {
   id: UUID!
   name: String!
 }
 
-type Allergy {
-  abbreviation: String!
-  name: String!
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
 }
 
 type Tag {
-  abbreviation: String!
+  key: String!
   name: String!
+  description: String!
+  shortName: String
+  priority: Priority
+  isAllergy: Boolean!
 }
 
 type Occurrence {
@@ -555,7 +553,6 @@ type Occurrence {
   priceStudent: Int!
   priceStaff: Int!
   priceGuest: Int!
-  allergies: [Allergy!]!
   tags: [Tag!]!
 }
 
@@ -591,7 +588,7 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 
 // region    ***************************** args.gotpl *****************************
 
-func (ec *executionContext) field_Mutation_addAllergy_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Mutation_addTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -612,6 +609,42 @@ func (ec *executionContext) field_Mutation_addAllergy_args(ctx context.Context, 
 		}
 	}
 	args["name"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["description"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["description"] = arg2
+	var arg3 *string
+	if tmp, ok := rawArgs["shortName"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shortName"))
+		arg3, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["shortName"] = arg3
+	var arg4 *db.Priority
+	if tmp, ok := rawArgs["priority"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
+		arg4, err = ec.unmarshalOPriority2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐPriority(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["priority"] = arg4
+	var arg5 bool
+	if tmp, ok := rawArgs["isAllergy"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isAllergy"))
+		arg5, err = ec.unmarshalNBoolean2bool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["isAllergy"] = arg5
 	return args, nil
 }
 
@@ -682,76 +715,6 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 // endregion ************************** directives.gotpl **************************
 
 // region    **************************** field.gotpl *****************************
-
-func (ec *executionContext) _Allergy_abbreviation(ctx context.Context, field graphql.CollectedField, obj *db.Allergy) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Allergy",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Abbreviation, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Allergy_name(ctx context.Context, field graphql.CollectedField, obj *db.Allergy) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Allergy",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
 
 func (ec *executionContext) _Dish_id(ctx context.Context, field graphql.CollectedField, obj *db.Dish) (ret graphql.Marshaler) {
 	defer func() {
@@ -1132,7 +1095,7 @@ func (ec *executionContext) _Image_acceptedAt(ctx context.Context, field graphql
 	return ec.marshalOTime2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Mutation_addAllergy(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Mutation_addTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -1149,7 +1112,7 @@ func (ec *executionContext) _Mutation_addAllergy(ctx context.Context, field grap
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	rawArgs := field.ArgumentMap(ec.Variables)
-	args, err := ec.field_Mutation_addAllergy_args(ctx, rawArgs)
+	args, err := ec.field_Mutation_addTag_args(ctx, rawArgs)
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
@@ -1157,7 +1120,7 @@ func (ec *executionContext) _Mutation_addAllergy(ctx context.Context, field grap
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddAllergy(rctx, args["abbreviation"].(string), args["name"].(string))
+		return ec.resolvers.Mutation().AddTag(rctx, args["abbreviation"].(string), args["name"].(string), args["description"].(string), args["shortName"].(*string), args["priority"].(*db.Priority), args["isAllergy"].(bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1169,9 +1132,9 @@ func (ec *executionContext) _Mutation_addAllergy(ctx context.Context, field grap
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*db.Allergy)
+	res := resTmp.(*db.Tag)
 	fc.Result = res
-	return ec.marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_id(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1419,41 +1382,6 @@ func (ec *executionContext) _Occurrence_priceGuest(ctx context.Context, field gr
 	return ec.marshalNInt2int32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Occurrence_allergies(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Occurrence",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Allergies(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*db.Allergy)
-	fc.Result = res
-	return ec.marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergyᚄ(ctx, field.Selections, res)
-}
-
 func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -1487,41 +1415,6 @@ func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.
 	res := resTmp.([]*db.Tag)
 	fc.Result = res
 	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Query_getAllergies(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllergies(rctx)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*db.Allergy)
-	fc.Result = res
-	return ec.marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergyᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2079,7 +1972,7 @@ func (ec *executionContext) _Review_acceptedAt(ctx context.Context, field graphq
 	return ec.marshalOTime2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Tag_abbreviation(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tag_key(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -2097,7 +1990,7 @@ func (ec *executionContext) _Tag_abbreviation(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Abbreviation, nil
+		return obj.Key, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2147,6 +2040,140 @@ func (ec *executionContext) _Tag_name(ctx context.Context, field graphql.Collect
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tag_description(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Description, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tag_shortName(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ShortName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(sql.NullString)
+	fc.Result = res
+	return ec.marshalOString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tag_priority(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Priority, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(db.Priority)
+	fc.Result = res
+	return ec.marshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐPriority(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tag_isAllergy(ctx context.Context, field graphql.CollectedField, obj *db.Tag) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsAllergy, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
@@ -3286,47 +3313,6 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** object.gotpl ****************************
 
-var allergyImplementors = []string{"Allergy"}
-
-func (ec *executionContext) _Allergy(ctx context.Context, sel ast.SelectionSet, obj *db.Allergy) graphql.Marshaler {
-	fields := graphql.CollectFields(ec.OperationContext, sel, allergyImplementors)
-	out := graphql.NewFieldSet(fields)
-	var invalids uint32
-	for i, field := range fields {
-		switch field.Name {
-		case "__typename":
-			out.Values[i] = graphql.MarshalString("Allergy")
-		case "abbreviation":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Allergy_abbreviation(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "name":
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Allergy_name(ctx, field, obj)
-			}
-
-			out.Values[i] = innerFunc(ctx)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		default:
-			panic("unknown field " + strconv.Quote(field.Name))
-		}
-	}
-	out.Dispatch()
-	if invalids > 0 {
-		return graphql.Null
-	}
-	return out
-}
-
 var dishImplementors = []string{"Dish"}
 
 func (ec *executionContext) _Dish(ctx context.Context, sel ast.SelectionSet, obj *db.Dish) graphql.Marshaler {
@@ -3502,9 +3488,9 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
-		case "addAllergy":
+		case "addTag":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_addAllergy(ctx, field)
+				return ec._Mutation_addTag(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -3623,26 +3609,6 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "allergies":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_allergies(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		case "tags":
 			field := field
 
@@ -3693,29 +3659,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getAllergies":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getAllergies(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "getTags":
 			field := field
 
@@ -3968,9 +3911,9 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Tag")
-		case "abbreviation":
+		case "key":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Tag_abbreviation(ctx, field, obj)
+				return ec._Tag_key(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -3981,6 +3924,40 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 		case "name":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Tag_name(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "description":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Tag_description(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "shortName":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Tag_shortName(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "priority":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Tag_priority(ctx, field, obj)
+			}
+
+			out.Values[i] = innerFunc(ctx)
+
+		case "isAllergy":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Tag_isAllergy(ctx, field, obj)
 			}
 
 			out.Values[i] = innerFunc(ctx)
@@ -4408,64 +4385,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) marshalNAllergy2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx context.Context, sel ast.SelectionSet, v db.Allergy) graphql.Marshaler {
-	return ec._Allergy(ctx, sel, &v)
-}
-
-func (ec *executionContext) marshalNAllergy2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergyᚄ(ctx context.Context, sel ast.SelectionSet, v []*db.Allergy) graphql.Marshaler {
-	ret := make(graphql.Array, len(v))
-	var wg sync.WaitGroup
-	isLen1 := len(v) == 1
-	if !isLen1 {
-		wg.Add(len(v))
-	}
-	for i := range v {
-		i := i
-		fc := &graphql.FieldContext{
-			Index:  &i,
-			Result: &v[i],
-		}
-		ctx := graphql.WithFieldContext(ctx, fc)
-		f := func(i int) {
-			defer func() {
-				if r := recover(); r != nil {
-					ec.Error(ctx, ec.Recover(ctx, r))
-					ret = nil
-				}
-			}()
-			if !isLen1 {
-				defer wg.Done()
-			}
-			ret[i] = ec.marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx, sel, v[i])
-		}
-		if isLen1 {
-			f(i)
-		} else {
-			go f(i)
-		}
-
-	}
-	wg.Wait()
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
-func (ec *executionContext) marshalNAllergy2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐAllergy(ctx context.Context, sel ast.SelectionSet, v *db.Allergy) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	return ec._Allergy(ctx, sel, v)
-}
-
 func (ec *executionContext) unmarshalNBoolean2bool(ctx context.Context, v interface{}) (bool, error) {
 	res, err := graphql.UnmarshalBoolean(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -4704,6 +4623,10 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTag(ctx context.Context, sel ast.SelectionSet, v db.Tag) graphql.Marshaler {
+	return ec._Tag(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*db.Tag) graphql.Marshaler {
@@ -5066,6 +4989,32 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 		return graphql.Null
 	}
 	res := graphql.MarshalBoolean(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐPriority(ctx context.Context, v interface{}) (db.Priority, error) {
+	res, err := scalars.UnmarshalPriority(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐPriority(ctx context.Context, sel ast.SelectionSet, v db.Priority) graphql.Marshaler {
+	res := scalars.MarshalPriority(v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOPriority2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐPriority(ctx context.Context, v interface{}) (*db.Priority, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := scalars.UnmarshalPriority(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOPriority2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐPriority(ctx context.Context, sel ast.SelectionSet, v *db.Priority) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := scalars.MarshalPriority(*v)
 	return res
 }
 

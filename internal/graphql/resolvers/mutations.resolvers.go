@@ -11,7 +11,7 @@ import (
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
 
-func (r *mutationResolver) AddAllergy(ctx context.Context, abbreviation string, name string) (*db.Allergy, error) {
+func (r *mutationResolver) AddTag(ctx context.Context, abbreviation string, name string, description string, shortName *string, priority *db.Priority, isAllergy bool) (*db.Tag, error) {
 	panic(fmt.Errorf("not implemented"))
 }
 
