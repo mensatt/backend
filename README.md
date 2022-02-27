@@ -18,7 +18,12 @@ Install: docker-compose
 Run: `docker-compose up -d`  
 Stop: `docker-compose down`
 
-todo: run first database seeding
+### Database Migrations
+
+Install dbmate: https://github.com/amacneil/dbmate
+
+Upgrade: `dbmate up`
+Downgrade: `dbmate down`
 
 ### Mensatt
 
