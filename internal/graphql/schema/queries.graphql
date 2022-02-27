@@ -4,4 +4,5 @@ type Query {
   getAllImages: [Image!]!
   getAllReviews: [Review!]!
   getOccurrencesByDate(date: Time!): [Occurrence!]!
+  getImagesForOccurrence(occurrence: UUID!): [Image!]!
 }

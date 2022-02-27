@@ -7,6 +7,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
@@ -29,6 +30,10 @@ func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*db.Review, error)
 
 func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*db.Occurrence, error) {
 	return r.Database.GetOccurrencesByDate(ctx, date)
+}
+
+func (r *queryResolver) GetImagesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*db.Image, error) {
+	return r.Database.GetImagesForOccurrence(ctx, occurrence)
 }
 
 // Query returns gqlserver.QueryResolver implementation.

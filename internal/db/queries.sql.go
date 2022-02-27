@@ -151,6 +151,42 @@ func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) 
 	return &i, err
 }
 
+const getImagesForOccurrence = `-- name: GetImagesForOccurrence :many
+SELECT id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+FROM image
+WHERE occurrence = $1
+`
+
+func (q *Queries) GetImagesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getImagesForOccurrence, occurrence)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Image
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(
+			&i.ID,
+			&i.Occurrence,
+			&i.DisplayName,
+			&i.Description,
+			&i.UpVotes,
+			&i.DownVotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AcceptedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOccurrenceByID = `-- name: GetOccurrenceByID :one
 SELECT id, dish, date, price_student, price_staff, price_guest 
 FROM occurrence

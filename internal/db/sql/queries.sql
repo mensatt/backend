@@ -38,3 +38,8 @@ WHERE occurrence_tag.occurrence_id = $1;
 SELECT *
 FROM occurrence
 WHERE date = $1;
+
+-- name: GetImagesForOccurrence :many
+SELECT *
+FROM image
+WHERE occurrence = $1;
