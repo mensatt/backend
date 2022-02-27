@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Init(g *gin.RouterGroup) error {
+func Run(g *gin.RouterGroup) error {
 	// Simple keep-alive/ping handler
 	g.GET("/ping", pingHandler())
 	return nil

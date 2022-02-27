@@ -30,7 +30,7 @@ resolver:
 # struct_tag: json
 
 # Optional: turn on to use []Thing instead of []*Thing
-omit_slice_element_pointers: true
+# omit_slice_element_pointers: true
 
 # Optional: set to speed up generation time by not performing a final validation pass.
 # skip_validation: true
@@ -45,19 +45,6 @@ omit_slice_element_pointers: true
 # The first line in each type will be used as defaults for resolver arguments and
 # modelgen, the others will be allowed when binding to fields. Configure them to
 # your liking
-# models:
-#   ID:
-#     model:
-#       - github.com/99designs/gqlgen/graphql.ID
-#       - github.com/99designs/gqlgen/graphql.Int
-#       - github.com/99designs/gqlgen/graphql.Int64
-#       - github.com/99designs/gqlgen/graphql.Int32
-#   Int:
-#     model:
-#       - github.com/99designs/gqlgen/graphql.Int
-#       - github.com/99designs/gqlgen/graphql.Int64
-#       - github.com/99designs/gqlgen/graphql.Int32
-
 models:
   String:
     model:

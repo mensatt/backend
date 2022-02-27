@@ -4,11 +4,18 @@ package db
 
 import (
 	"context"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
-	GetAllergies(ctx context.Context) ([]Allergy, error)
-	GetTags(ctx context.Context) ([]Tag, error)
+	GetAllAllergies(ctx context.Context) ([]*Allergy, error)
+	GetAllTags(ctx context.Context) ([]*Tag, error)
+	GetAllergiesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Allergy, error)
+	GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error)
+	GetOccurenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error)
+	GetSideDishesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Dish, error)
+	GetTagsForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Tag, error)
 }
 
 var _ Querier = (*Queries)(nil)

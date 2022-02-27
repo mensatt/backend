@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	// move to config file or env variables
+	// TODO: load from env variables
 	sc := server.ServerConfig{
 		Host:           "localhost",
 		Port:           4000,
@@ -21,6 +21,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Error connecting to database:", err)
 	}
+	defer pool.Close()
 
 	log.Fatal(server.Run(&sc, pool))
 }

@@ -16,7 +16,7 @@ type GraphQLParams struct {
 	Database     db.Querier
 }
 
-func Init(g *gin.RouterGroup, params *GraphQLParams) {
+func Run(g *gin.RouterGroup, params *GraphQLParams) {
 	g.POST("", graphqlHandler(params.Database))
 	if params.DebugEnabled {
 		g.GET("/playground", playgroundHandler(g.BasePath()))
