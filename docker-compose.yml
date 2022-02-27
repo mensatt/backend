@@ -1,17 +1,29 @@
 version: "3.9"
 
 services:
-  postgresql_database:
-    image: postgres:14.2-alpine
+  mensatt:
+    build:
+      target: dev
+    volumes:
+      - .:/opt/app/mensatt
     environment:
-      - POSTGRES_USER=mensatt
-      - POSTGRES_PASSWORD=admin
-      - POSTGRES_DB=mensatt
+      DATABASE_URL: postgres://mensatt@postgresql/mensatt?sslmode=disable&pool_max_conns=10
+    ports:
+      - "4000:4000"
+    links:
+      - postgresql
+
+  postgresql:
+    image: postgres:14.2-alpine
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data/
+    environment:
+      POSTGRES_DB: mensatt
+      POSTGRES_USER: mensatt
+      POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
     restart: always
-    volumes:
-      - postgres-data:/var/lib/postgresql/data/
 
 volumes:
-  postgres-data:
+  postgresql-data:

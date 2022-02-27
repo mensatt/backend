@@ -2,8 +2,8 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-  bin = "./tmp/mensatt-backend"
-  cmd = "go build -o ./tmp/mensatt-backend ./cmd/mensatt/main.go"
+  bin = "./tmp/mensatt"
+  cmd = "go build -o ./tmp/mensatt ./cmd/mensatt/main.go"
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor"]
   exclude_file = []
