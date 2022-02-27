@@ -11,25 +11,25 @@ import (
 	"github.com/mensatt/mensatt-backend/internal/graphql/resolvers"
 )
 
-type GraphQL struct {
+type GraphQLParams struct {
 	DebugEnabled bool
 	Database     db.Querier
 }
 
-func (gql *GraphQL) Init(g *gin.RouterGroup) {
-	g.POST("", gql.graphqlHandler())
-	if gql.DebugEnabled {
-		g.GET("/playground", gql.playgroundHandler(g.BasePath()))
+func Init(g *gin.RouterGroup, params *GraphQLParams) {
+	g.POST("", graphqlHandler(params.Database))
+	if params.DebugEnabled {
+		g.GET("/playground", playgroundHandler(g.BasePath()))
 	}
 }
 
 // graphqlHandler defines the GQLGen GraphQL server handler
-func (gql *GraphQL) graphqlHandler() gin.HandlerFunc {
+func graphqlHandler(database db.Querier) gin.HandlerFunc {
 	h := handler.NewDefaultServer(
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
 				Resolvers: &resolvers.Resolver{
-					Database: gql.Database,
+					Database: database,
 				},
 			},
 		),
@@ -41,7 +41,7 @@ func (gql *GraphQL) graphqlHandler() gin.HandlerFunc {
 }
 
 // playgroundHandler defines a handler to expose the Playground
-func (gql *GraphQL) playgroundHandler(path string) gin.HandlerFunc {
+func playgroundHandler(path string) gin.HandlerFunc {
 	h := playground.Handler("GraphQL", path)
 
 	return func(c *gin.Context) {
