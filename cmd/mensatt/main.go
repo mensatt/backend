@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	// TODO: load from env variables
 	sc := mustGetServerConfig()
 
 	pool, err := pgxpool.Connect(context.Background(), utils.MustGet("DATABASE_URL"))

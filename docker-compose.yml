@@ -7,6 +7,10 @@ services:
     volumes:
       - .:/opt/app/mensatt
     environment:
+      HOST: 0.0.0.0
+      PORT: 4000
+      SERVER_PATH_VERSION: v1
+      DEBUG_ENABLED: true
       DATABASE_URL: postgres://mensatt@postgresql/mensatt?sslmode=disable&pool_max_conns=10
     ports:
       - "4000:4000"
