@@ -5,7 +5,7 @@ import "fmt"
 // ServerConfig defines the configuration for the server
 type ServerConfig struct {
 	Host           string
-	Port           int
+	Port           int32
 	ServiceVersion string
 	DebugEnabled   bool
 }
