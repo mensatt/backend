@@ -1,6 +1,6 @@
 .PHONY: generate tidy up down start stop sqlc gqlgen
 
-DC = docker compose -f docker-compose.yml
+DC = docker-compose -f docker-compose.yml
 EXEC_MENSATT = $(DC) exec mensatt
 
 up:
