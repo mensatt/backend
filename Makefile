@@ -1,4 +1,4 @@
-.PHONY: generate tidy log up down start stop sqlc gqlgen dbmate-new dbmate-migrate dbmate-up dbmate-down dbmate-drop dbmate-status
+.PHONY: generate tidy log up down start stop sqlc gqlgen dbmate-new dbmate-migrate dbmate-up dbmate-down dbmate-drop dbmate-status seed
 
 DC = docker compose -f docker-compose.yml
 EXEC_MENSATT = $(DC) exec mensatt
@@ -41,3 +41,6 @@ dbmate-drop:
 	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) drop
 dbmate-status: 
 	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) status
+
+seed:
+	$(EXEC_MENSATT) go run ./internal/db/seeder/main.go
