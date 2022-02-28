@@ -37,6 +37,8 @@ dbmate-up:
 	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) up
 dbmate-down: 
 	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) down
+dbmate-create: 
+	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) create
 dbmate-drop: 
 	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) drop
 dbmate-status: 

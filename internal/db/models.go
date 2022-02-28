@@ -80,10 +80,6 @@ type Review struct {
 	AcceptedAt  sql.NullTime   `json:"accepted_at"`
 }
 
-type SchemaMigration struct {
-	Version string `json:"version"`
-}
-
 type Tag struct {
 	Key         string         `json:"key"`
 	Name        string         `json:"name"`
