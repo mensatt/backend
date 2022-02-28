@@ -63,6 +63,9 @@ models:
   Dish:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Dish
+  TagInput:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db.CreateTagParams
   Tag:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Tag

@@ -10,6 +10,7 @@ import (
 )
 
 type Querier interface {
+	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
 	GetAllDishes(ctx context.Context) ([]*Dish, error)
 	GetAllImages(ctx context.Context) ([]*Image, error)
 	GetAllReviews(ctx context.Context) ([]*Review, error)

@@ -5,14 +5,13 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
 
-func (r *mutationResolver) AddTag(ctx context.Context, abbreviation string, name string, description string, shortName *string, priority *db.Priority, isAllergy bool) (*db.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *mutationResolver) CreateTag(ctx context.Context, tag db.CreateTagParams) (*db.Tag, error) {
+	return r.Database.CreateTag(ctx, &tag)
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.

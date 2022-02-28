@@ -1,4 +1,4 @@
-.PHONY: generate tidy up down start stop sqlc gqlgen dbmate-new dbmate-migrate dbmate-up dbmate-down dbmate-drop dbmate-status
+.PHONY: generate tidy log up down start stop sqlc gqlgen dbmate-new dbmate-migrate dbmate-up dbmate-down dbmate-drop dbmate-status
 
 DC = docker compose -f docker-compose.yml
 EXEC_MENSATT = $(DC) exec mensatt
@@ -13,6 +13,8 @@ start:
 	$(DC) start
 stop:
 	$(DC) stop
+log:
+	$(DC) logs mensatt
 
 #go code generation
 generate:

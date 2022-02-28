@@ -5,10 +5,47 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
 )
+
+const createTag = `-- name: CreateTag :one
+INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
+VALUES ($1, $2, $3, $4, $5, $6)
+RETURNING key, name, description, short_name, priority, is_allergy
+`
+
+type CreateTagParams struct {
+	Key         string         `json:"key"`
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	ShortName   sql.NullString `json:"short_name"`
+	Priority    Priority       `json:"priority"`
+	IsAllergy   bool           `json:"is_allergy"`
+}
+
+func (q *Queries) CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error) {
+	row := q.db.QueryRow(ctx, createTag,
+		arg.Key,
+		arg.Name,
+		arg.Description,
+		arg.ShortName,
+		arg.Priority,
+		arg.IsAllergy,
+	)
+	var i Tag
+	err := row.Scan(
+		&i.Key,
+		&i.Name,
+		&i.Description,
+		&i.ShortName,
+		&i.Priority,
+		&i.IsAllergy,
+	)
+	return &i, err
+}
 
 const getAllDishes = `-- name: GetAllDishes :many
 SELECT id, name

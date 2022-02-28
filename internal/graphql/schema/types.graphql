@@ -9,6 +9,15 @@ enum Priority {
   HIGH
 }
 
+input TagInput {
+  key: String!
+  name: String!
+  description: String!
+  shortName: String
+  priority: Priority
+  isAllergy: Boolean!
+}
+
 type Tag {
   key: String!
   name: String!

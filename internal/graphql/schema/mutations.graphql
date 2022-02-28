@@ -1,3 +1,3 @@
 type Mutation {
-  addTag(abbreviation: String!, name: String!, description: String!, shortName: String, priority: Priority, isAllergy: Boolean!): Tag!
+  createTag(tag: TagInput!): Tag!
 }
