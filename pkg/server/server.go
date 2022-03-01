@@ -3,6 +3,7 @@ package server
 import (
 	"log"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql"
@@ -13,6 +14,7 @@ func Run(cfg *ServerConfig, dbtx db.DBTX) error {
 	database := db.New(dbtx)
 
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	miscRouterGroup := r.Group(cfg.VersionedPath("/misc"))
 	misc.Run(miscRouterGroup)
