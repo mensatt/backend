@@ -305,7 +305,7 @@ func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrenceID u
 
 const getTagsForOccurrence = `-- name: GetTagsForOccurrence :many
 SELECT tag.key, tag.name, tag.description, tag.short_name, tag.priority, tag.is_allergy
-FROM occurrence_tag JOIN tag ON occurrence_tag.tag_abbreviation = tag.abbreviation
+FROM occurrence_tag JOIN tag ON occurrence_tag.tag_key = tag.key
 WHERE occurrence_tag.occurrence_id = $1
 `
 

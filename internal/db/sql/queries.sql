@@ -31,7 +31,7 @@ WHERE occurrence_side_dishes.occurrence_id = $1;
 
 -- name: GetTagsForOccurrence :many
 SELECT tag.*
-FROM occurrence_tag JOIN tag ON occurrence_tag.tag_key = tag.abbreviation
+FROM occurrence_tag JOIN tag ON occurrence_tag.tag_key = tag.key
 WHERE occurrence_tag.occurrence_id = $1; 
 
 -- name: GetOccurrencesByDate :many
