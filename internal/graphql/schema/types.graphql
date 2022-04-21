@@ -36,6 +36,8 @@ type Occurrence {
   priceStaff: Int!
   priceGuest: Int!
   tags: [Tag!]!
+  reviews: [Review!]!
+  images: [Image!]!
 }
 
 type Review {

@@ -5,7 +5,6 @@ package resolvers
 
 import (
 	"context"
-
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
@@ -24,6 +23,14 @@ func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *db.Occurrence)
 
 func (r *occurrenceResolver) Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error) {
 	return r.Database.GetTagsForOccurrence(ctx, obj.ID)
+}
+
+func (r *occurrenceResolver) Reviews(ctx context.Context, obj *db.Occurrence) ([]*db.Review, error) {
+	return r.Database.GetReviewsForOccurrence(ctx, obj.ID)
+}
+
+func (r *occurrenceResolver) Images(ctx context.Context, obj *db.Occurrence) ([]*db.Image, error) {
+	return r.Database.GetImagesForOccurrence(ctx, obj.ID)
 }
 
 func (r *reviewResolver) Occurrence(ctx context.Context, obj *db.Review) (*db.Occurrence, error) {
