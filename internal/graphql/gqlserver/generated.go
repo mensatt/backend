@@ -540,18 +540,18 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "schema/directives.graphql", Input: `directive @goModel(
-	model: String
-	models: [String!]
+    model: String
+    models: [String!]
 ) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
 
 directive @goField(
-	forceResolver: Boolean
-	name: String
+    forceResolver: Boolean
+    name: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 directive @goTag(
-	key: String!
-	value: String
+    key: String!
+    value: String
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION`, BuiltIn: false},
 	{Name: "schema/inputs.graphql", Input: `input TagInput {
     key: String!
@@ -559,79 +559,78 @@ directive @goTag(
     description: String!
     shortName: String
     priority: Priority
-    isAllergy: Boolean!
+    isAllergy: Boolean
 }`, BuiltIn: false},
 	{Name: "schema/mutations.graphql", Input: `type Mutation {
-  createTag(tag: TagInput!): Tag!
+    createTag(tag: TagInput!): Tag!
 }`, BuiltIn: false},
 	{Name: "schema/queries.graphql", Input: `type Query {
-  getAllTags: [Tag!]!
-  getAllDishes: [Dish!]!
-  getAllOccurrences: [Occurrence!]!
-  getAllReviews: [Review!]!
-  getAllImages: [Image!]!
-
-  getOccurrencesByDate(date: Time!): [Occurrence!]!
+    getAllTags: [Tag!]!
+    getAllDishes: [Dish!]!
+    getAllOccurrences: [Occurrence!]!
+    getAllReviews: [Review!]!
+    getAllImages: [Image!]!
+    getOccurrencesByDate(date: Time!): [Occurrence!]!
 }
 `, BuiltIn: false},
 	{Name: "schema/scalars.graphql", Input: `scalar Time
 scalar UUID`, BuiltIn: false},
 	{Name: "schema/types.graphql", Input: `enum Priority {
-  LOW
-  MEDIUM
-  HIGH
+    LOW
+    MEDIUM
+    HIGH
 }
 
 type Tag {
-  key: String!
-  name: String!
-  description: String!
-  shortName: String
-  priority: Priority
-  isAllergy: Boolean!
+    key: String!
+    name: String!
+    description: String!
+    shortName: String
+    priority: Priority
+    isAllergy: Boolean!
 }
 
 type Dish {
-  id: UUID!
-  name: String!
+    id: UUID!
+    name: String!
 }
 
 type Occurrence {
-  id: UUID!
-  dish: Dish!
-  sideDishes: [Dish!]!
-  date: Time!
-  priceStudent: Int!
-  priceStaff: Int!
-  priceGuest: Int!
-  tags: [Tag!]!
-  reviews: [Review!]!
-  images: [Image!]!
+    id: UUID!
+    dish: Dish!
+    sideDishes: [Dish!]!
+    date: Time!
+    priceStudent: Int!
+    priceStaff: Int!
+    priceGuest: Int!
+    tags: [Tag!]!
+    reviews: [Review!]!
+    images: [Image!]!
 }
 
 type Review {
-  id: UUID!
-  occurrence: Occurrence!
-  displayName: String!
-  stars: Int!
-  text: String
-  upVotes: Int!
-  downVotes: Int!
-  createdAt: Time!
-  updatedAt: Time!
-  acceptedAt: Time
+    id: UUID!
+    occurrence: Occurrence!
+    displayName: String!
+    stars: Int!
+    text: String
+    upVotes: Int!
+    downVotes: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    acceptedAt: Time
 }
 
 type Image {
-  id: UUID!
-  occurrence: Occurrence!
-  displayName: String!
-  description: String
-  upVotes: Int!
-  downVotes: Int!
-  createdAt: Time!
-  updatedAt: Time!
-  acceptedAt: Time
+    id: UUID!
+    occurrence: Occurrence!
+    displayName: String!
+    description: String
+    upVotes: Int!
+    downVotes: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    acceptedAt: Time
 }
 `, BuiltIn: false},
 }
@@ -3528,7 +3527,7 @@ func (ec *executionContext) unmarshalInputTagInput(ctx context.Context, obj inte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isAllergy"))
-			it.IsAllergy, err = ec.unmarshalNBoolean2bool(ctx, v)
+			it.IsAllergy, err = ec.unmarshalOBoolean2bool(ctx, v)
 			if err != nil {
 				return it, err
 			}

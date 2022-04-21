@@ -4,5 +4,5 @@ input TagInput {
     description: String!
     shortName: String
     priority: Priority
-    isAllergy: Boolean!
+    isAllergy: Boolean
 }
