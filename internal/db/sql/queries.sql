@@ -2,27 +2,51 @@
 SELECT *
 FROM tag;
 
+-- name: GetTagByKey :one
+SELECT *
+FROM tag
+WHERE key = $1;
+
 -- name: GetAllDishes :many
 SELECT *
 FROM dish;
+
+-- name: GetDishByID :one
+SELECT *
+FROM dish
+WHERE id = $1;
 
 -- name: GetAllReviews :many
 SELECT *
 FROM review;
 
+-- name: GetReviewByID :one
+SELECT *
+FROM review
+WHERE id = $1;
+
 -- name: GetAllImages :many
 SELECT *
 FROM image;
+
+-- name: GetImageByID :one
+SELECT *
+FROM image
+WHERE id = $1;
+
+-- name: GetAllOccurrences :many
+SELECT *
+FROM occurrence;
 
 -- name: GetOccurrenceByID :one
 SELECT * 
 FROM occurrence
 WHERE id = $1;
 
--- name: GetDishByID :one
-SELECT * 
-FROM dish
-WHERE id = $1;
+-- name: GetOccurrencesByDate :many
+SELECT *
+FROM occurrence
+WHERE date = $1;
 
 -- name: GetSideDishesForOccurrence :many
 SELECT dish.*
@@ -32,17 +56,19 @@ WHERE occurrence_side_dishes.occurrence_id = $1;
 -- name: GetTagsForOccurrence :many
 SELECT tag.*
 FROM occurrence_tag JOIN tag ON occurrence_tag.tag_key = tag.key
-WHERE occurrence_tag.occurrence_id = $1; 
+WHERE occurrence_tag.occurrence_id = $1;
 
--- name: GetOccurrencesByDate :many
-SELECT *
-FROM occurrence
-WHERE date = $1;
+-- name: GetReviewsForOccurrence :many
+SELECT review.*
+FROM occurrence JOIN review ON occurrence.id = review.occurrence
+WHERE occurrence.id = $1;
 
 -- name: GetImagesForOccurrence :many
-SELECT *
-FROM image
-WHERE occurrence = $1;
+SELECT image.*
+FROM occurrence JOIN image ON occurrence.id = image.occurrence
+WHERE occurrence.id = $1;
+
+--------------------------------------------------------------------------------
 
 -- name: CreateTag :one
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy)

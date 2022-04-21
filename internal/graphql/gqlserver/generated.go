@@ -75,9 +75,11 @@ type ComplexityRoot struct {
 		Date         func(childComplexity int) int
 		Dish         func(childComplexity int) int
 		ID           func(childComplexity int) int
+		Images       func(childComplexity int) int
 		PriceGuest   func(childComplexity int) int
 		PriceStaff   func(childComplexity int) int
 		PriceStudent func(childComplexity int) int
+		Reviews      func(childComplexity int) int
 		SideDishes   func(childComplexity int) int
 		Tags         func(childComplexity int) int
 	}
@@ -125,6 +127,8 @@ type OccurrenceResolver interface {
 	SideDishes(ctx context.Context, obj *db.Occurrence) ([]*db.Dish, error)
 
 	Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error)
+	Reviews(ctx context.Context, obj *db.Occurrence) ([]*db.Review, error)
+	Images(ctx context.Context, obj *db.Occurrence) ([]*db.Image, error)
 }
 type QueryResolver interface {
 	GetAllTags(ctx context.Context) ([]*db.Tag, error)
@@ -263,6 +267,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Occurrence.ID(childComplexity), true
 
+	case "Occurrence.images":
+		if e.complexity.Occurrence.Images == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.Images(childComplexity), true
+
 	case "Occurrence.priceGuest":
 		if e.complexity.Occurrence.PriceGuest == nil {
 			break
@@ -283,6 +294,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Occurrence.PriceStudent(childComplexity), true
+
+	case "Occurrence.reviews":
+		if e.complexity.Occurrence.Reviews == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.Reviews(childComplexity), true
 
 	case "Occurrence.sideDishes":
 		if e.complexity.Occurrence.SideDishes == nil {
@@ -593,6 +611,8 @@ type Occurrence {
   priceStaff: Int!
   priceGuest: Int!
   tags: [Tag!]!
+  reviews: [Review!]!
+  images: [Image!]!
 }
 
 type Review {
@@ -1439,6 +1459,76 @@ func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.
 	res := resTmp.([]*db.Tag)
 	fc.Result = res
 	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTagᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Occurrence_reviews(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Occurrence().Reviews(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*db.Review)
+	fc.Result = res
+	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐReviewᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Occurrence_images(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Occurrence().Images(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*db.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_getAllTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -3790,6 +3880,46 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 					}
 				}()
 				res = ec._Occurrence_tags(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "reviews":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Occurrence_reviews(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "images":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Occurrence_images(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
