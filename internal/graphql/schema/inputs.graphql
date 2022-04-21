@@ -1,0 +1,8 @@
+input TagInput {
+    key: String!
+    name: String!
+    description: String!
+    shortName: String
+    priority: Priority
+    isAllergy: Boolean!
+}

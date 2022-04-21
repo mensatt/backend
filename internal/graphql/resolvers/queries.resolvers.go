@@ -7,7 +7,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
@@ -20,20 +19,20 @@ func (r *queryResolver) GetAllDishes(ctx context.Context) ([]*db.Dish, error) {
 	return r.Database.GetAllDishes(ctx)
 }
 
-func (r *queryResolver) GetAllImages(ctx context.Context) ([]*db.Image, error) {
-	return r.Database.GetAllImages(ctx)
+func (r *queryResolver) GetAllOccurrences(ctx context.Context) ([]*db.Occurrence, error) {
+	return r.Database.GetAllOccurrences(ctx)
 }
 
 func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*db.Review, error) {
 	return r.Database.GetAllReviews(ctx)
 }
 
-func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*db.Occurrence, error) {
-	return r.Database.GetOccurrencesByDate(ctx, date)
+func (r *queryResolver) GetAllImages(ctx context.Context) ([]*db.Image, error) {
+	return r.Database.GetAllImages(ctx)
 }
 
-func (r *queryResolver) GetImagesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*db.Image, error) {
-	return r.Database.GetImagesForOccurrence(ctx, occurrence)
+func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*db.Occurrence, error) {
+	return r.Database.GetOccurrencesByDate(ctx, date)
 }
 
 // Query returns gqlserver.QueryResolver implementation.

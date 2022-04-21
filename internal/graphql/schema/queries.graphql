@@ -1,8 +1,8 @@
 type Query {
-  getAllTags: [Tag!]!
-  getAllDishes: [Dish!]!
-  getAllImages: [Image!]!
-  getAllReviews: [Review!]!
-  getOccurrencesByDate(date: Time!): [Occurrence!]!
-  getImagesForOccurrence(occurrence: UUID!): [Image!]!
+    getAllTags: [Tag!]!
+    getAllDishes: [Dish!]!
+    getAllOccurrences: [Occurrence!]!
+    getAllReviews: [Review!]!
+    getAllImages: [Image!]!
+    getOccurrencesByDate(date: Time!): [Occurrence!]!
 }

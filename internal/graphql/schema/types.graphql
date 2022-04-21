@@ -1,66 +1,57 @@
-type Dish {
-  id: UUID!
-  name: String!
-}
-
 enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-}
-
-input TagInput {
-  key: String!
-  name: String!
-  description: String!
-  shortName: String
-  priority: Priority
-  isAllergy: Boolean!
+    LOW
+    MEDIUM
+    HIGH
 }
 
 type Tag {
-  key: String!
-  name: String!
-  description: String!
-  shortName: String
-  priority: Priority
-  isAllergy: Boolean!
+    key: String!
+    name: String!
+    description: String!
+    shortName: String
+    priority: Priority
+    isAllergy: Boolean!
+}
+
+type Dish {
+    id: UUID!
+    name: String!
 }
 
 type Occurrence {
-  id: UUID!
-  dish: Dish!
-  sideDishes: [Dish!]!
-  date: Time!
-  priceStudent: Int!
-  priceStaff: Int!
-  priceGuest: Int!
-  tags: [Tag!]!
-  reviews: [Review!]!
-  images: [Image!]!
+    id: UUID!
+    dish: Dish!
+    sideDishes: [Dish!]!
+    date: Time!
+    priceStudent: Int!
+    priceStaff: Int!
+    priceGuest: Int!
+    tags: [Tag!]!
+    reviews: [Review!]!
+    images: [Image!]!
 }
 
 type Review {
-  id: UUID!
-  occurrence: Occurrence!
-  displayName: String!
-  stars: Int!
-  text: String
-  upVotes: Int!
-  downVotes: Int!
-  createdAt: Time!
-  updatedAt: Time!
-  acceptedAt: Time
+    id: UUID!
+    occurrence: Occurrence!
+    displayName: String!
+    stars: Int!
+    text: String
+    upVotes: Int!
+    downVotes: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    acceptedAt: Time
 }
 
 type Image {
-  id: UUID!
-  occurrence: Occurrence!
-  displayName: String!
-  description: String
-  upVotes: Int!
-  downVotes: Int!
-  createdAt: Time!
-  updatedAt: Time!
-  acceptedAt: Time
+    id: UUID!
+    occurrence: Occurrence!
+    displayName: String!
+    description: String
+    upVotes: Int!
+    downVotes: Int!
+    createdAt: Time!
+    updatedAt: Time!
+    acceptedAt: Time
 }
