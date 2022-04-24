@@ -2,6 +2,8 @@ name: Docker Publish
 
 on:
   release:
+    types:
+      - created
     branches:
       - master
 
