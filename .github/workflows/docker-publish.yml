@@ -29,6 +29,4 @@ jobs:
         uses: docker/build-push-action@v2.10.0
         with:
           push: true # Will only build if this is not here
-          tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.tags }}
-            ghcr.io/${{ github.repository }}:latest
+          tags: ${{ steps.meta.outputs.tags }}
