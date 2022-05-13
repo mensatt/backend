@@ -2,36 +2,31 @@
 
 package db
 
-// // Repository defines all functions to execute db queries and transactions
-// type Repository interface {
-// 	Querier
-// }
+import (
+	"embed"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	"github.com/golang-migrate/migrate/v4/source/iofs"
+	_ "github.com/lib/pq"
+	"github.com/mensatt/mensatt-backend/pkg/utils"
+)
 
-// type repoSvc struct {
-// 	*Queries
-// 	db *pgxpool.Pool
-// }
+//go:embed sql/migrations/*.sql
+var fs embed.FS
 
-// // NewRepository returns an implementation of the Repository interface.
-// func NewRepository(db *pgxpool.Pool) Repository {
-// 	return &repoSvc{
-// 		Queries: New(db),
-// 		db:      db,
-// 	}
-// }
+func UpgradeDatabase() error {
+	d, err := iofs.New(fs, "sql/migrations")
+	if err != nil {
+		return err
+	}
 
-// func (r *repoSvc) withTx(ctx context.Context, txFn func(*Queries) error) error {
-// 	tx, err := r.db.BeginTx(ctx, pgx.TxOptions{})
-// 	if err != nil {
-// 		return err
-// 	}
-// 	q := New(tx)
-// 	err = txFn(q)
-// 	if err != nil {
-// 		if rbErr := tx.Rollback(ctx); rbErr != nil {
-// 			return fmt.Errorf("tx failed: %v, unable to rollback: %v", err, rbErr)
-// 		}
-// 		return err
-// 	}
-// 	return tx.Commit(ctx)
-// }
+	m, err := migrate.NewWithSourceInstance("iofs", d, utils.MustGet("DATABASE_URL"))
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+	return nil
+}

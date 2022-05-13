@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/getsentry/sentry-go"
+	"github.com/mensatt/mensatt-backend/internal/db"
 	"log"
 	"time"
 
@@ -35,6 +36,12 @@ func main() {
 		log.Fatalln("Error connecting to database:", err)
 	}
 	defer pool.Close()
+
+	// Run migrations to keep the database up to date
+	err = db.UpgradeDatabase()
+	if err != nil {
+		log.Fatalln("Error upgrading database:", err)
+	}
 
 	log.Fatal(server.Run(&sc, pool))
 }

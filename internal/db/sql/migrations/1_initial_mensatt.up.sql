@@ -71,14 +71,3 @@ CREATE TABLE image (
     PRIMARY KEY (id),
     CONSTRAINT fk_occurrence FOREIGN KEY(occurrence) REFERENCES occurrence(id)
 );
-
--- migrate:down
-DROP TABLE IF EXISTS dish CASCADE;
-DROP TYPE priority CASCADE;
-DROP TABLE IF EXISTS allergy CASCADE;
-DROP TABLE IF EXISTS occurrence CASCADE;
-DROP TABLE IF EXISTS occurrence_side_dishes CASCADE;
-DROP TABLE IF EXISTS occurrence_allergy CASCADE;
-DROP TABLE IF EXISTS occurrence_tag CASCADE;
-DROP TABLE IF EXISTS review CASCADE;
-DROP TABLE IF EXISTS image CASCADE;

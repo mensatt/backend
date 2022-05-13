@@ -55,6 +55,3 @@ INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUE
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Su', 'Schwefeloxid/Sulfite', 'Schwefeloxid/Sulfite', '', 'LOW', TRUE);
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Lu', 'Lupinen', 'Lupinen', '', 'LOW', TRUE);
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('We', 'Weichtiere', 'Weichtiere', '', 'LOW', TRUE);
-
--- migrate:down
-TRUNCATE TABLE tag CASCADE;
