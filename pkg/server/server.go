@@ -1,6 +1,7 @@
 package server
 
 import (
+	sentrygin "github.com/getsentry/sentry-go/gin"
 	"log"
 
 	"github.com/gin-contrib/cors"
@@ -11,15 +12,17 @@ import (
 )
 
 func Run(cfg *ServerConfig, dbtx db.DBTX) error {
-	database := db.New(dbtx)
 
-	r := gin.Default()
-	r.Use(cors.Default())
+	app := gin.Default()
+	app.Use(cors.Default())
+	app.Use(sentrygin.New(sentrygin.Options{}))
 
-	miscRouterGroup := r.Group(cfg.VersionedPath("/misc"))
+	miscRouterGroup := app.Group(cfg.VersionedPath("/misc"))
 	misc.Run(miscRouterGroup)
 
-	gqlRouterGroup := r.Group(cfg.VersionedPath("/graphql"))
+	database := db.New(dbtx)
+
+	gqlRouterGroup := app.Group(cfg.VersionedPath("/graphql"))
 	gqlServerParams := graphql.GraphQLParams{
 		DebugEnabled: cfg.DebugEnabled,
 		Database:     database,
@@ -28,5 +31,5 @@ func Run(cfg *ServerConfig, dbtx db.DBTX) error {
 
 	log.Println("Running @ " + cfg.SchemaVersionedEndpoint(""))
 
-	return r.Run(cfg.ListenEndpoint()) // Start the server
+	return app.Run(cfg.ListenEndpoint()) // Start the server
 }

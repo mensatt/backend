@@ -28,4 +28,6 @@ RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 FROM busybox
 
 COPY --from=built /tmp/mensatt /usr/bin/mensatt
+
+EXPOSE 4000
 CMD ["mensatt"]

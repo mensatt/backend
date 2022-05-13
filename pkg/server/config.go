@@ -1,6 +1,8 @@
 package server
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // ServerConfig defines the configuration for the server
 type ServerConfig struct {
@@ -8,6 +10,7 @@ type ServerConfig struct {
 	Port           int32
 	ServiceVersion string
 	DebugEnabled   bool
+	SentryDSN      string
 }
 
 // ListenEndpoint builds the endpoint string (host + port)

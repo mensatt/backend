@@ -11,16 +11,17 @@ services:
       PORT: 4000
       SERVER_PATH_VERSION: v1
       DEBUG_ENABLED: true
-      DATABASE_URL: postgres://mensatt@postgresql/mensatt?sslmode=disable
+      DATABASE_URL: postgres://mensatt@postgres/mensatt?sslmode=disable
+      SENTRY_DSN: https://<token>.ingest.sentry.io/<project>
     ports:
       - "4000:4000"
     links:
-      - postgresql
+      - postgres
 
-  postgresql:
+  postgres:
     image: postgres:14.2-alpine
     volumes:
-      - postgresql-data:/var/lib/postgresql/data/
+      - postgres-data:/var/lib/postgresql/data/
     environment:
       POSTGRES_DB: mensatt
       POSTGRES_USER: mensatt
@@ -30,4 +31,4 @@ services:
     restart: always
 
 volumes:
-  postgresql-data:
+  postgres-data:
