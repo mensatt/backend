@@ -11,6 +11,125 @@ import (
 	"github.com/google/uuid"
 )
 
+const addOccurrenceSideDish = `-- name: AddOccurrenceSideDish :one
+INSERT INTO occurrence_side_dishes (occurrence_id, dish_id)
+VALUES ($1, $2)
+RETURNING occurrence_id, dish_id
+`
+
+type AddOccurrenceSideDishParams struct {
+	OccurrenceID uuid.UUID `json:"occurrence_id"`
+	DishID       uuid.UUID `json:"dish_id"`
+}
+
+func (q *Queries) AddOccurrenceSideDish(ctx context.Context, arg *AddOccurrenceSideDishParams) (*OccurrenceSideDish, error) {
+	row := q.db.QueryRow(ctx, addOccurrenceSideDish, arg.OccurrenceID, arg.DishID)
+	var i OccurrenceSideDish
+	err := row.Scan(&i.OccurrenceID, &i.DishID)
+	return &i, err
+}
+
+const addOccurrenceTag = `-- name: AddOccurrenceTag :one
+INSERT INTO occurrence_tag (occurrence_id, tag_key)
+VALUES ($1, $2)
+RETURNING occurrence_id, tag_key
+`
+
+type AddOccurrenceTagParams struct {
+	OccurrenceID uuid.UUID `json:"occurrence_id"`
+	TagKey       string    `json:"tag_key"`
+}
+
+func (q *Queries) AddOccurrenceTag(ctx context.Context, arg *AddOccurrenceTagParams) (*OccurrenceTag, error) {
+	row := q.db.QueryRow(ctx, addOccurrenceTag, arg.OccurrenceID, arg.TagKey)
+	var i OccurrenceTag
+	err := row.Scan(&i.OccurrenceID, &i.TagKey)
+	return &i, err
+}
+
+const createDish = `-- name: CreateDish :one
+INSERT INTO dish (name)
+VALUES ($1)
+RETURNING id, name
+`
+
+func (q *Queries) CreateDish(ctx context.Context, name string) (*Dish, error) {
+	row := q.db.QueryRow(ctx, createDish, name)
+	var i Dish
+	err := row.Scan(&i.ID, &i.Name)
+	return &i, err
+}
+
+const createOccurrence = `-- name: CreateOccurrence :one
+INSERT INTO occurrence (dish, date, price_student, price_staff, price_guest)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING id, dish, date, price_student, price_staff, price_guest
+`
+
+type CreateOccurrenceParams struct {
+	Dish         uuid.UUID `json:"dish"`
+	Date         time.Time `json:"date"`
+	PriceStudent int32     `json:"price_student"`
+	PriceStaff   int32     `json:"price_staff"`
+	PriceGuest   int32     `json:"price_guest"`
+}
+
+func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error) {
+	row := q.db.QueryRow(ctx, createOccurrence,
+		arg.Dish,
+		arg.Date,
+		arg.PriceStudent,
+		arg.PriceStaff,
+		arg.PriceGuest,
+	)
+	var i Occurrence
+	err := row.Scan(
+		&i.ID,
+		&i.Dish,
+		&i.Date,
+		&i.PriceStudent,
+		&i.PriceStaff,
+		&i.PriceGuest,
+	)
+	return &i, err
+}
+
+const createReview = `-- name: CreateReview :one
+INSERT INTO review (occurrence, display_name, stars, text)
+VALUES ($1, $2, $3, $4)
+RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+`
+
+type CreateReviewParams struct {
+	Occurrence  uuid.UUID      `json:"occurrence"`
+	DisplayName sql.NullString `json:"display_name"`
+	Stars       int32          `json:"stars"`
+	Text        sql.NullString `json:"text"`
+}
+
+func (q *Queries) CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error) {
+	row := q.db.QueryRow(ctx, createReview,
+		arg.Occurrence,
+		arg.DisplayName,
+		arg.Stars,
+		arg.Text,
+	)
+	var i Review
+	err := row.Scan(
+		&i.ID,
+		&i.Occurrence,
+		&i.DisplayName,
+		&i.Stars,
+		&i.Text,
+		&i.UpVotes,
+		&i.DownVotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AcceptedAt,
+	)
+	return &i, err
+}
+
 const createTag = `-- name: CreateTag :one
 
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy)

@@ -44,6 +44,7 @@ type ResolverRoot interface {
 	Occurrence() OccurrenceResolver
 	Query() QueryResolver
 	Review() ReviewResolver
+	OccurrenceInput() OccurrenceInputResolver
 }
 
 type DirectiveRoot struct {
@@ -68,7 +69,10 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		CreateTag func(childComplexity int, tag db.CreateTagParams) int
+		CreateDish       func(childComplexity int, name string) int
+		CreateOccurrence func(childComplexity int, occurrence db.CreateOccurrenceParams) int
+		CreateReview     func(childComplexity int, review db.CreateReviewParams) int
+		CreateTag        func(childComplexity int, tag db.CreateTagParams) int
 	}
 
 	Occurrence struct {
@@ -121,6 +125,9 @@ type ImageResolver interface {
 }
 type MutationResolver interface {
 	CreateTag(ctx context.Context, tag db.CreateTagParams) (*db.Tag, error)
+	CreateDish(ctx context.Context, name string) (*db.Dish, error)
+	CreateOccurrence(ctx context.Context, occurrence db.CreateOccurrenceParams) (*db.Occurrence, error)
+	CreateReview(ctx context.Context, review db.CreateReviewParams) (*db.Review, error)
 }
 type OccurrenceResolver interface {
 	Dish(ctx context.Context, obj *db.Occurrence) (*db.Dish, error)
@@ -140,6 +147,12 @@ type QueryResolver interface {
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *db.Review) (*db.Occurrence, error)
+}
+
+type OccurrenceInputResolver interface {
+	SideDishes(ctx context.Context, obj *db.CreateOccurrenceParams, data []uuid.UUID) error
+
+	Tags(ctx context.Context, obj *db.CreateOccurrenceParams, data []string) error
 }
 
 type executableSchema struct {
@@ -233,6 +246,42 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Image.UpdatedAt(childComplexity), true
+
+	case "Mutation.createDish":
+		if e.complexity.Mutation.CreateDish == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createDish_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateDish(childComplexity, args["name"].(string)), true
+
+	case "Mutation.createOccurrence":
+		if e.complexity.Mutation.CreateOccurrence == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createOccurrence_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateOccurrence(childComplexity, args["occurrence"].(db.CreateOccurrenceParams)), true
+
+	case "Mutation.createReview":
+		if e.complexity.Mutation.CreateReview == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createReview_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateReview(childComplexity, args["review"].(db.CreateReviewParams)), true
 
 	case "Mutation.createTag":
 		if e.complexity.Mutation.CreateTag == nil {
@@ -560,9 +609,36 @@ directive @goTag(
     shortName: String
     priority: Priority
     isAllergy: Boolean
-}`, BuiltIn: false},
+}
+
+input OccurrenceInput {
+    dish: UUID!
+    sideDishes: [UUID!] # optional -> empty array
+    date: Time!
+    priceStudent: Int!
+    priceStaff: Int!
+    priceGuest: Int!
+    tags: [String!] # optional -> empty array
+}
+
+input ReviewInput {
+    occurrence: UUID!
+    displayName: String!
+    stars: Int!
+    text: String
+}
+
+#input ImageInput {
+#    occurrence: UUID!
+#    displayName: String!
+#    description: String
+#}`, BuiltIn: false},
 	{Name: "schema/mutations.graphql", Input: `type Mutation {
-    createTag(tag: TagInput!): Tag!
+    createTag(tag: TagInput!): Tag! # auth
+    createDish(name: String!): Dish! # auth
+    createOccurrence(occurrence: OccurrenceInput!): Occurrence! # auth
+    createReview(review: ReviewInput!): Review! # non-auth
+    #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/ # non-auth
 }`, BuiltIn: false},
 	{Name: "schema/queries.graphql", Input: `type Query {
     getAllTags: [Tag!]!
@@ -639,6 +715,51 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Mutation_createDish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 db.CreateOccurrenceParams
+	if tmp, ok := rawArgs["occurrence"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
+		arg0, err = ec.unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐCreateOccurrenceParams(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["occurrence"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_createReview_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 db.CreateReviewParams
+	if tmp, ok := rawArgs["review"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("review"))
+		arg0, err = ec.unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐCreateReviewParams(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["review"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_createTag_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1157,6 +1278,132 @@ func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graph
 	res := resTmp.(*db.Tag)
 	fc.Result = res
 	return ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐTag(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createDish(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createDish_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateDish(rctx, args["name"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Dish)
+	fc.Result = res
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐDish(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createOccurrence_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateOccurrence(rctx, args["occurrence"].(db.CreateOccurrenceParams))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Occurrence)
+	fc.Result = res
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐOccurrence(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Mutation_createReview(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Mutation_createReview_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateReview(rctx, args["review"].(db.CreateReviewParams))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*db.Review)
+	fc.Result = res
+	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐReview(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_id(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -3474,6 +3721,130 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, obj interface{}) (db.CreateOccurrenceParams, error) {
+	var it db.CreateOccurrenceParams
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "dish":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
+			it.Dish, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sideDishes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sideDishes"))
+			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.OccurrenceInput().SideDishes(ctx, &it, data); err != nil {
+				return it, err
+			}
+		case "date":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
+			it.Date, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "priceStudent":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStudent"))
+			it.PriceStudent, err = ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "priceStaff":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStaff"))
+			it.PriceStaff, err = ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "priceGuest":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceGuest"))
+			it.PriceGuest, err = ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "tags":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.OccurrenceInput().Tags(ctx, &it, data); err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputReviewInput(ctx context.Context, obj interface{}) (db.CreateReviewParams, error) {
+	var it db.CreateReviewParams
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "occurrence":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
+			it.Occurrence, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "displayName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
+			it.DisplayName, err = ec.unmarshalNString2databaseᚋsqlᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "stars":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stars"))
+			it.Stars, err = ec.unmarshalNInt2int32(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "text":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
+			it.Text, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputTagInput(ctx context.Context, obj interface{}) (db.CreateTagParams, error) {
 	var it db.CreateTagParams
 	asMap := map[string]interface{}{}
@@ -3723,6 +4094,36 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createTag":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createTag(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createDish":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createDish(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createOccurrence":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createOccurrence(ctx, field)
+			}
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createReview":
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createReview(ctx, field)
 			}
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, innerFunc)
@@ -4903,6 +5304,15 @@ func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensa
 	return ec._Occurrence(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐCreateOccurrenceParams(ctx context.Context, v interface{}) (db.CreateOccurrenceParams, error) {
+	res, err := ec.unmarshalInputOccurrenceInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNReview2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐReview(ctx context.Context, sel ast.SelectionSet, v db.Review) graphql.Marshaler {
+	return ec._Review(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐReviewᚄ(ctx context.Context, sel ast.SelectionSet, v []*db.Review) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -4955,6 +5365,11 @@ func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensatt�
 		return graphql.Null
 	}
 	return ec._Review(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐCreateReviewParams(ctx context.Context, v interface{}) (db.CreateReviewParams, error) {
+	res, err := ec.unmarshalInputReviewInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNString2databaseᚋsqlᚐNullString(ctx context.Context, v interface{}) (sql.NullString, error) {
@@ -5451,6 +5866,44 @@ func (ec *executionContext) unmarshalOTime2databaseᚋsqlᚐNullTime(ctx context
 func (ec *executionContext) marshalOTime2databaseᚋsqlᚐNullTime(ctx context.Context, sel ast.SelectionSet, v sql.NullTime) graphql.Marshaler {
 	res := scalars.MarshalNullTime(v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, v interface{}) ([]uuid.UUID, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]uuid.UUID, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx context.Context, sel ast.SelectionSet, v []uuid.UUID) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

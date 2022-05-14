@@ -5,13 +5,24 @@ package resolvers
 
 import (
 	"context"
-
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
 
 func (r *mutationResolver) CreateTag(ctx context.Context, tag db.CreateTagParams) (*db.Tag, error) {
 	return r.Database.CreateTag(ctx, &tag)
+}
+
+func (r *mutationResolver) CreateDish(ctx context.Context, name string) (*db.Dish, error) {
+	return r.Database.CreateDish(ctx, name)
+}
+
+func (r *mutationResolver) CreateOccurrence(ctx context.Context, occurrence db.CreateOccurrenceParams) (*db.Occurrence, error) {
+	return r.Database.CreateOccurrence(ctx, &occurrence) // todo: add tags and side dishes to occurrence
+}
+
+func (r *mutationResolver) CreateReview(ctx context.Context, review db.CreateReviewParams) (*db.Review, error) {
+	return r.Database.CreateReview(ctx, &review)
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.

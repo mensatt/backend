@@ -10,6 +10,11 @@ import (
 )
 
 type Querier interface {
+	AddOccurrenceSideDish(ctx context.Context, arg *AddOccurrenceSideDishParams) (*OccurrenceSideDish, error)
+	AddOccurrenceTag(ctx context.Context, arg *AddOccurrenceTagParams) (*OccurrenceTag, error)
+	CreateDish(ctx context.Context, name string) (*Dish, error)
+	CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error)
+	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
 	GetAllDishes(ctx context.Context) ([]*Dish, error)
 	GetAllImages(ctx context.Context) ([]*Image, error)

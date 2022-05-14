@@ -1,6 +1,9 @@
 package resolvers
 
-import "github.com/mensatt/mensatt-backend/internal/db"
+import (
+	"github.com/mensatt/mensatt-backend/internal/db"
+	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -8,4 +11,9 @@ import "github.com/mensatt/mensatt-backend/internal/db"
 
 type Resolver struct {
 	Database db.Querier
+}
+
+func (r *Resolver) OccurrenceInput() gqlserver.OccurrenceInputResolver {
+	//TODO implement me
+	panic("implement me")
 }

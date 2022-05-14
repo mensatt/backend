@@ -74,3 +74,28 @@ WHERE occurrence.id = $1;
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
+
+-- name: CreateDish :one
+INSERT INTO dish (name)
+VALUES ($1)
+RETURNING *;
+
+-- name: CreateOccurrence :one
+INSERT INTO occurrence (dish, date, price_student, price_staff, price_guest)
+VALUES ($1, $2, $3, $4, $5)
+RETURNING *;
+
+-- name: AddOccurrenceSideDish :one
+INSERT INTO occurrence_side_dishes (occurrence_id, dish_id)
+VALUES ($1, $2)
+RETURNING *;
+
+-- name: AddOccurrenceTag :one
+INSERT INTO occurrence_tag (occurrence_id, tag_key)
+VALUES ($1, $2)
+RETURNING *;
+
+-- name: CreateReview :one
+INSERT INTO review (occurrence, display_name, stars, text)
+VALUES ($1, $2, $3, $4)
+RETURNING *;

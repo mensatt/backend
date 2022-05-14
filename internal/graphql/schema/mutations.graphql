@@ -1,3 +1,7 @@
 type Mutation {
-    createTag(tag: TagInput!): Tag!
+    createTag(tag: TagInput!): Tag! # auth
+    createDish(name: String!): Dish! # auth
+    createOccurrence(occurrence: OccurrenceInput!): Occurrence! # auth
+    createReview(review: ReviewInput!): Review! # non-auth
+    #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/ # non-auth
 }

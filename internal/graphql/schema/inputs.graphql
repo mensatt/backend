@@ -6,3 +6,26 @@ input TagInput {
     priority: Priority
     isAllergy: Boolean
 }
+
+input OccurrenceInput {
+    dish: UUID!
+    sideDishes: [UUID!] # optional -> empty array
+    date: Time!
+    priceStudent: Int!
+    priceStaff: Int!
+    priceGuest: Int!
+    tags: [String!] # optional -> empty array
+}
+
+input ReviewInput {
+    occurrence: UUID!
+    displayName: String!
+    stars: Int!
+    text: String
+}
+
+#input ImageInput {
+#    occurrence: UUID!
+#    displayName: String!
+#    description: String
+#}
