@@ -72,9 +72,6 @@ models:
   Image:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Image
-  OccurrenceInput:
-    model:
-      - github.com/mensatt/mensatt-backend/internal/db.CreateOccurrenceParams
   Occurrence:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Occurrence

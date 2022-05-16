@@ -75,6 +75,10 @@ INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
 
+-- -- name: CreateMultipleTags :copyfrom
+-- INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
+-- VALUES ($1, $2, $3, $4, $5, $6);
+
 -- name: CreateDish :one
 INSERT INTO dish (name)
 VALUES ($1)

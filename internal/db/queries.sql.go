@@ -48,11 +48,15 @@ func (q *Queries) AddOccurrenceTag(ctx context.Context, arg *AddOccurrenceTagPar
 }
 
 const createDish = `-- name: CreateDish :one
+
 INSERT INTO dish (name)
 VALUES ($1)
 RETURNING id, name
 `
 
+// -- name: CreateMultipleTags :copyfrom
+// INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
+// VALUES ($1, $2, $3, $4, $5, $6);
 func (q *Queries) CreateDish(ctx context.Context, name string) (*Dish, error) {
 	row := q.db.QueryRow(ctx, createDish, name)
 	var i Dish
