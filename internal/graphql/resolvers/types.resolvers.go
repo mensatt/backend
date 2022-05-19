@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
@@ -20,6 +21,42 @@ func (r *occurrenceResolver) Dish(ctx context.Context, obj *db.Occurrence) (*db.
 
 func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *db.Occurrence) ([]*db.Dish, error) {
 	return r.Database.GetSideDishesForOccurrence(ctx, obj.ID)
+}
+
+func (r *occurrenceResolver) Kj(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) Kcal(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) Fat(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) SaturatedFat(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) Carbohydrates(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) Sugar(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) Fiber(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) Protein(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *occurrenceResolver) Salt(ctx context.Context, obj *db.Occurrence) (*float64, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *occurrenceResolver) Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error) {

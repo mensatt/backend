@@ -67,7 +67,7 @@ func (q *Queries) CreateDish(ctx context.Context, name string) (*Dish, error) {
 const createOccurrence = `-- name: CreateOccurrence :one
 INSERT INTO occurrence (dish, date, price_student, price_staff, price_guest)
 VALUES ($1, $2, $3, $4, $5)
-RETURNING id, dish, date, price_student, price_staff, price_guest
+RETURNING id, dish, date, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 type CreateOccurrenceParams struct {
@@ -91,6 +91,15 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrencePar
 		&i.ID,
 		&i.Dish,
 		&i.Date,
+		&i.Kj,
+		&i.Kcal,
+		&i.Fat,
+		&i.SaturatedFat,
+		&i.Carbohydrates,
+		&i.Sugar,
+		&i.Fiber,
+		&i.Protein,
+		&i.Salt,
 		&i.PriceStudent,
 		&i.PriceStaff,
 		&i.PriceGuest,
@@ -233,7 +242,7 @@ func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
 }
 
 const getAllOccurrences = `-- name: GetAllOccurrences :many
-SELECT id, dish, date, price_student, price_staff, price_guest
+SELECT id, dish, date, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 `
 
@@ -250,6 +259,15 @@ func (q *Queries) GetAllOccurrences(ctx context.Context) ([]*Occurrence, error) 
 			&i.ID,
 			&i.Dish,
 			&i.Date,
+			&i.Kj,
+			&i.Kcal,
+			&i.Fat,
+			&i.SaturatedFat,
+			&i.Carbohydrates,
+			&i.Sugar,
+			&i.Fiber,
+			&i.Protein,
+			&i.Salt,
 			&i.PriceStudent,
 			&i.PriceStaff,
 			&i.PriceGuest,
@@ -405,7 +423,7 @@ func (q *Queries) GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*
 }
 
 const getOccurrenceByID = `-- name: GetOccurrenceByID :one
-SELECT id, dish, date, price_student, price_staff, price_guest 
+SELECT id, dish, date, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest 
 FROM occurrence
 WHERE id = $1
 `
@@ -417,6 +435,15 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 		&i.ID,
 		&i.Dish,
 		&i.Date,
+		&i.Kj,
+		&i.Kcal,
+		&i.Fat,
+		&i.SaturatedFat,
+		&i.Carbohydrates,
+		&i.Sugar,
+		&i.Fiber,
+		&i.Protein,
+		&i.Salt,
 		&i.PriceStudent,
 		&i.PriceStaff,
 		&i.PriceGuest,
@@ -425,7 +452,7 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 }
 
 const getOccurrencesByDate = `-- name: GetOccurrencesByDate :many
-SELECT id, dish, date, price_student, price_staff, price_guest
+SELECT id, dish, date, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 WHERE date = $1
 `
@@ -443,6 +470,15 @@ func (q *Queries) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*
 			&i.ID,
 			&i.Dish,
 			&i.Date,
+			&i.Kj,
+			&i.Kcal,
+			&i.Fat,
+			&i.SaturatedFat,
+			&i.Carbohydrates,
+			&i.Sugar,
+			&i.Fiber,
+			&i.Protein,
+			&i.Salt,
 			&i.PriceStudent,
 			&i.PriceStaff,
 			&i.PriceGuest,
