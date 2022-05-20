@@ -66,25 +66,25 @@ models:
       - github.com/mensatt/mensatt-backend/internal/graphql/scalars.Priority
   Dish:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.Dish
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Dish
   TagInput:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.CreateTagParams
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.CreateTagParams
   Tag:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.Tag
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Tag
   Image:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.Image
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Image
   Occurrence:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.Occurrence
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence
   OccurrenceInput:
     model:
       - github.com/mensatt/mensatt-backend/internal/graphql/models.OccurrenceInputHelper
   ReviewInput:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.CreateReviewParams
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.CreateReviewParams
   Review:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db.Review
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Review

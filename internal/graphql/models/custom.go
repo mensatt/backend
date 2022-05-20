@@ -2,11 +2,11 @@ package models
 
 import (
 	"github.com/google/uuid"
-	"github.com/mensatt/mensatt-backend/internal/db"
+	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 )
 
 type OccurrenceInputHelper struct {
-	db.CreateOccurrenceParams
+	sqlc.CreateOccurrenceParams
 	SideDishes []uuid.UUID `json:"sideDishes"`
 	Tags       []string    `json:"tags"`
 }

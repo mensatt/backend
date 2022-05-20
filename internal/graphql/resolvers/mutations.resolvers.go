@@ -6,24 +6,24 @@ package resolvers
 import (
 	"context"
 
-	"github.com/mensatt/mensatt-backend/internal/db"
+	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 )
 
-func (r *mutationResolver) CreateTag(ctx context.Context, tag db.CreateTagParams) (*db.Tag, error) {
+func (r *mutationResolver) CreateTag(ctx context.Context, tag sqlc.CreateTagParams) (*sqlc.Tag, error) {
 	return r.Database.CreateTag(ctx, &tag)
 }
 
-func (r *mutationResolver) CreateDish(ctx context.Context, name string) (*db.Dish, error) {
+func (r *mutationResolver) CreateDish(ctx context.Context, name string) (*sqlc.Dish, error) {
 	return r.Database.CreateDish(ctx, name)
 }
 
-func (r *mutationResolver) CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInputHelper) (*db.Occurrence, error) {
+func (r *mutationResolver) CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {
 	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &occurrence.CreateOccurrenceParams, occurrence.SideDishes, occurrence.Tags)
 }
 
-func (r *mutationResolver) CreateReview(ctx context.Context, review db.CreateReviewParams) (*db.Review, error) {
+func (r *mutationResolver) CreateReview(ctx context.Context, review sqlc.CreateReviewParams) (*sqlc.Review, error) {
 	return r.Database.CreateReview(ctx, &review)
 }
 

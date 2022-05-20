@@ -18,12 +18,11 @@ func main() {
 		Port:           utils.MustGetInt32("PORT"),
 		ServiceVersion: utils.MustGet("SERVER_PATH_VERSION"),
 		DebugEnabled:   utils.MustGetBool("DEBUG_ENABLED"),
-		SentryDSN:      utils.MustGet("SENTRY_DSN"),
 	}
 
 	// Initialize sentry.io client for error reporting & logging
 	err := sentry.Init(sentry.ClientOptions{
-		Dsn: sc.SentryDSN,
+		Dsn: utils.MustGet("SENTRY_DSN"),
 	})
 	if err != nil {
 		log.Fatalln("Sentry initialization failed:", err)

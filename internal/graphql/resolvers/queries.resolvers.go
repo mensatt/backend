@@ -7,31 +7,31 @@ import (
 	"context"
 	"time"
 
-	"github.com/mensatt/mensatt-backend/internal/db"
+	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
 
-func (r *queryResolver) GetAllTags(ctx context.Context) ([]*db.Tag, error) {
+func (r *queryResolver) GetAllTags(ctx context.Context) ([]*sqlc.Tag, error) {
 	return r.Database.GetAllTags(ctx)
 }
 
-func (r *queryResolver) GetAllDishes(ctx context.Context) ([]*db.Dish, error) {
+func (r *queryResolver) GetAllDishes(ctx context.Context) ([]*sqlc.Dish, error) {
 	return r.Database.GetAllDishes(ctx)
 }
 
-func (r *queryResolver) GetAllOccurrences(ctx context.Context) ([]*db.Occurrence, error) {
+func (r *queryResolver) GetAllOccurrences(ctx context.Context) ([]*sqlc.Occurrence, error) {
 	return r.Database.GetAllOccurrences(ctx)
 }
 
-func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*db.Review, error) {
+func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*sqlc.Review, error) {
 	return r.Database.GetAllReviews(ctx)
 }
 
-func (r *queryResolver) GetAllImages(ctx context.Context) ([]*db.Image, error) {
+func (r *queryResolver) GetAllImages(ctx context.Context) ([]*sqlc.Image, error) {
 	return r.Database.GetAllImages(ctx)
 }
 
-func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*db.Occurrence, error) {
+func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrencesByDate(ctx, date)
 }
 

@@ -6,35 +6,35 @@ package resolvers
 import (
 	"context"
 
-	"github.com/mensatt/mensatt-backend/internal/db"
+	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
 
-func (r *imageResolver) Occurrence(ctx context.Context, obj *db.Image) (*db.Occurrence, error) {
+func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
-func (r *occurrenceResolver) Dish(ctx context.Context, obj *db.Occurrence) (*db.Dish, error) {
+func (r *occurrenceResolver) Dish(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Dish, error) {
 	return r.Database.GetDishByID(ctx, obj.Dish)
 }
 
-func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *db.Occurrence) ([]*db.Dish, error) {
+func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Dish, error) {
 	return r.Database.GetSideDishesForOccurrence(ctx, obj.ID)
 }
 
-func (r *occurrenceResolver) Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error) {
+func (r *occurrenceResolver) Tags(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Tag, error) {
 	return r.Database.GetTagsForOccurrence(ctx, obj.ID)
 }
 
-func (r *occurrenceResolver) Reviews(ctx context.Context, obj *db.Occurrence) ([]*db.Review, error) {
+func (r *occurrenceResolver) Reviews(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Review, error) {
 	return r.Database.GetReviewsForOccurrence(ctx, obj.ID)
 }
 
-func (r *occurrenceResolver) Images(ctx context.Context, obj *db.Occurrence) ([]*db.Image, error) {
+func (r *occurrenceResolver) Images(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Image, error) {
 	return r.Database.GetImagesForOccurrence(ctx, obj.ID)
 }
 
-func (r *reviewResolver) Occurrence(ctx context.Context, obj *db.Review) (*db.Occurrence, error) {
+func (r *reviewResolver) Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
