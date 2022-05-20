@@ -142,16 +142,6 @@ type OccurrenceResolver interface {
 	Dish(ctx context.Context, obj *db.Occurrence) (*db.Dish, error)
 	SideDishes(ctx context.Context, obj *db.Occurrence) ([]*db.Dish, error)
 
-	Kj(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	Kcal(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	Fat(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	SaturatedFat(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	Carbohydrates(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	Sugar(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	Fiber(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	Protein(ctx context.Context, obj *db.Occurrence) (*float64, error)
-	Salt(ctx context.Context, obj *db.Occurrence) (*float64, error)
-
 	Tags(ctx context.Context, obj *db.Occurrence) ([]*db.Tag, error)
 	Reviews(ctx context.Context, obj *db.Occurrence) ([]*db.Review, error)
 	Images(ctx context.Context, obj *db.Occurrence) ([]*db.Image, error)
@@ -1642,14 +1632,14 @@ func (ec *executionContext) _Occurrence_kj(ctx context.Context, field graphql.Co
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Kj(rctx, obj)
+		return obj.Kj, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1658,9 +1648,9 @@ func (ec *executionContext) _Occurrence_kj(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_kcal(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1674,14 +1664,14 @@ func (ec *executionContext) _Occurrence_kcal(ctx context.Context, field graphql.
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Kcal(rctx, obj)
+		return obj.Kcal, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1690,9 +1680,9 @@ func (ec *executionContext) _Occurrence_kcal(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_fat(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1706,14 +1696,14 @@ func (ec *executionContext) _Occurrence_fat(ctx context.Context, field graphql.C
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Fat(rctx, obj)
+		return obj.Fat, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1722,9 +1712,9 @@ func (ec *executionContext) _Occurrence_fat(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_saturatedFat(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1738,14 +1728,14 @@ func (ec *executionContext) _Occurrence_saturatedFat(ctx context.Context, field 
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().SaturatedFat(rctx, obj)
+		return obj.SaturatedFat, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1754,9 +1744,9 @@ func (ec *executionContext) _Occurrence_saturatedFat(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_carbohydrates(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1770,14 +1760,14 @@ func (ec *executionContext) _Occurrence_carbohydrates(ctx context.Context, field
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Carbohydrates(rctx, obj)
+		return obj.Carbohydrates, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1786,9 +1776,9 @@ func (ec *executionContext) _Occurrence_carbohydrates(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_sugar(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1802,14 +1792,14 @@ func (ec *executionContext) _Occurrence_sugar(ctx context.Context, field graphql
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Sugar(rctx, obj)
+		return obj.Sugar, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1818,9 +1808,9 @@ func (ec *executionContext) _Occurrence_sugar(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_fiber(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1834,14 +1824,14 @@ func (ec *executionContext) _Occurrence_fiber(ctx context.Context, field graphql
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Fiber(rctx, obj)
+		return obj.Fiber, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1850,9 +1840,9 @@ func (ec *executionContext) _Occurrence_fiber(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_protein(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1866,14 +1856,14 @@ func (ec *executionContext) _Occurrence_protein(ctx context.Context, field graph
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Protein(rctx, obj)
+		return obj.Protein, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1882,9 +1872,9 @@ func (ec *executionContext) _Occurrence_protein(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_salt(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -1898,14 +1888,14 @@ func (ec *executionContext) _Occurrence_salt(ctx context.Context, field graphql.
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().Salt(rctx, obj)
+		return obj.Salt, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1914,9 +1904,9 @@ func (ec *executionContext) _Occurrence_salt(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*float64)
+	res := resTmp.(sql.NullFloat64)
 	fc.Result = res
-	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_priceStudent(ctx context.Context, field graphql.CollectedField, obj *db.Occurrence) (ret graphql.Marshaler) {
@@ -4580,158 +4570,68 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "kj":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_kj(ctx, field, obj)
-				return res
+				return ec._Occurrence_kj(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "kcal":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_kcal(ctx, field, obj)
-				return res
+				return ec._Occurrence_kcal(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "fat":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_fat(ctx, field, obj)
-				return res
+				return ec._Occurrence_fat(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "saturatedFat":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_saturatedFat(ctx, field, obj)
-				return res
+				return ec._Occurrence_saturatedFat(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "carbohydrates":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_carbohydrates(ctx, field, obj)
-				return res
+				return ec._Occurrence_carbohydrates(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "sugar":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_sugar(ctx, field, obj)
-				return res
+				return ec._Occurrence_sugar(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "fiber":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_fiber(ctx, field, obj)
-				return res
+				return ec._Occurrence_fiber(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "protein":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_protein(ctx, field, obj)
-				return res
+				return ec._Occurrence_protein(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "salt":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_salt(ctx, field, obj)
-				return res
+				return ec._Occurrence_salt(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
 		case "priceStudent":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Occurrence_priceStudent(ctx, field, obj)
@@ -6309,20 +6209,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := graphql.UnmarshalFloatContext(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
+func (ec *executionContext) unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx context.Context, v interface{}) (sql.NullFloat64, error) {
+	res, err := scalars.UnmarshalNullFloat(v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel ast.SelectionSet, v *float64) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalFloatContext(*v)
-	return graphql.WrapContextMarshaler(ctx, res)
+func (ec *executionContext) marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx context.Context, sel ast.SelectionSet, v sql.NullFloat64) graphql.Marshaler {
+	res := scalars.MarshalNullFloat(v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚐPriority(ctx context.Context, v interface{}) (db.Priority, error) {
