@@ -40,11 +40,16 @@ func main() {
 	// Flush buffered events before the program terminates
 	defer sentry.Flush(2 * time.Second)
 
-	databasePassword, err := c.Get(utils.MustGet("DATABASE_PASSWORD_FILE"))
+	username, err := c.Get(utils.MustGet("DATABASE_USERNAME_FILE"))
+	if err != nil {
+		log.Fatalln("Database username secret could not be retrieved:", err)
+	}
+
+	password, err := c.Get(utils.MustGet("DATABASE_PASSWORD_FILE"))
 	if err != nil {
 		log.Fatalln("Database password secret could not be retrieved:", err)
 	}
-	databaseUrl := utils.GetDatabaseHost(databasePassword)
+	databaseUrl := utils.GetDatabaseHost(username, password)
 
 	pool, err := pgxpool.Connect(context.Background(), databaseUrl)
 	if err != nil {

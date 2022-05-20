@@ -2,6 +2,6 @@ package utils
 
 import "os"
 
-func GetDatabaseHost(password string) string {
-	return "postgres://" + os.Getenv("DATABASE_USERNAME") + ":" + password + "@" + os.Getenv("DATABASE_HOST") + "/" + os.Getenv("DATABASE_NAME")
+func GetDatabaseHost(username string, password string) string {
+	return "postgres://" + username + ":" + password + "@" + os.Getenv("DATABASE_HOST") + "/" + os.Getenv("DATABASE_NAME")
 }

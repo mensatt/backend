@@ -3,6 +3,8 @@ version: "3.9"
 secrets:
   sentry_dsn:
     file: "./.secrets/sentry_dsn.secret"
+  database_username:
+    file: "./.secrets/database_username.secret"
   database_password:
     file: "./.secrets/database_password.secret"
 
@@ -14,6 +16,7 @@ services:
       - .:/opt/app/mensatt
     secrets:
       - "sentry_dsn"
+      - "database_username"
       - "database_password"
     environment:
       HOST: 0.0.0.0
@@ -22,9 +25,9 @@ services:
       DEBUG_ENABLED: true
       DATABASE_HOST: postgres
       DATABASE_NAME: mensatt
-      DATABASE_USERNAME: mensatt
-      SENTRY_DSN_FILE: sentry_dsn
-      DATABASE_PASSWORD_FILE: database_password
+      DATABASE_USERNAME_FILE: /run/secrets/database_username
+      DATABASE_PASSWORD_FILE: /run/secrets/database_password
+      SENTRY_DSN_FILE: /run/secrets/sentry_dsn
     ports:
       - "4000:4000"
     links:
@@ -34,11 +37,13 @@ services:
     image: postgres:14.2-alpine
     volumes:
       - postgres-data:/var/lib/postgresql/data/
+    secrets:
+      - "database_username"
+      - "database_password"
     environment:
       POSTGRES_DB: mensatt
-      POSTGRES_USER: mensatt
-      POSTGRES_PASSWORD: test123
-      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_USER_FILE: /run/secrets/database_username
+      POSTGRES_PASSWORD_FILE: /run/secrets/database_password
     ports:
       - "5432:5432"
     restart: always
