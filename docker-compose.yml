@@ -1,18 +1,30 @@
 version: "3.9"
 
+secrets:
+  sentry_dsn:
+    file: "./.secrets/sentry_dsn.secret"
+  database_password:
+    file: "./.secrets/database_password.secret"
+
 services:
   mensatt:
     build:
       target: dev
     volumes:
       - .:/opt/app/mensatt
+    secrets:
+      - "sentry_dsn"
+      - "database_password"
     environment:
       HOST: 0.0.0.0
       PORT: 4000
       SERVER_PATH_VERSION: v1
       DEBUG_ENABLED: true
-      DATABASE_URL: postgres://mensatt@postgres/mensatt?sslmode=disable
-      SENTRY_DSN: https://<token>.ingest.sentry.io/<project>
+      DATABASE_HOST: postgres
+      DATABASE_NAME: mensatt
+      DATABASE_USERNAME: mensatt
+      SENTRY_DSN_FILE: sentry_dsn
+      DATABASE_PASSWORD_FILE: database_password
     ports:
       - "4000:4000"
     links:
@@ -25,6 +37,7 @@ services:
     environment:
       POSTGRES_DB: mensatt
       POSTGRES_USER: mensatt
+      POSTGRES_PASSWORD: test123
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
