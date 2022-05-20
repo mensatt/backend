@@ -70,7 +70,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateDish       func(childComplexity int, name string) int
-		CreateOccurrence func(childComplexity int, occurrence models.OccurrenceInput) int
+		CreateOccurrence func(childComplexity int, occurrence models.OccurrenceInputHelper) int
 		CreateReview     func(childComplexity int, review db.CreateReviewParams) int
 		CreateTag        func(childComplexity int, tag db.CreateTagParams) int
 	}
@@ -135,7 +135,7 @@ type ImageResolver interface {
 type MutationResolver interface {
 	CreateTag(ctx context.Context, tag db.CreateTagParams) (*db.Tag, error)
 	CreateDish(ctx context.Context, name string) (*db.Dish, error)
-	CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInput) (*db.Occurrence, error)
+	CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInputHelper) (*db.Occurrence, error)
 	CreateReview(ctx context.Context, review db.CreateReviewParams) (*db.Review, error)
 }
 type OccurrenceResolver interface {
@@ -272,7 +272,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateOccurrence(childComplexity, args["occurrence"].(models.OccurrenceInput)), true
+		return e.complexity.Mutation.CreateOccurrence(childComplexity, args["occurrence"].(models.OccurrenceInputHelper)), true
 
 	case "Mutation.createReview":
 		if e.complexity.Mutation.CreateReview == nil {
@@ -679,12 +679,21 @@ directive @goTag(
 
 input OccurrenceInput {
     dish: UUID!
-    sideDishes: [UUID!] # optional -> empty array
+    sideDishes: [UUID!]
     date: Time!
+    kj: Float,
+    kcal: Float,
+    fat: Float,
+    saturatedFat: Float,
+    carbohydrates: Float,
+    sugar: Float,
+    fiber: Float,
+    protein: Float,
+    salt: Float,
     priceStudent: Int!
     priceStaff: Int!
     priceGuest: Int!
-    tags: [String!] # optional -> empty array
+    tags: [String!]
 }
 
 input ReviewInput {
@@ -809,10 +818,10 @@ func (ec *executionContext) field_Mutation_createDish_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_createOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.OccurrenceInput
+	var arg0 models.OccurrenceInputHelper
 	if tmp, ok := rawArgs["occurrence"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
-		arg0, err = ec.unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInput(ctx, tmp)
+		arg0, err = ec.unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1422,7 +1431,7 @@ func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, fiel
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateOccurrence(rctx, args["occurrence"].(models.OccurrenceInput))
+		return ec.resolvers.Mutation().CreateOccurrence(rctx, args["occurrence"].(models.OccurrenceInputHelper))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4084,8 +4093,8 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, obj interface{}) (models.OccurrenceInput, error) {
-	var it models.OccurrenceInput
+func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, obj interface{}) (models.OccurrenceInputHelper, error) {
+	var it models.OccurrenceInputHelper
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -4117,11 +4126,83 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "kj":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kj"))
+			it.Kj, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "kcal":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kcal"))
+			it.Kcal, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fat":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fat"))
+			it.Fat, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "saturatedFat":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("saturatedFat"))
+			it.SaturatedFat, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "carbohydrates":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carbohydrates"))
+			it.Carbohydrates, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "sugar":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sugar"))
+			it.Sugar, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "fiber":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fiber"))
+			it.Fiber, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "protein":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("protein"))
+			it.Protein, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "salt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("salt"))
+			it.Salt, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "priceStudent":
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStudent"))
-			it.PriceStudent, err = ec.unmarshalNInt2int(ctx, v)
+			it.PriceStudent, err = ec.unmarshalNInt2int32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4129,7 +4210,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStaff"))
-			it.PriceStaff, err = ec.unmarshalNInt2int(ctx, v)
+			it.PriceStaff, err = ec.unmarshalNInt2int32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4137,7 +4218,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceGuest"))
-			it.PriceGuest, err = ec.unmarshalNInt2int(ctx, v)
+			it.PriceGuest, err = ec.unmarshalNInt2int32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -5651,21 +5732,6 @@ func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋmensattᚋmensattᚑ
 	return ec._Image(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "must not be null")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v interface{}) (int32, error) {
 	res, err := graphql.UnmarshalInt32(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -5739,7 +5805,7 @@ func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensa
 	return ec._Occurrence(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInput(ctx context.Context, v interface{}) (models.OccurrenceInput, error) {
+func (ec *executionContext) unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx context.Context, v interface{}) (models.OccurrenceInputHelper, error) {
 	res, err := ec.unmarshalInputOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }

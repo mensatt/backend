@@ -79,6 +79,9 @@ models:
   Occurrence:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.Occurrence
+  OccurrenceInput:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/graphql/models.OccurrenceInputHelper
   ReviewInput:
     model:
       - github.com/mensatt/mensatt-backend/internal/db.CreateReviewParams

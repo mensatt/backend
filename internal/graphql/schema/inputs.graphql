@@ -9,12 +9,21 @@ input TagInput {
 
 input OccurrenceInput {
     dish: UUID!
-    sideDishes: [UUID!] # optional -> empty array
+    sideDishes: [UUID!]
     date: Time!
+    kj: Float,
+    kcal: Float,
+    fat: Float,
+    saturatedFat: Float,
+    carbohydrates: Float,
+    sugar: Float,
+    fiber: Float,
+    protein: Float,
+    salt: Float,
     priceStudent: Int!
     priceStaff: Int!
     priceGuest: Int!
-    tags: [String!] # optional -> empty array
+    tags: [String!]
 }
 
 input ReviewInput {

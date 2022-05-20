@@ -68,16 +68,10 @@ SELECT image.*
 FROM occurrence JOIN image ON occurrence.id = image.occurrence
 WHERE occurrence.id = $1;
 
---------------------------------------------------------------------------------
-
 -- name: CreateTag :one
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
 VALUES ($1, $2, $3, $4, $5, $6)
 RETURNING *;
-
--- -- name: CreateMultipleTags :copyfrom
--- INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
--- VALUES ($1, $2, $3, $4, $5, $6);
 
 -- name: CreateDish :one
 INSERT INTO dish (name)
@@ -85,8 +79,8 @@ VALUES ($1)
 RETURNING *;
 
 -- name: CreateOccurrence :one
-INSERT INTO occurrence (dish, date, price_student, price_staff, price_guest)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO occurrence (dish, date, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 RETURNING *;
 
 -- name: AddOccurrenceSideDish :one
@@ -94,10 +88,18 @@ INSERT INTO occurrence_side_dishes (occurrence_id, dish_id)
 VALUES ($1, $2)
 RETURNING *;
 
+-- name: AddMultipleOccurrenceSideDishes :copyfrom
+INSERT INTO occurrence_side_dishes (occurrence_id, dish_id)
+VALUES ($1, $2);
+
 -- name: AddOccurrenceTag :one
 INSERT INTO occurrence_tag (occurrence_id, tag_key)
 VALUES ($1, $2)
 RETURNING *;
+
+-- name: AddMultipleOccurrenceTags :copyfrom
+INSERT INTO occurrence_tag (occurrence_id, tag_key)
+VALUES ($1, $2);
 
 -- name: CreateReview :one
 INSERT INTO review (occurrence, display_name, stars, text)

@@ -1,8 +1,10 @@
 package server
 
 import (
-	sentrygin "github.com/getsentry/sentry-go/gin"
 	"log"
+
+	sentrygin "github.com/getsentry/sentry-go/gin"
+	"github.com/jackc/pgx/v4/pgxpool"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -11,7 +13,7 @@ import (
 	"github.com/mensatt/mensatt-backend/internal/misc"
 )
 
-func Run(cfg *ServerConfig, dbtx db.DBTX) error {
+func Run(cfg *ServerConfig, pool *pgxpool.Pool) error {
 
 	app := gin.Default()
 	app.Use(cors.Default())
@@ -20,7 +22,7 @@ func Run(cfg *ServerConfig, dbtx db.DBTX) error {
 	miscRouterGroup := app.Group(cfg.VersionedPath("/misc"))
 	misc.Run(miscRouterGroup)
 
-	database := db.New(dbtx)
+	database := db.NewExtended(pool)
 
 	gqlRouterGroup := app.Group(cfg.VersionedPath("/graphql"))
 	gqlServerParams := graphql.GraphQLParams{

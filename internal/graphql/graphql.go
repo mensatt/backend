@@ -13,7 +13,7 @@ import (
 
 type GraphQLParams struct {
 	DebugEnabled bool
-	Database     db.Querier
+	Database     db.ExtendedQuerier
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) {
@@ -24,7 +24,7 @@ func Run(g *gin.RouterGroup, params *GraphQLParams) {
 }
 
 // graphqlHandler defines the GQLGen GraphQL server handler
-func graphqlHandler(database db.Querier) gin.HandlerFunc {
+func graphqlHandler(database db.ExtendedQuerier) gin.HandlerFunc {
 	h := handler.NewDefaultServer(
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
