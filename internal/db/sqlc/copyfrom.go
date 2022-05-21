@@ -29,8 +29,8 @@ func (r *iteratorForAddMultipleOccurrenceSideDishes) Next() bool {
 
 func (r iteratorForAddMultipleOccurrenceSideDishes) Values() ([]interface{}, error) {
 	return []interface{}{
-		r.rows[0].OccurrenceID,
-		r.rows[0].DishID,
+		r.rows[0].Occurrence,
+		r.rows[0].Dish,
 	}, nil
 }
 
@@ -39,7 +39,7 @@ func (r iteratorForAddMultipleOccurrenceSideDishes) Err() error {
 }
 
 func (q *Queries) AddMultipleOccurrenceSideDishes(ctx context.Context, arg []*AddMultipleOccurrenceSideDishesParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"occurrence_side_dishes"}, []string{"occurrence_id", "dish_id"}, &iteratorForAddMultipleOccurrenceSideDishes{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"occurrence_side_dishes"}, []string{"occurrence", "dish"}, &iteratorForAddMultipleOccurrenceSideDishes{rows: arg})
 }
 
 // iteratorForAddMultipleOccurrenceTags implements pgx.CopyFromSource.
@@ -62,8 +62,8 @@ func (r *iteratorForAddMultipleOccurrenceTags) Next() bool {
 
 func (r iteratorForAddMultipleOccurrenceTags) Values() ([]interface{}, error) {
 	return []interface{}{
-		r.rows[0].OccurrenceID,
-		r.rows[0].TagKey,
+		r.rows[0].Occurrence,
+		r.rows[0].Tag,
 	}, nil
 }
 
@@ -72,5 +72,5 @@ func (r iteratorForAddMultipleOccurrenceTags) Err() error {
 }
 
 func (q *Queries) AddMultipleOccurrenceTags(ctx context.Context, arg []*AddMultipleOccurrenceTagsParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"occurrence_tag"}, []string{"occurrence_id", "tag_key"}, &iteratorForAddMultipleOccurrenceTags{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"occurrence_tag"}, []string{"occurrence", "tag"}, &iteratorForAddMultipleOccurrenceTags{rows: arg})
 }

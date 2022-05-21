@@ -14,48 +14,48 @@ import (
 )
 
 type AddMultipleOccurrenceSideDishesParams struct {
-	OccurrenceID uuid.UUID `json:"occurrence_id"`
-	DishID       uuid.UUID `json:"dish_id"`
+	Occurrence uuid.UUID `json:"occurrence"`
+	Dish       uuid.UUID `json:"dish"`
 }
 
 type AddMultipleOccurrenceTagsParams struct {
-	OccurrenceID uuid.UUID `json:"occurrence_id"`
-	TagKey       string    `json:"tag_key"`
+	Occurrence uuid.UUID `json:"occurrence"`
+	Tag        string    `json:"tag"`
 }
 
 const addOccurrenceSideDish = `-- name: AddOccurrenceSideDish :one
-INSERT INTO occurrence_side_dishes (occurrence_id, dish_id)
+INSERT INTO occurrence_side_dishes (occurrence, dish)
 VALUES ($1, $2)
-RETURNING occurrence_id, dish_id
+RETURNING occurrence, dish
 `
 
 type AddOccurrenceSideDishParams struct {
-	OccurrenceID uuid.UUID `json:"occurrence_id"`
-	DishID       uuid.UUID `json:"dish_id"`
+	Occurrence uuid.UUID `json:"occurrence"`
+	Dish       uuid.UUID `json:"dish"`
 }
 
 func (q *Queries) AddOccurrenceSideDish(ctx context.Context, arg *AddOccurrenceSideDishParams) (*OccurrenceSideDish, error) {
-	row := q.db.QueryRow(ctx, addOccurrenceSideDish, arg.OccurrenceID, arg.DishID)
+	row := q.db.QueryRow(ctx, addOccurrenceSideDish, arg.Occurrence, arg.Dish)
 	var i OccurrenceSideDish
-	err := row.Scan(&i.OccurrenceID, &i.DishID)
+	err := row.Scan(&i.Occurrence, &i.Dish)
 	return &i, err
 }
 
 const addOccurrenceTag = `-- name: AddOccurrenceTag :one
-INSERT INTO occurrence_tag (occurrence_id, tag_key)
+INSERT INTO occurrence_tag (occurrence, tag)
 VALUES ($1, $2)
-RETURNING occurrence_id, tag_key
+RETURNING occurrence, tag
 `
 
 type AddOccurrenceTagParams struct {
-	OccurrenceID uuid.UUID `json:"occurrence_id"`
-	TagKey       string    `json:"tag_key"`
+	Occurrence uuid.UUID `json:"occurrence"`
+	Tag        string    `json:"tag"`
 }
 
 func (q *Queries) AddOccurrenceTag(ctx context.Context, arg *AddOccurrenceTagParams) (*OccurrenceTag, error) {
-	row := q.db.QueryRow(ctx, addOccurrenceTag, arg.OccurrenceID, arg.TagKey)
+	row := q.db.QueryRow(ctx, addOccurrenceTag, arg.Occurrence, arg.Tag)
 	var i OccurrenceTag
-	err := row.Scan(&i.OccurrenceID, &i.TagKey)
+	err := row.Scan(&i.Occurrence, &i.Tag)
 	return &i, err
 }
 
@@ -580,12 +580,12 @@ func (q *Queries) GetReviewsForOccurrence(ctx context.Context, id uuid.UUID) ([]
 
 const getSideDishesForOccurrence = `-- name: GetSideDishesForOccurrence :many
 SELECT dish.id, dish.name
-FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish_id = dish.id
-WHERE occurrence_side_dishes.occurrence_id = $1
+FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish = dish.id
+WHERE occurrence_side_dishes.occurrence = $1
 `
 
-func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Dish, error) {
-	rows, err := q.db.Query(ctx, getSideDishesForOccurrence, occurrenceID)
+func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Dish, error) {
+	rows, err := q.db.Query(ctx, getSideDishesForOccurrence, occurrence)
 	if err != nil {
 		return nil, err
 	}
@@ -626,12 +626,12 @@ func (q *Queries) GetTagByKey(ctx context.Context, key string) (*Tag, error) {
 
 const getTagsForOccurrence = `-- name: GetTagsForOccurrence :many
 SELECT tag.key, tag.name, tag.description, tag.short_name, tag.priority, tag.is_allergy
-FROM occurrence_tag JOIN tag ON occurrence_tag.tag_key = tag.key
-WHERE occurrence_tag.occurrence_id = $1
+FROM occurrence_tag JOIN tag ON occurrence_tag.tag = tag.key
+WHERE occurrence_tag.occurrence = $1
 `
 
-func (q *Queries) GetTagsForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Tag, error) {
-	rows, err := q.db.Query(ctx, getTagsForOccurrence, occurrenceID)
+func (q *Queries) GetTagsForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Tag, error) {
+	rows, err := q.db.Query(ctx, getTagsForOccurrence, occurrence)
 	if err != nil {
 		return nil, err
 	}

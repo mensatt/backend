@@ -35,21 +35,22 @@ CREATE TABLE occurrence (
     price_student integer NOT NULL,
     price_staff integer NOT NULL,
     price_guest integer NOT NULL,
-    PRIMARY KEY (id)
+    PRIMARY KEY (id),
+    FOREIGN KEY(dish) REFERENCES dish(id)
 );
 
 CREATE TABLE occurrence_side_dishes (
-    occurrence_id uuid NOT NULL,
-    dish_id uuid NOT NULL,
-    CONSTRAINT fk_occurrence FOREIGN KEY(occurrence_id) REFERENCES occurrence(id),
-    CONSTRAINT fk_dish FOREIGN KEY(dish_id) REFERENCES dish(id)
+    occurrence uuid NOT NULL,
+    dish uuid NOT NULL,
+    FOREIGN KEY(occurrence) REFERENCES occurrence(id),
+    FOREIGN KEY(dish) REFERENCES dish(id)
 );
 
 CREATE TABLE occurrence_tag (
-    occurrence_id uuid NOT NULL,
-    tag_key varchar NOT NULL,
-    CONSTRAINT fk_occurrence FOREIGN KEY(occurrence_id) REFERENCES occurrence(id),
-    CONSTRAINT fk_tag FOREIGN KEY(tag_key) REFERENCES tag(key)
+    occurrence uuid NOT NULL,
+    tag varchar NOT NULL,
+    FOREIGN KEY(occurrence) REFERENCES occurrence(id),
+    FOREIGN KEY(tag) REFERENCES tag(key)
 );
 
 CREATE TABLE review (
@@ -64,7 +65,7 @@ CREATE TABLE review (
     updated_at timestamptz DEFAULT NOW() NOT NULL,
     accepted_at timestamptz,
     PRIMARY KEY (id),
-    CONSTRAINT fk_occurrence FOREIGN KEY(occurrence) REFERENCES occurrence(id)
+    FOREIGN KEY(occurrence) REFERENCES occurrence(id)
 );
 
 CREATE TABLE image (
@@ -78,5 +79,5 @@ CREATE TABLE image (
     updated_at timestamptz DEFAULT NOW() NOT NULL,
     accepted_at timestamptz,
     PRIMARY KEY (id),
-    CONSTRAINT fk_occurrence FOREIGN KEY(occurrence) REFERENCES occurrence(id)
+    FOREIGN KEY(occurrence) REFERENCES occurrence(id)
 );

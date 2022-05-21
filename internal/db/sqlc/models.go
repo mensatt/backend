@@ -69,13 +69,13 @@ type Occurrence struct {
 }
 
 type OccurrenceSideDish struct {
-	OccurrenceID uuid.UUID `json:"occurrence_id"`
-	DishID       uuid.UUID `json:"dish_id"`
+	Occurrence uuid.UUID `json:"occurrence"`
+	Dish       uuid.UUID `json:"dish"`
 }
 
 type OccurrenceTag struct {
-	OccurrenceID uuid.UUID `json:"occurrence_id"`
-	TagKey       string    `json:"tag_key"`
+	Occurrence uuid.UUID `json:"occurrence"`
+	Tag        string    `json:"tag"`
 }
 
 type Review struct {

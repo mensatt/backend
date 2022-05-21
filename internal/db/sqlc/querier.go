@@ -32,9 +32,9 @@ type Querier interface {
 	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*Occurrence, error)
 	GetReviewByID(ctx context.Context, id uuid.UUID) (*Review, error)
 	GetReviewsForOccurrence(ctx context.Context, id uuid.UUID) ([]*Review, error)
-	GetSideDishesForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Dish, error)
+	GetSideDishesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Dish, error)
 	GetTagByKey(ctx context.Context, key string) (*Tag, error)
-	GetTagsForOccurrence(ctx context.Context, occurrenceID uuid.UUID) ([]*Tag, error)
+	GetTagsForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Tag, error)
 }
 
 var _ Querier = (*Queries)(nil)

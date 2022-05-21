@@ -50,13 +50,13 @@ WHERE date = $1;
 
 -- name: GetSideDishesForOccurrence :many
 SELECT dish.*
-FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish_id = dish.id
-WHERE occurrence_side_dishes.occurrence_id = $1;
+FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish = dish.id
+WHERE occurrence_side_dishes.occurrence = $1;
 
 -- name: GetTagsForOccurrence :many
 SELECT tag.*
-FROM occurrence_tag JOIN tag ON occurrence_tag.tag_key = tag.key
-WHERE occurrence_tag.occurrence_id = $1;
+FROM occurrence_tag JOIN tag ON occurrence_tag.tag = tag.key
+WHERE occurrence_tag.occurrence = $1;
 
 -- name: GetReviewsForOccurrence :many
 SELECT review.*
@@ -84,21 +84,21 @@ VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
 RETURNING *;
 
 -- name: AddOccurrenceSideDish :one
-INSERT INTO occurrence_side_dishes (occurrence_id, dish_id)
+INSERT INTO occurrence_side_dishes (occurrence, dish)
 VALUES ($1, $2)
 RETURNING *;
 
 -- name: AddMultipleOccurrenceSideDishes :copyfrom
-INSERT INTO occurrence_side_dishes (occurrence_id, dish_id)
+INSERT INTO occurrence_side_dishes (occurrence, dish)
 VALUES ($1, $2);
 
 -- name: AddOccurrenceTag :one
-INSERT INTO occurrence_tag (occurrence_id, tag_key)
+INSERT INTO occurrence_tag (occurrence, tag)
 VALUES ($1, $2)
 RETURNING *;
 
 -- name: AddMultipleOccurrenceTags :copyfrom
-INSERT INTO occurrence_tag (occurrence_id, tag_key)
+INSERT INTO occurrence_tag (occurrence, tag)
 VALUES ($1, $2);
 
 -- name: CreateReview :one

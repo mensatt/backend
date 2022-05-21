@@ -53,14 +53,14 @@ func (eq *ExtendedQueries) CreateOccurrenceWithSideDishesAndTags(ctx context.Con
 
 	for _, dishID := range sideDishes {
 		addSideDishesParams = append(addSideDishesParams, &sqlc.AddMultipleOccurrenceSideDishesParams{
-			OccurrenceID: occ.ID,
-			DishID:       dishID,
+			Occurrence: occ.ID,
+			Dish:       dishID,
 		})
 	}
 	for _, tagKey := range tags {
 		addTagsParams = append(addTagsParams, &sqlc.AddMultipleOccurrenceTagsParams{
-			OccurrenceID: occ.ID,
-			TagKey:       tagKey,
+			Occurrence: occ.ID,
+			Tag:        tagKey,
 		})
 	}
 
