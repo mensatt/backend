@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 )
 
 // MustGet will return the env or panic if it is not present
@@ -52,4 +53,27 @@ func MustGetInt64(k string) int64 {
 		log.Panic("ENV err: [" + k + "]" + err.Error())
 	}
 	return i
+}
+
+// GetOrFile attempts to resolve 'key' as an environment variable.
+// Failing that, it will check to see if '<key>_FILE' exists.
+// If so, it will attempt to read from the referenced file to populate a value.
+func GetOrFile(envVar string) (string, error) {
+	envVarValue := os.Getenv(envVar)
+	if envVarValue != "" {
+		return envVarValue, nil
+	}
+
+	fileVar := envVar + "_FILE"
+	fileVarValue := os.Getenv(fileVar)
+	if fileVarValue == "" {
+		return envVarValue, nil
+	}
+
+	fileContents, err := os.ReadFile(fileVarValue)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.TrimSuffix(string(fileContents), "\n"), nil
 }
