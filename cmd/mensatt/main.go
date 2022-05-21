@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"github.com/getsentry/sentry-go"
-	"github.com/mensatt/mensatt-backend/pkg/secrets"
+	"github.com/mensatt/mensatt-backend/internal/db"
 	"log"
 	"time"
 
@@ -20,12 +20,7 @@ func main() {
 		DebugEnabled:   utils.MustGetBool("DEBUG_ENABLED"),
 	}
 
-	c, err := secrets.CreateSecretsContainer()
-	if err != nil {
-		log.Panic(err)
-	}
-
-	sentryDSN, err := c.Get(utils.MustGet("SENTRY_DSN_FILE"))
+	sentryDSN, err := utils.GetOrFile("SENTRY_DSN")
 	if err != nil {
 		log.Fatalln("Sentry DSN secret could not be retrieved:", err)
 	}
@@ -40,12 +35,12 @@ func main() {
 	// Flush buffered events before the program terminates
 	defer sentry.Flush(2 * time.Second)
 
-	username, err := c.Get(utils.MustGet("DATABASE_USERNAME_FILE"))
+	username, err := utils.GetOrFile("DATABASE_USERNAME")
 	if err != nil {
 		log.Fatalln("Database username secret could not be retrieved:", err)
 	}
 
-	password, err := c.Get(utils.MustGet("DATABASE_PASSWORD_FILE"))
+	password, err := utils.GetOrFile("DATABASE_PASSWORD")
 	if err != nil {
 		log.Fatalln("Database password secret could not be retrieved:", err)
 	}
@@ -57,13 +52,11 @@ func main() {
 	}
 	defer pool.Close()
 
-	/*
-		// Run migrations to keep the database up to date
-		err = db.UpgradeDatabase()
-		if err != nil {
-			log.Fatalln("Error upgrading database:", err)
-		}
-	*/
+	// Run migrations to keep the database up to date
+	err = db.UpgradeDatabase(databaseUrl)
+	if err != nil {
+		log.Fatalln("Error upgrading database:", err)
+	}
 
 	log.Fatal(server.Run(&sc, pool))
 }

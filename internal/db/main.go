@@ -8,19 +8,18 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/lib/pq"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
 )
 
 //go:embed sql/migrations/*.sql
 var fs embed.FS
 
-func UpgradeDatabase() error {
+func UpgradeDatabase(databaseUrl string) error {
 	d, err := iofs.New(fs, "sql/migrations")
 	if err != nil {
 		return err
 	}
 
-	m, err := migrate.NewWithSourceInstance("iofs", d, utils.MustGet("DATABASE_URL"))
+	m, err := migrate.NewWithSourceInstance("iofs", d, databaseUrl)
 	if err != nil {
 		return err
 	}
