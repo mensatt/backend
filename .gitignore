@@ -20,4 +20,6 @@ go.work
 .idea/
 .vscode/
 
+.secrets/
+
 tmp/
