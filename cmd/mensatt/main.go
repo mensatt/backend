@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
-	"github.com/getsentry/sentry-go"
-	"github.com/mensatt/mensatt-backend/internal/db"
+	"fmt"
 	"log"
 	"time"
+
+	"github.com/getsentry/sentry-go"
+	"github.com/mensatt/mensatt-backend/internal/db"
 
 	"github.com/jackc/pgx/v4/pgxpool"
 	"github.com/mensatt/mensatt-backend/pkg/server"
@@ -44,7 +46,7 @@ func main() {
 	if err != nil {
 		log.Fatalln("Database password secret could not be retrieved:", err)
 	}
-	databaseUrl := utils.GetDatabaseHost(username, password)
+	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", username, password, utils.MustGet("DATABASE_HOST"), utils.MustGet("DATABASE_NAME"))
 
 	pool, err := pgxpool.Connect(context.Background(), databaseUrl)
 	if err != nil {
