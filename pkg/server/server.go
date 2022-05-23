@@ -15,8 +15,8 @@ import (
 	"github.com/mensatt/mensatt-backend/pkg/utils"
 )
 
-func Run(cfg *ServerConfig, pool *pgxpool.Pool) error {
-	jwtKeyStore, err := utils.InitJWTKeyStore(&utils.JWTKeyStoreConfig{})
+func Run(config *ServerConfig, pool *pgxpool.Pool) error {
+	jwtKeyStore, err := utils.InitJWTKeyStore(&config.JWT)
 	if err != nil {
 		return err
 	}
@@ -31,17 +31,17 @@ func Run(cfg *ServerConfig, pool *pgxpool.Pool) error {
 		Database:    database,
 	}))
 
-	miscRouterGroup := app.Group(cfg.VersionedPath("/misc"))
+	miscRouterGroup := app.Group(config.VersionedPath("/misc"))
 	misc.Run(miscRouterGroup)
 
-	gqlRouterGroup := app.Group(cfg.VersionedPath("/graphql"))
+	gqlRouterGroup := app.Group(config.VersionedPath("/graphql"))
 	gqlServerParams := graphql.GraphQLParams{
-		DebugEnabled: cfg.DebugEnabled,
+		DebugEnabled: config.DebugEnabled,
 		Database:     database,
 	}
 	graphql.Run(gqlRouterGroup, &gqlServerParams)
 
-	log.Println("Running @ " + cfg.SchemaVersionedEndpoint(""))
+	log.Println("Running @ " + config.SchemaVersionedEndpoint(""))
 
-	return app.Run(cfg.ListenEndpoint()) // Start the server
+	return app.Run(config.ListenEndpoint()) // Start the server
 }
