@@ -20,9 +20,8 @@ type contextKey struct {
 }
 
 type AuthParams struct {
-	KeyStore   *utils.JWTKeyStore
-	Database   db.ExtendedQuerier
-	CookieName string
+	JWTKeyStore *utils.JWTKeyStore
+	Database    db.ExtendedQuerier
 }
 
 // Auth wraps the request with auth middleware
@@ -34,7 +33,7 @@ func Auth(params AuthParams) gin.HandlerFunc {
 			return // No token, no auth
 		}
 
-		userID, err := params.KeyStore.ParseJWT(tokenString)
+		userID, err := params.JWTKeyStore.ParseJWT(tokenString)
 		if err != nil {
 			log.Println("[Auth Middleware]: Failed to parse or invalid JWT:", err)
 			return

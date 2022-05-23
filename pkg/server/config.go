@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+
+	"github.com/mensatt/mensatt-backend/pkg/utils"
 )
 
 // ServerConfig defines the configuration for the server
@@ -10,6 +12,7 @@ type ServerConfig struct {
 	Port           int32
 	ServiceVersion string
 	DebugEnabled   bool
+	JWT            utils.JWTKeyStoreConfig
 }
 
 // ListenEndpoint builds the endpoint string (host + port)

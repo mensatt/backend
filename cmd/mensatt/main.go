@@ -20,6 +20,12 @@ func main() {
 		Port:           utils.MustGetInt32("PORT"),
 		ServiceVersion: utils.MustGet("SERVER_PATH_VERSION"),
 		DebugEnabled:   utils.MustGetBool("DEBUG_ENABLED"),
+		JWT: utils.JWTKeyStoreConfig{
+			PrivateKeyPath: utils.MustGet("JWT_PRIVATE_KEY_PATH"),
+			PublicKeyPath:  utils.MustGet("JWT_PUBLIC_KEY_PATH"),
+			Algorithm:      utils.MustGet("JWT_ALGORITHM"),
+			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
+		},
 	}
 
 	sentryDSN, err := utils.GetOrFile("SENTRY_DSN")
