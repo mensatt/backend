@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql"
+	"github.com/mensatt/mensatt-backend/internal/middleware"
 	"github.com/mensatt/mensatt-backend/internal/misc"
 )
 
@@ -18,6 +19,9 @@ func Run(cfg *ServerConfig, pool *pgxpool.Pool) error {
 	app := gin.Default()
 	app.Use(cors.Default())
 	app.Use(sentrygin.New(sentrygin.Options{}))
+	app.Use(middleware.Auth(middleware.AuthParams{
+		CookieName: "token",
+	}))
 
 	miscRouterGroup := app.Group(cfg.VersionedPath("/misc"))
 	misc.Run(miscRouterGroup)

@@ -4,8 +4,10 @@ import (
 	"crypto/rsa"
 	"fmt"
 	"io/ioutil"
+	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 )
 
 //JWTKeyStoreConfig defines the options for JWTKeyStore
@@ -13,10 +15,11 @@ type JWTKeyStoreConfig struct {
 	PrivateKeyPath string
 	PublicKeyPath  string
 	Algorithm      string
+	TimeoutSec     int
 }
 
 type JWTKeyStore struct {
-	config      *JWTKeyStoreConfig
+	timeout     time.Duration
 	algorithm   jwt.SigningMethod
 	privateKey  *rsa.PrivateKey
 	publicKey   *rsa.PublicKey
@@ -48,8 +51,10 @@ func LoadJWTKeys(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
 		return nil, fmt.Errorf("unexpected signing method: %v", jwtConfig.Algorithm)
 	}
 
+	timeout := time.Duration(jwtConfig.TimeoutSec) * time.Second
+
 	return &JWTKeyStore{
-		config:      jwtConfig,
+		timeout:     timeout,
 		algorithm:   algo,
 		privateKey:  privKey,
 		publicKey:   pubKey,
@@ -57,20 +62,37 @@ func LoadJWTKeys(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
 	}, nil
 }
 
+type CustomClaims struct {
+	UserID uuid.UUID `json:"user_id"`
+	jwt.RegisteredClaims
+}
+
 // GenerateJWT generates JWT with the provided data
-func (ks *JWTKeyStore) GenerateJWT(claims jwt.Claims) (string, error) {
+func (ks *JWTKeyStore) GenerateJWT(userID uuid.UUID) (string, error) {
+	now := time.Now()
+	claims := CustomClaims{
+		userID,
+		jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(now.Add(ks.timeout)),
+			IssuedAt:  jwt.NewNumericDate(now),
+		},
+	}
 	token := jwt.NewWithClaims(ks.algorithm, claims)
 	tokenString, err := token.SignedString(ks.privateKey)
 	return tokenString, err
 }
 
 // ParseJWT parses the JWT
-func (ks *JWTKeyStore) ParseJWT(tokenString string, claims jwt.Claims) error {
+func (ks *JWTKeyStore) ParseJWT(tokenString string) (uuid.UUID, error) {
+	var claims CustomClaims
 	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
 		if ks.algorithm != token.Method {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return ks.pubKeyBytes, nil
 	})
-	return err
+	if err != nil {
+		return uuid.UUID{}, err
+	}
+	return claims.UserID, nil
 }

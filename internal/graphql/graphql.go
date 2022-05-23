@@ -9,27 +9,30 @@ import (
 	"github.com/mensatt/mensatt-backend/internal/db"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/graphql/resolvers"
+	"github.com/mensatt/mensatt-backend/pkg/utils"
 )
 
 type GraphQLParams struct {
 	DebugEnabled bool
 	Database     db.ExtendedQuerier
+	JWTKeyStore  utils.JWTKeyStore
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) {
-	g.POST("", graphqlHandler(params.Database))
+	g.POST("", graphqlHandler(params.Database, params.JWTKeyStore))
 	if params.DebugEnabled {
 		g.GET("/playground", playgroundHandler(g.BasePath()))
 	}
 }
 
 // graphqlHandler defines the GQLGen GraphQL server handler
-func graphqlHandler(database db.ExtendedQuerier) gin.HandlerFunc {
+func graphqlHandler(database db.ExtendedQuerier, jwtKeyStore utils.JWTKeyStore) gin.HandlerFunc {
 	h := handler.NewDefaultServer(
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
 				Resolvers: &resolvers.Resolver{
-					Database: database,
+					Database:    database,
+					JWTKeyStore: jwtKeyStore,
 				},
 			},
 		),
