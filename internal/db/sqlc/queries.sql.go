@@ -73,14 +73,15 @@ func (q *Queries) CreateDish(ctx context.Context, name string) (*Dish, error) {
 }
 
 const createOccurrence = `-- name: CreateOccurrence :one
-INSERT INTO occurrence (dish, date, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+INSERT INTO occurrence (dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 RETURNING id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 type CreateOccurrenceParams struct {
 	Dish          uuid.UUID     `json:"dish"`
 	Date          time.Time     `json:"date"`
+	ReviewStatus  ReviewStatus  `json:"review_status"`
 	Kj            sql.NullInt32 `json:"kj"`
 	Kcal          sql.NullInt32 `json:"kcal"`
 	Fat           sql.NullInt32 `json:"fat"`
@@ -99,6 +100,7 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrencePar
 	row := q.db.QueryRow(ctx, createOccurrence,
 		arg.Dish,
 		arg.Date,
+		arg.ReviewStatus,
 		arg.Kj,
 		arg.Kcal,
 		arg.Fat,

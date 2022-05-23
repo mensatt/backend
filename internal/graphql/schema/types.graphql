@@ -29,7 +29,7 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
-    reviewStatus: ReviewStatus
+    reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
     fat: Int,
