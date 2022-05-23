@@ -11,7 +11,7 @@ input OccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Time!
-    reviewStatus: ReviewStatus
+    reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
     fat: Int,

@@ -45,7 +45,6 @@ type ResolverRoot interface {
 	Occurrence() OccurrenceResolver
 	Query() QueryResolver
 	Review() ReviewResolver
-	OccurrenceInput() OccurrenceInputResolver
 }
 
 type DirectiveRoot struct {
@@ -144,8 +143,6 @@ type OccurrenceResolver interface {
 	Dish(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Dish, error)
 	SideDishes(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Dish, error)
 
-	ReviewStatus(ctx context.Context, obj *sqlc.Occurrence) (*models.ReviewStatus, error)
-
 	Tags(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Tag, error)
 	Reviews(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Review, error)
 	Images(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Image, error)
@@ -160,10 +157,6 @@ type QueryResolver interface {
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error)
-}
-
-type OccurrenceInputResolver interface {
-	ReviewStatus(ctx context.Context, obj *models.OccurrenceInputHelper, data *models.ReviewStatus) error
 }
 
 type executableSchema struct {
@@ -696,7 +689,7 @@ input OccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Time!
-    reviewStatus: ReviewStatus
+    reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -773,7 +766,7 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
-    reviewStatus: ReviewStatus
+    reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -1664,25 +1657,28 @@ func (ec *executionContext) _Occurrence_reviewStatus(ctx context.Context, field 
 		Object:     "Occurrence",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Occurrence().ReviewStatus(rctx, obj)
+		return obj.ReviewStatus, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
-	res := resTmp.(*models.ReviewStatus)
+	res := resTmp.(sqlc.ReviewStatus)
 	fc.Result = res
-	return ec.marshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx, field.Selections, res)
+	return ec.marshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_kj(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -4185,11 +4181,8 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewStatus"))
-			data, err := ec.unmarshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx, v)
+			it.ReviewStatus, err = ec.unmarshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, v)
 			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.OccurrenceInput().ReviewStatus(ctx, &it, data); err != nil {
 				return it, err
 			}
 		case "kj":
@@ -4717,22 +4710,15 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "reviewStatus":
-			field := field
-
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Occurrence_reviewStatus(ctx, field, obj)
-				return res
+				return ec._Occurrence_reviewStatus(ctx, field, obj)
 			}
 
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
+			out.Values[i] = innerFunc(ctx)
 
-			})
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "kj":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Occurrence_kj(ctx, field, obj)
@@ -5956,6 +5942,21 @@ func (ec *executionContext) unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensa
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, v interface{}) (sqlc.ReviewStatus, error) {
+	res, err := scalars.UnmarshalReviewStatus(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.ReviewStatus) graphql.Marshaler {
+	res := scalars.MarshalReviewStatus(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "must not be null")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNString2databaseᚋsqlᚐNullString(ctx context.Context, v interface{}) (sql.NullString, error) {
 	res, err := scalars.UnmarshalNullString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -6376,22 +6377,6 @@ func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋmensatt�
 func (ec *executionContext) marshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, sel ast.SelectionSet, v sqlc.Priority) graphql.Marshaler {
 	res := scalars.MarshalPriority(v)
 	return res
-}
-
-func (ec *executionContext) unmarshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx context.Context, v interface{}) (*models.ReviewStatus, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var res = new(models.ReviewStatus)
-	err := res.UnmarshalGQL(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v *models.ReviewStatus) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	return v
 }
 
 func (ec *executionContext) unmarshalOString2databaseᚋsqlᚐNullString(ctx context.Context, v interface{}) (sql.NullString, error) {

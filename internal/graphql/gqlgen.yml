@@ -66,6 +66,9 @@ models:
   Priority:
     model:
       - github.com/mensatt/mensatt-backend/internal/graphql/scalars.Priority
+  ReviewStatus:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.ReviewStatus
   Dish:
     model:
       - github.com/mensatt/mensatt-backend/internal/db/sqlc.Dish
