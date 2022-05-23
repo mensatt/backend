@@ -35,6 +35,8 @@ type Querier interface {
 	GetSideDishesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Dish, error)
 	GetTagByKey(ctx context.Context, key string) (*Tag, error)
 	GetTagsForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Tag, error)
+	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 }
 
 var _ Querier = (*Queries)(nil)

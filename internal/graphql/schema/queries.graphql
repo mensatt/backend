@@ -1,4 +1,6 @@
 type Query {
+    getCurrentUser: User
+
     getAllTags: [Tag!]!
     getAllDishes: [Dish!]!
     getAllOccurrences: [Occurrence!]!

@@ -90,3 +90,6 @@ models:
   Review:
     model:
       - github.com/mensatt/mensatt-backend/internal/db/sqlc.Review
+  User:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.User

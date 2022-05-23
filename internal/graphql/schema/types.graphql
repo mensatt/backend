@@ -64,3 +64,8 @@ type Image {
     updatedAt: Time!
     acceptedAt: Time
 }
+
+type User {
+    id: UUID!
+    email: String!
+}

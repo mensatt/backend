@@ -99,3 +99,11 @@ type Tag struct {
 	Priority    Priority       `json:"priority"`
 	IsAllergy   bool           `json:"is_allergy"`
 }
+
+type User struct {
+	ID           uuid.UUID `json:"id"`
+	Email        string    `json:"email"`
+	PasswordHash string    `json:"password_hash"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
+}

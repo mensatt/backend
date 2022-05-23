@@ -105,3 +105,13 @@ VALUES ($1, $2);
 INSERT INTO review (occurrence, display_name, stars, text)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
+
+-- name: GetUserByID :one
+SELECT *
+FROM users
+WHERE id = $1;
+
+-- name: GetUserByEmail :one
+SELECT *
+FROM users
+WHERE email = $1;

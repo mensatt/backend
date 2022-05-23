@@ -9,7 +9,12 @@ import (
 
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
+	"github.com/mensatt/mensatt-backend/internal/middleware"
 )
+
+func (r *queryResolver) GetCurrentUser(ctx context.Context) (*sqlc.User, error) {
+	return middleware.GetUserIDFromCtx(ctx), nil
+}
 
 func (r *queryResolver) GetAllTags(ctx context.Context) ([]*sqlc.Tag, error) {
 	return r.Database.GetAllTags(ctx)
