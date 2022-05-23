@@ -23,7 +23,6 @@ type JWTKeyStore struct {
 	algorithm   jwt.SigningMethod
 	privateKey  *rsa.PrivateKey
 	publicKey   *rsa.PublicKey
-	pubKeyBytes []byte
 }
 
 func InitJWTKeyStore(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
@@ -58,7 +57,6 @@ func InitJWTKeyStore(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
 		algorithm:   algo,
 		privateKey:  privKey,
 		publicKey:   pubKey,
-		pubKeyBytes: pubBytes,
 	}, nil
 }
 
@@ -89,7 +87,7 @@ func (ks *JWTKeyStore) ParseJWT(tokenString string) (uuid.UUID, error) {
 		if ks.algorithm != token.Method {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
-		return ks.pubKeyBytes, nil
+		return ks.publicKey, nil
 	})
 	if err != nil {
 		return uuid.UUID{}, err

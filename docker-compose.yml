@@ -28,6 +28,10 @@ services:
       DATABASE_USERNAME_FILE: /run/secrets/database_username
       DATABASE_PASSWORD_FILE: /run/secrets/database_password
       SENTRY_DSN_FILE: /run/secrets/sentry_dsn
+      JWT_PRIVATE_KEY_PATH: ./.secrets/jwt-keys/private.pem
+      JWT_PUBLIC_KEY_PATH: ./.secrets/jwt-keys/public.pem
+      JWT_ALGORITHM: RS256
+      JWT_TIMEOUT_SEC: 525600
     ports:
       - "4000:4000"
     links:

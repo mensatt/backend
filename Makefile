@@ -1,4 +1,4 @@
-.PHONY: generate tidy log up down start stop sqlc gqlgen dbmate-new dbmate-migrate dbmate-up dbmate-down dbmate-drop dbmate-status seed
+.PHONY: generate tidy log up down start stop sqlc gqlgen dbmate-new dbmate-migrate dbmate-up dbmate-down dbmate-drop dbmate-status seed jwt-keys
 
 DC = docker compose -f docker-compose.yml
 EXEC_MENSATT = $(DC) exec mensatt
@@ -46,3 +46,7 @@ dbmate-status:
 
 seed:
 	$(EXEC_MENSATT) go run ./internal/db/seeder/main.go
+
+jwt-keys:
+	openssl genrsa -out ./.secrets/jwt-keys/private.pem 2048
+	openssl rsa -in ./.secrets/jwt-keys/private.pem -pubout > ./.secrets/jwt-keys/public.pem
