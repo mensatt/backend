@@ -23,15 +23,15 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
-    kj: Float,
-    kcal: Float,
-    fat: Float,
-    saturatedFat: Float,
-    carbohydrates: Float,
-    sugar: Float,
-    fiber: Float,
-    protein: Float,
-    salt: Float,
+    kj: Int,
+    kcal: Int,
+    fat: Int,
+    saturatedFat: Int,
+    carbohydrates: Int,
+    sugar: Int,
+    fiber: Int,
+    protein: Int,
+    salt: Int,
     priceStudent: Int!
     priceStaff: Int!
     priceGuest: Int!

@@ -79,20 +79,20 @@ RETURNING id, dish, date, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fi
 `
 
 type CreateOccurrenceParams struct {
-	Dish          uuid.UUID       `json:"dish"`
-	Date          time.Time       `json:"date"`
-	Kj            sql.NullFloat64 `json:"kj"`
-	Kcal          sql.NullFloat64 `json:"kcal"`
-	Fat           sql.NullFloat64 `json:"fat"`
-	SaturatedFat  sql.NullFloat64 `json:"saturated_fat"`
-	Carbohydrates sql.NullFloat64 `json:"carbohydrates"`
-	Sugar         sql.NullFloat64 `json:"sugar"`
-	Fiber         sql.NullFloat64 `json:"fiber"`
-	Protein       sql.NullFloat64 `json:"protein"`
-	Salt          sql.NullFloat64 `json:"salt"`
-	PriceStudent  int32           `json:"price_student"`
-	PriceStaff    int32           `json:"price_staff"`
-	PriceGuest    int32           `json:"price_guest"`
+	Dish          uuid.UUID     `json:"dish"`
+	Date          time.Time     `json:"date"`
+	Kj            sql.NullInt32 `json:"kj"`
+	Kcal          sql.NullInt32 `json:"kcal"`
+	Fat           sql.NullInt32 `json:"fat"`
+	SaturatedFat  sql.NullInt32 `json:"saturated_fat"`
+	Carbohydrates sql.NullInt32 `json:"carbohydrates"`
+	Sugar         sql.NullInt32 `json:"sugar"`
+	Fiber         sql.NullInt32 `json:"fiber"`
+	Protein       sql.NullInt32 `json:"protein"`
+	Salt          sql.NullInt32 `json:"salt"`
+	PriceStudent  int32         `json:"price_student"`
+	PriceStaff    int32         `json:"price_staff"`
+	PriceGuest    int32         `json:"price_guest"`
 }
 
 func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error) {

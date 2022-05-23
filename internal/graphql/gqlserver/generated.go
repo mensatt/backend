@@ -681,15 +681,15 @@ input OccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Time!
-    kj: Float,
-    kcal: Float,
-    fat: Float,
-    saturatedFat: Float,
-    carbohydrates: Float,
-    sugar: Float,
-    fiber: Float,
-    protein: Float,
-    salt: Float,
+    kj: Int,
+    kcal: Int,
+    fat: Int,
+    saturatedFat: Int,
+    carbohydrates: Int,
+    sugar: Int,
+    fiber: Int,
+    protein: Int,
+    salt: Int,
     priceStudent: Int!
     priceStaff: Int!
     priceGuest: Int!
@@ -751,15 +751,15 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
-    kj: Float,
-    kcal: Float,
-    fat: Float,
-    saturatedFat: Float,
-    carbohydrates: Float,
-    sugar: Float,
-    fiber: Float,
-    protein: Float,
-    salt: Float,
+    kj: Int,
+    kcal: Int,
+    fat: Int,
+    saturatedFat: Int,
+    carbohydrates: Int,
+    sugar: Int,
+    fiber: Int,
+    protein: Int,
+    salt: Int,
     priceStudent: Int!
     priceStaff: Int!
     priceGuest: Int!
@@ -1657,9 +1657,9 @@ func (ec *executionContext) _Occurrence_kj(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_kcal(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1689,9 +1689,9 @@ func (ec *executionContext) _Occurrence_kcal(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_fat(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1721,9 +1721,9 @@ func (ec *executionContext) _Occurrence_fat(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_saturatedFat(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1753,9 +1753,9 @@ func (ec *executionContext) _Occurrence_saturatedFat(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_carbohydrates(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1785,9 +1785,9 @@ func (ec *executionContext) _Occurrence_carbohydrates(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_sugar(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1817,9 +1817,9 @@ func (ec *executionContext) _Occurrence_sugar(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_fiber(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1849,9 +1849,9 @@ func (ec *executionContext) _Occurrence_fiber(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_protein(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1881,9 +1881,9 @@ func (ec *executionContext) _Occurrence_protein(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_salt(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -1913,9 +1913,9 @@ func (ec *executionContext) _Occurrence_salt(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullFloat64)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_priceStudent(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -4130,7 +4130,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kj"))
-			it.Kj, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Kj, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4138,7 +4138,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kcal"))
-			it.Kcal, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Kcal, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4146,7 +4146,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fat"))
-			it.Fat, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Fat, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4154,7 +4154,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("saturatedFat"))
-			it.SaturatedFat, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.SaturatedFat, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4162,7 +4162,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carbohydrates"))
-			it.Carbohydrates, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Carbohydrates, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4170,7 +4170,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sugar"))
-			it.Sugar, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Sugar, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4178,7 +4178,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fiber"))
-			it.Fiber, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Fiber, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4186,7 +4186,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("protein"))
-			it.Protein, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Protein, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4194,7 +4194,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("salt"))
-			it.Salt, err = ec.unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx, v)
+			it.Salt, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6275,13 +6275,13 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) unmarshalOFloat2databaseᚋsqlᚐNullFloat64(ctx context.Context, v interface{}) (sql.NullFloat64, error) {
-	res, err := scalars.UnmarshalNullFloat(v)
+func (ec *executionContext) unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx context.Context, v interface{}) (sql.NullInt32, error) {
+	res, err := scalars.UnmarshalNullInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOFloat2databaseᚋsqlᚐNullFloat64(ctx context.Context, sel ast.SelectionSet, v sql.NullFloat64) graphql.Marshaler {
-	res := scalars.MarshalNullFloat(v)
+func (ec *executionContext) marshalOInt2databaseᚋsqlᚐNullInt32(ctx context.Context, sel ast.SelectionSet, v sql.NullInt32) graphql.Marshaler {
+	res := scalars.MarshalNullInt(v)
 	return res
 }
 

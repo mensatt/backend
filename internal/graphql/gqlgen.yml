@@ -50,10 +50,12 @@ models:
     model:
       - github.com/99designs/gqlgen/graphql.String
       - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullString
-  Float:
+  Int:
     model:
-      - github.com/99designs/gqlgen/graphql.Float
-      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullFloat
+      - github.com/99designs/gqlgen/graphql.Int
+      - github.com/99designs/gqlgen/graphql.Int32
+      - github.com/99designs/gqlgen/graphql.Int64
+      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullInt
   Time:
     model:
       - github.com/99designs/gqlgen/graphql.Time
