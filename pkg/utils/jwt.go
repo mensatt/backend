@@ -19,29 +19,29 @@ type JWTKeyStoreConfig struct {
 }
 
 type JWTKeyStore struct {
-	timeout     time.Duration
-	algorithm   jwt.SigningMethod
-	privateKey  *rsa.PrivateKey
-	publicKey   *rsa.PublicKey
+	timeout    time.Duration
+	algorithm  jwt.SigningMethod
+	privateKey *rsa.PrivateKey
+	publicKey  *rsa.PublicKey
 }
 
 func InitJWTKeyStore(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
 	pubBytes, err := ioutil.ReadFile(jwtConfig.PublicKeyPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read public key file: %v", err)
 	}
 	pubKey, err := jwt.ParseRSAPublicKeyFromPEM(pubBytes)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse public key: %v", err)
 	}
 
 	privBytes, err := ioutil.ReadFile(jwtConfig.PrivateKeyPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read private key file: %v", err)
 	}
 	privKey, err := jwt.ParseRSAPrivateKeyFromPEM(privBytes)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing private key: %v", err)
 	}
 	privKey.Precompute()
 
@@ -53,10 +53,10 @@ func InitJWTKeyStore(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
 	timeout := time.Duration(jwtConfig.TimeoutSec) * time.Second
 
 	return &JWTKeyStore{
-		timeout:     timeout,
-		algorithm:   algo,
-		privateKey:  privKey,
-		publicKey:   pubKey,
+		timeout:    timeout,
+		algorithm:  algo,
+		privateKey: privKey,
+		publicKey:  pubKey,
 	}, nil
 }
 

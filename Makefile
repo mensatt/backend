@@ -48,5 +48,5 @@ seed:
 	$(EXEC_MENSATT) go run ./internal/db/seeder/main.go
 
 jwt-keys:
-	openssl genrsa -out ./.secrets/jwt-keys/private.pem 2048
-	openssl rsa -in ./.secrets/jwt-keys/private.pem -pubout > ./.secrets/jwt-keys/public.pem
+	openssl genrsa -out ./.secrets/jwt_private_key.pem 2048
+	openssl rsa -in ./.secrets/jwt_private_key.pem -pubout > ./.secrets/jwt_public_key.pem
