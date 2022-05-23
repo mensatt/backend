@@ -33,6 +33,26 @@ func (e *Priority) Scan(src interface{}) error {
 	return nil
 }
 
+type ReviewStatus string
+
+const (
+	ReviewStatusAPPROVED         ReviewStatus = "APPROVED"
+	ReviewStatusAWAITINGAPPROVAL ReviewStatus = "AWAITING_APPROVAL"
+	ReviewStatusUPDATED          ReviewStatus = "UPDATED"
+)
+
+func (e *ReviewStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = ReviewStatus(s)
+	case string:
+		*e = ReviewStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for ReviewStatus: %T", src)
+	}
+	return nil
+}
+
 type Dish struct {
 	ID   uuid.UUID `json:"id"`
 	Name string    `json:"name"`
@@ -54,6 +74,7 @@ type Occurrence struct {
 	ID            uuid.UUID     `json:"id"`
 	Dish          uuid.UUID     `json:"dish"`
 	Date          time.Time     `json:"date"`
+	ReviewStatus  ReviewStatus  `json:"review_status"`
 	Kj            sql.NullInt32 `json:"kj"`
 	Kcal          sql.NullInt32 `json:"kcal"`
 	Fat           sql.NullInt32 `json:"fat"`

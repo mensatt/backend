@@ -4,6 +4,12 @@ enum Priority {
     HIGH
 }
 
+enum ReviewStatus {
+    APPROVED
+    AWAITING_APPROVAL
+    UPDATED
+}
+
 type Tag {
     key: String!
     name: String!
@@ -23,6 +29,7 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
+    reviewStatus: ReviewStatus
     kj: Int,
     kcal: Int,
     fat: Int,
