@@ -45,6 +45,7 @@ type ResolverRoot interface {
 	Occurrence() OccurrenceResolver
 	Query() QueryResolver
 	Review() ReviewResolver
+	OccurrenceInput() OccurrenceInputResolver
 }
 
 type DirectiveRoot struct {
@@ -89,6 +90,7 @@ type ComplexityRoot struct {
 		PriceStaff    func(childComplexity int) int
 		PriceStudent  func(childComplexity int) int
 		Protein       func(childComplexity int) int
+		ReviewStatus  func(childComplexity int) int
 		Reviews       func(childComplexity int) int
 		Salt          func(childComplexity int) int
 		SaturatedFat  func(childComplexity int) int
@@ -142,6 +144,8 @@ type OccurrenceResolver interface {
 	Dish(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Dish, error)
 	SideDishes(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Dish, error)
 
+	ReviewStatus(ctx context.Context, obj *sqlc.Occurrence) (*models.ReviewStatus, error)
+
 	Tags(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Tag, error)
 	Reviews(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Review, error)
 	Images(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Image, error)
@@ -156,6 +160,10 @@ type QueryResolver interface {
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error)
+}
+
+type OccurrenceInputResolver interface {
+	ReviewStatus(ctx context.Context, obj *models.OccurrenceInputHelper, data *models.ReviewStatus) error
 }
 
 type executableSchema struct {
@@ -388,6 +396,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Occurrence.Protein(childComplexity), true
+
+	case "Occurrence.reviewStatus":
+		if e.complexity.Occurrence.ReviewStatus == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.ReviewStatus(childComplexity), true
 
 	case "Occurrence.reviews":
 		if e.complexity.Occurrence.Reviews == nil {
@@ -681,6 +696,7 @@ input OccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Time!
+    reviewStatus: ReviewStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -732,6 +748,12 @@ scalar UUID`, BuiltIn: false},
     HIGH
 }
 
+enum ReviewStatus {
+    APPROVED
+    AWAITING_APPROVAL
+    UPDATED
+}
+
 type Tag {
     key: String!
     name: String!
@@ -751,6 +773,7 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
+    reviewStatus: ReviewStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -1628,6 +1651,38 @@ func (ec *executionContext) _Occurrence_date(ctx context.Context, field graphql.
 	res := resTmp.(time.Time)
 	fc.Result = res
 	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Occurrence_reviewStatus(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Occurrence().ReviewStatus(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*models.ReviewStatus)
+	fc.Result = res
+	return ec.marshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Occurrence_kj(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
@@ -4126,6 +4181,17 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
+		case "reviewStatus":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewStatus"))
+			data, err := ec.unmarshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			if err = ec.resolvers.OccurrenceInput().ReviewStatus(ctx, &it, data); err != nil {
+				return it, err
+			}
 		case "kj":
 			var err error
 
@@ -4650,6 +4716,23 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "reviewStatus":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Occurrence_reviewStatus(ctx, field, obj)
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "kj":
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Occurrence_kj(ctx, field, obj)
@@ -6293,6 +6376,22 @@ func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋmensatt�
 func (ec *executionContext) marshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, sel ast.SelectionSet, v sqlc.Priority) graphql.Marshaler {
 	res := scalars.MarshalPriority(v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx context.Context, v interface{}) (*models.ReviewStatus, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(models.ReviewStatus)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOReviewStatus2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v *models.ReviewStatus) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) unmarshalOString2databaseᚋsqlᚐNullString(ctx context.Context, v interface{}) (sql.NullString, error) {

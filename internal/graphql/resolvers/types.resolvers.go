@@ -5,8 +5,11 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
+
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
+	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 )
 
 func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
@@ -19,6 +22,10 @@ func (r *occurrenceResolver) Dish(ctx context.Context, obj *sqlc.Occurrence) (*s
 
 func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Dish, error) {
 	return r.Database.GetSideDishesForOccurrence(ctx, obj.ID)
+}
+
+func (r *occurrenceResolver) ReviewStatus(ctx context.Context, obj *sqlc.Occurrence) (*models.ReviewStatus, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *occurrenceResolver) Tags(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Tag, error) {

@@ -19,10 +19,13 @@ CREATE TABLE tag (
     PRIMARY KEY (key)
 );
 
+CREATE TYPE review_status AS ENUM('APPROVED', 'AWAITING_APPROVAL', 'UPDATED');
+
 CREATE TABLE occurrence (
     id uuid DEFAULT uuid_generate_v4(),
     dish uuid NOT NULL,
     date date NOT NULL,
+    review_status review_status DEFAULT 'AWAITING_APPROVAL' NOT NULL,
     kj integer,
     kcal integer,
     fat integer,
