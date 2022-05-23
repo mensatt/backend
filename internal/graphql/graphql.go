@@ -7,6 +7,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	"github.com/mensatt/mensatt-backend/internal/db"
+	"github.com/mensatt/mensatt-backend/internal/graphql/directives"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/graphql/resolvers"
 	"github.com/mensatt/mensatt-backend/pkg/utils"
@@ -33,6 +34,9 @@ func graphqlHandler(database db.ExtendedQuerier, jwtKeyStore utils.JWTKeyStore) 
 				Resolvers: &resolvers.Resolver{
 					Database:    database,
 					JWTKeyStore: jwtKeyStore,
+				},
+				Directives: gqlserver.DirectiveRoot{
+					Authenticated: directives.Authenticated,
 				},
 			},
 		),
