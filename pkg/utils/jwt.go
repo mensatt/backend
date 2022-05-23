@@ -15,7 +15,7 @@ type JWTKeyStoreConfig struct {
 	PrivateKeyPath string
 	PublicKeyPath  string
 	Algorithm      string
-	TimeoutSec     int
+	TimeoutSec     int32
 }
 
 type JWTKeyStore struct {
@@ -26,7 +26,7 @@ type JWTKeyStore struct {
 	pubKeyBytes []byte
 }
 
-func LoadJWTKeys(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
+func InitJWTKeyStore(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
 	pubBytes, err := ioutil.ReadFile(jwtConfig.PublicKeyPath)
 	if err != nil {
 		return nil, err
