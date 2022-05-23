@@ -15,7 +15,7 @@ import (
 )
 
 func main() {
-	sc := server.ServerConfig{
+	config := server.ServerConfig{
 		Host:           utils.MustGet("HOST"),
 		Port:           utils.MustGetInt32("PORT"),
 		ServiceVersion: utils.MustGet("SERVER_PATH_VERSION"),
@@ -66,5 +66,5 @@ func main() {
 		log.Fatalln("Error upgrading database:", err)
 	}
 
-	log.Fatal(server.Run(&sc, pool))
+	log.Fatal(server.Run(&config, pool))
 }
