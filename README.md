@@ -2,17 +2,18 @@
 
 The backend repository for Mensatt written in go.
 
-## Dev Server with hot reload
+## Requirements
+- Docker & Docker Compose
+- GCC (build-essentials)
+- Go 1.17
 
-Prequesites: `docker`  
-
-Create and start: `make up`  
-Stop and remove: `make down`  
-Start: `make stop`  
-Stop: `make stop`
-
-## Dev Tools
+## Building
 
 Generate all: `make generate`
-Run gqlgen: `make gqlgen`  
-Run sqlc: `make sqlc`
+Run only gqlgen: `make gqlgen`  
+Run only sqlc: `make sqlc`
+
+## Running
+
+Start dev server: `make up`
+Stop the server: `make down`
