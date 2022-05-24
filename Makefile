@@ -18,18 +18,18 @@ log:
 
 #go code generation
 generate:
-	$(EXEC_MENSATT) go generate ./...
+	go generate ./...
 sqlc:
-	$(EXEC_MENSATT) go generate ./internal/db/...
+	go generate ./internal/db/...
 gqlgen:
-	$(EXEC_MENSATT) go generate ./internal/graphql/...
+	go generate ./internal/graphql/...
 
 # go
 tidy:
-	$(EXEC_MENSATT) go mod tidy
+	go mod tidy
 
 seed:
-	$(EXEC_MENSATT) go run ./internal/db/seeder/main.go
+	go run ./internal/db/seeder/main.go
 
 jwt-keys:
 	openssl genrsa -out ./.secrets/jwt_private_key.pem 2048
