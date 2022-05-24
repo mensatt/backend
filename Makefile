@@ -28,22 +28,6 @@ gqlgen:
 tidy:
 	$(EXEC_MENSATT) go mod tidy
 
-# dbmate
-dbmate-new: 
-	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) new
-dbmate-migrate: 
-	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) migrate
-dbmate-up: 
-	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) up
-dbmate-down: 
-	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) down
-dbmate-create: 
-	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) create
-dbmate-drop: 
-	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) drop
-dbmate-status: 
-	$(EXEC_MENSATT) dbmate $(DBMATE_OPTS) status
-
 seed:
 	$(EXEC_MENSATT) go run ./internal/db/seeder/main.go
 
