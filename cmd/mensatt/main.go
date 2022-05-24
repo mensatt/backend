@@ -30,7 +30,7 @@ func main() {
 
 	sentryDSN, err := utils.GetOrFile("SENTRY_DSN")
 	if err != nil {
-		log.Fatalln("Sentry DSN secret could not be retrieved:", err)
+		log.Println("Sentry DSN secret could not be retrieved:", err)
 	}
 
 	// Initialize sentry.io client for error reporting & logging
