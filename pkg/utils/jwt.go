@@ -83,7 +83,7 @@ func (ks *JWTKeyStore) GenerateJWT(userID uuid.UUID) (string, error) {
 // ParseJWT parses the JWT
 func (ks *JWTKeyStore) ParseJWT(tokenString string) (uuid.UUID, error) {
 	var claims CustomClaims
-	_, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
 		if ks.algorithm != token.Method {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}

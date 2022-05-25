@@ -27,6 +27,7 @@ func securePingHandler() gin.HandlerFunc {
 		user := middleware.GetUserIDFromCtx(c.Request.Context())
 		if user == nil {
 			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.Abort()
 			return
 		}
 

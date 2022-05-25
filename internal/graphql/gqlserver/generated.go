@@ -773,11 +773,12 @@ input ReviewInput {
 	{Name: "../schema/mutations.graphql", Input: `type Mutation {
     login(email: String!, password: String!): String!
 
-    createTag(tag: TagInput!): Tag! # auth
-    createDish(name: String!): Dish! # auth
-    createOccurrence(occurrence: OccurrenceInput!): Occurrence! # auth
-    createReview(review: ReviewInput!): Review! # non-auth
-    #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/ # non-auth
+    createTag(tag: TagInput!): Tag! @authenticated
+    createDish(name: String!): Dish! @authenticated
+    createOccurrence(occurrence: OccurrenceInput!): Occurrence! @authenticated
+    
+    createReview(review: ReviewInput!): Review! 
+    #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/
 }`, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
     getCurrentUser: User
@@ -1618,8 +1619,28 @@ func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graph
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTag(rctx, fc.Args["tag"].(sqlc.CreateTagParams))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateTag(rctx, fc.Args["tag"].(sqlc.CreateTagParams))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.Tag); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Tag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1687,8 +1708,28 @@ func (ec *executionContext) _Mutation_createDish(ctx context.Context, field grap
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateDish(rctx, fc.Args["name"].(string))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateDish(rctx, fc.Args["name"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.Dish); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Dish`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1748,8 +1789,28 @@ func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, fiel
 		}
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateOccurrence(rctx, fc.Args["occurrence"].(models.OccurrenceInputHelper))
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateOccurrence(rctx, fc.Args["occurrence"].(models.OccurrenceInputHelper))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.Occurrence); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
