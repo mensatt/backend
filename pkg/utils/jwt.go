@@ -26,6 +26,11 @@ type JWTKeyStore struct {
 }
 
 func InitJWTKeyStore(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
+	algo := jwt.GetSigningMethod(jwtConfig.Algorithm)
+	if _, ok := algo.(*jwt.SigningMethodRSA); !ok {
+		return nil, fmt.Errorf("unexpected signing method: %v", jwtConfig.Algorithm)
+	}
+
 	pubBytes, err := ioutil.ReadFile(jwtConfig.PublicKeyPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read public key file: %v", err)
@@ -44,11 +49,6 @@ func InitJWTKeyStore(jwtConfig *JWTKeyStoreConfig) (*JWTKeyStore, error) {
 		return nil, fmt.Errorf("error parsing private key: %v", err)
 	}
 	privKey.Precompute()
-
-	algo := jwt.GetSigningMethod(jwtConfig.Algorithm)
-	if algo == nil {
-		return nil, fmt.Errorf("unexpected signing method: %v", jwtConfig.Algorithm)
-	}
 
 	timeout := time.Duration(jwtConfig.TimeoutSec) * time.Second
 

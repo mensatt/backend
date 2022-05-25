@@ -16,7 +16,7 @@ import (
 type GraphQLParams struct {
 	DebugEnabled bool
 	Database     db.ExtendedQuerier
-	JWTKeyStore  utils.JWTKeyStore
+	JWTKeyStore  *utils.JWTKeyStore
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) {
@@ -27,7 +27,7 @@ func Run(g *gin.RouterGroup, params *GraphQLParams) {
 }
 
 // graphqlHandler defines the GQLGen GraphQL server handler
-func graphqlHandler(database db.ExtendedQuerier, jwtKeyStore utils.JWTKeyStore) gin.HandlerFunc {
+func graphqlHandler(database db.ExtendedQuerier, jwtKeyStore *utils.JWTKeyStore) gin.HandlerFunc {
 	h := handler.NewDefaultServer(
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{

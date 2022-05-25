@@ -11,5 +11,5 @@ import (
 
 type Resolver struct {
 	Database    db.ExtendedQuerier
-	JWTKeyStore utils.JWTKeyStore
+	JWTKeyStore *utils.JWTKeyStore
 }

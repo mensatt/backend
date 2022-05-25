@@ -38,6 +38,7 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 	gqlServerParams := graphql.GraphQLParams{
 		DebugEnabled: config.DebugEnabled,
 		Database:     database,
+		JWTKeyStore:  jwtKeyStore,
 	}
 	graphql.Run(gqlRouterGroup, &gqlServerParams)
 
