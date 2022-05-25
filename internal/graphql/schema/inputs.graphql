@@ -21,9 +21,9 @@ input OccurrenceInput {
     fiber: Int,
     protein: Int,
     salt: Int,
-    priceStudent: Int!
-    priceStaff: Int!
-    priceGuest: Int!
+    priceStudent: Int
+    priceStaff: Int
+    priceGuest: Int
     tags: [String!]
 }
 

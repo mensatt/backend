@@ -39,9 +39,9 @@ type Occurrence {
     fiber: Int,
     protein: Int,
     salt: Int,
-    priceStudent: Int!
-    priceStaff: Int!
-    priceGuest: Int!
+    priceStudent: Int
+    priceStaff: Int
+    priceGuest: Int
     tags: [Tag!]!
     reviews: [Review!]!
     images: [Image!]!

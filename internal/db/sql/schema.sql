@@ -34,9 +34,9 @@ CREATE TABLE occurrence (
     fiber integer,
     protein integer,
     salt integer,
-    price_student integer NOT NULL,
-    price_staff integer NOT NULL,
-    price_guest integer NOT NULL,
+    price_student integer,
+    price_staff integer,
+    price_guest integer,
     PRIMARY KEY (id),
     FOREIGN KEY(dish) REFERENCES dish(id)
 );

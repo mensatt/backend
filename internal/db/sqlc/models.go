@@ -84,9 +84,9 @@ type Occurrence struct {
 	Fiber         sql.NullInt32 `json:"fiber"`
 	Protein       sql.NullInt32 `json:"protein"`
 	Salt          sql.NullInt32 `json:"salt"`
-	PriceStudent  int32         `json:"price_student"`
-	PriceStaff    int32         `json:"price_staff"`
-	PriceGuest    int32         `json:"price_guest"`
+	PriceStudent  sql.NullInt32 `json:"price_student"`
+	PriceStaff    sql.NullInt32 `json:"price_staff"`
+	PriceGuest    sql.NullInt32 `json:"price_guest"`
 }
 
 type OccurrenceSideDish struct {

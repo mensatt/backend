@@ -752,9 +752,9 @@ input OccurrenceInput {
     fiber: Int,
     protein: Int,
     salt: Int,
-    priceStudent: Int!
-    priceStaff: Int!
-    priceGuest: Int!
+    priceStudent: Int
+    priceStaff: Int
+    priceGuest: Int
     tags: [String!]
 }
 
@@ -833,9 +833,9 @@ type Occurrence {
     fiber: Int,
     protein: Int,
     salt: Int,
-    priceStudent: Int!
-    priceStaff: Int!
-    priceGuest: Int!
+    priceStudent: Int
+    priceStaff: Int
+    priceGuest: Int
     tags: [Tag!]!
     reviews: [Review!]!
     images: [Image!]!
@@ -2531,14 +2531,11 @@ func (ec *executionContext) _Occurrence_priceStudent(ctx context.Context, field 
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(int32)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_priceStudent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2575,14 +2572,11 @@ func (ec *executionContext) _Occurrence_priceStaff(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(int32)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_priceStaff(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2619,14 +2613,11 @@ func (ec *executionContext) _Occurrence_priceGuest(ctx context.Context, field gr
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
-	res := resTmp.(int32)
+	res := resTmp.(sql.NullInt32)
 	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
+	return ec.marshalOInt2databaseᚋsqlᚐNullInt32(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_priceGuest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6139,7 +6130,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStudent"))
-			it.PriceStudent, err = ec.unmarshalNInt2int32(ctx, v)
+			it.PriceStudent, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6147,7 +6138,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStaff"))
-			it.PriceStaff, err = ec.unmarshalNInt2int32(ctx, v)
+			it.PriceStaff, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6155,7 +6146,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceGuest"))
-			it.PriceGuest, err = ec.unmarshalNInt2int32(ctx, v)
+			it.PriceGuest, err = ec.unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -6603,23 +6594,14 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 
 			out.Values[i] = ec._Occurrence_priceStudent(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "priceStaff":
 
 			out.Values[i] = ec._Occurrence_priceStaff(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "priceGuest":
 
 			out.Values[i] = ec._Occurrence_priceGuest(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "tags":
 			field := field
 
