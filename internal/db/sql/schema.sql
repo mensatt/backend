@@ -6,6 +6,13 @@ CREATE TABLE dish (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE dish_alias (
+    alias_name varchar UNIQUE NOT NULL,
+    dish uuid UNIQUE NOT NULL,
+    PRIMARY KEY (alias_name),
+    FOREIGN KEY (dish) REFERENCES dish(id)
+);
+
 CREATE TYPE priority AS ENUM ('UNSET', 'LOW', 'MEDIUM', 'HIGH');
 
 CREATE TABLE tag (
@@ -44,14 +51,14 @@ CREATE TABLE occurrence (
 CREATE TABLE occurrence_side_dishes (
     occurrence uuid NOT NULL,
     dish uuid NOT NULL,
-    FOREIGN KEY(occurrence) REFERENCES occurrence(id),
+    FOREIGN KEY(occurrence) REFERENCES occurrence(id) ON DELETE CASCADE,
     FOREIGN KEY(dish) REFERENCES dish(id)
 );
 
 CREATE TABLE occurrence_tag (
     occurrence uuid NOT NULL,
     tag varchar NOT NULL,
-    FOREIGN KEY(occurrence) REFERENCES occurrence(id),
+    FOREIGN KEY(occurrence) REFERENCES occurrence(id) ON DELETE CASCADE,
     FOREIGN KEY(tag) REFERENCES tag(key)
 );
 
