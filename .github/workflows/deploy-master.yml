@@ -33,18 +33,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Connect to server
-        uses: actions/setup-ssh@v1
+        uses: appleboy/ssh-action@master
         with:
           key: ${{ secrets.SSH_KEY }}
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
-          user: ${{ secrets.SSH_USER }}
-      - name: Pull latest image from Github container registry
-        run: |
-          - ls
-          - cd {{ secrets.DEPLOYMENT_DIR }}
-          - ls
-          - docker pull
-          - docker compose down
-          - docker-compose up -d
+          username: ${{ secrets.SSH_USER }}
+          script: |
+            - whoami
+            - ls
+            - cd {{ secrets.DEPLOYMENT_DIR }}
+            - ls
+            - docker pull
+            - docker compose down
+            - docker-compose up -d
 
