@@ -3,7 +3,7 @@ name: Docker Publish
 on:
   release:
     types: [published]
-    branches: [master]
+    branches: [main]
 
 jobs:
   build:
