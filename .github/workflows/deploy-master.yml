@@ -1,0 +1,49 @@
+name: Docker Build & Deploy
+
+on:
+  push:
+    branches: [master, autodeploy]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Login to GitHub container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images: ghcr.io/${{ github.repository }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2.10.0
+        with:
+          push: true # Will only build if this is not here
+          tags: ${{ steps.meta.outputs.tags }}
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to server
+        uses: actions/setup-ssh@v1.3
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          user: ${{ secrets.SSH_USER }}
+        run: |
+          - ls
+          - cd {{ secrets.DEPLOYMENT_DIR }}
+          - ls
+          - docker pull
+          - docker compose down
+          - docker-compose up -d
+
