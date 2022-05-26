@@ -2,7 +2,7 @@ version: 1
 packages:
   - name: "sqlc"
     path: "sqlc"
-    queries: "./sql/queries.sql"
+    queries: "./sql/queries/"
     schema: "./sql/migrations/"
     engine: "postgresql"
     sql_package: "pgx/v4"

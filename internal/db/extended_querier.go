@@ -48,20 +48,20 @@ func (eq *ExtendedQueries) CreateOccurrenceWithSideDishesAndTags(ctx context.Con
 		return nil, err
 	}
 
-	var addSideDishesParams []*sqlc.AddMultipleOccurrenceSideDishesParams
-	var addTagsParams []*sqlc.AddMultipleOccurrenceTagsParams
+	addSideDishesParams := make([]*sqlc.AddMultipleOccurrenceSideDishesParams, len(sideDishes))
+	addTagsParams := make([]*sqlc.AddMultipleOccurrenceTagsParams, len(tags))
 
-	for _, dishID := range sideDishes {
-		addSideDishesParams = append(addSideDishesParams, &sqlc.AddMultipleOccurrenceSideDishesParams{
+	for i, dishID := range sideDishes {
+		addSideDishesParams[i] = &sqlc.AddMultipleOccurrenceSideDishesParams{
 			Occurrence: occ.ID,
 			Dish:       dishID,
-		})
+		}
 	}
-	for _, tagKey := range tags {
-		addTagsParams = append(addTagsParams, &sqlc.AddMultipleOccurrenceTagsParams{
+	for i, tagKey := range tags {
+		addTagsParams[i] = &sqlc.AddMultipleOccurrenceTagsParams{
 			Occurrence: occ.ID,
 			Tag:        tagKey,
-		})
+		}
 	}
 
 	_, err = qtx.AddMultipleOccurrenceSideDishes(ctx, addSideDishesParams)
