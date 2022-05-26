@@ -2,7 +2,7 @@ name: Docker Build & Deploy
 
 on:
   push:
-    branches: [master, autodeploy]
+    branches: [master]
 
 jobs:
   build:
@@ -41,10 +41,7 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USER }}
           script: |
-            whoami
-            ls
             cd ${{ secrets.DEPLOYMENT_DIR }}
-            ls
             docker compose pull
             docker compose down
             docker compose up -d
