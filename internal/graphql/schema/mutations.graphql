@@ -3,6 +3,7 @@ type Mutation {
 
     createTag(tag: TagInput!): Tag! @authenticated
     createDish(name: String!): Dish! @authenticated
+    createAlias(alias: String! dish: UUID!): Dish! @authenticated
     createOccurrence(occurrence: OccurrenceInput!): Occurrence! @authenticated
     
     createReview(review: ReviewInput!): Review! 

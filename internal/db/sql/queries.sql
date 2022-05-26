@@ -16,6 +16,15 @@ SELECT *
 FROM dish
 WHERE id = $1;
 
+-- name: GetAllAliases :many
+SELECT *
+FROM dish_alias;
+
+-- name: GetAliasesByDishID :many
+SELECT *
+FROM dish_alias
+WHERE dish = $1;
+
 -- name: GetAllReviews :many
 SELECT *
 FROM review;
@@ -76,6 +85,11 @@ RETURNING *;
 -- name: CreateDish :one
 INSERT INTO dish (name)
 VALUES ($1)
+RETURNING *;
+
+-- name: CreateDishAlias :one
+INSERT INTO dish_alias (alias_name, dish)
+VALUES ($1, $2)
 RETURNING *;
 
 -- name: CreateOccurrence :one

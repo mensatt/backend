@@ -7,8 +7,8 @@ CREATE TABLE dish (
 );
 
 CREATE TABLE dish_alias (
-    alias_name varchar UNIQUE NOT NULL,
-    dish uuid UNIQUE NOT NULL,
+    alias_name varchar,
+    dish uuid NOT NULL,
     PRIMARY KEY (alias_name),
     FOREIGN KEY (dish) REFERENCES dish(id)
 );
