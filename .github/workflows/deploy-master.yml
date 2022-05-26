@@ -40,11 +40,11 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USER }}
           script: |
-            - whoami
-            - ls
-            - cd ${{ secrets.DEPLOYMENT_DIR }}
-            - ls
-            - docker pull
-            - docker compose down
-            - docker-compose up -d
+            whoami
+            ls
+            cd ${{ secrets.DEPLOYMENT_DIR }}
+            ls
+            docker pull
+            docker compose down
+            docker-compose up -d
 
