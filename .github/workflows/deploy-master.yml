@@ -44,7 +44,7 @@ jobs:
             ls
             cd ${{ secrets.DEPLOYMENT_DIR }}
             ls
-            docker pull
+            docker compose pull
             docker compose down
             docker-compose up -d
 
