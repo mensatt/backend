@@ -30,6 +30,7 @@ jobs:
           push: true # Will only build if this is not here
           tags: ${{ steps.meta.outputs.tags }}
   deploy:
+    needs: [build]
     runs-on: ubuntu-latest
     steps:
       - name: Connect to server
@@ -46,5 +47,5 @@ jobs:
             ls
             docker compose pull
             docker compose down
-            docker-compose up -d
+            docker compose up -d
 
