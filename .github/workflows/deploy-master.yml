@@ -39,6 +39,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
           user: ${{ secrets.SSH_USER }}
+      - name: Pull latest image from Github container registry
         run: |
           - ls
           - cd {{ secrets.DEPLOYMENT_DIR }}
