@@ -42,7 +42,7 @@ jobs:
           script: |
             - whoami
             - ls
-            - cd {{ secrets.DEPLOYMENT_DIR }}
+            - cd ${{ secrets.DEPLOYMENT_DIR }}
             - ls
             - docker pull
             - docker compose down
