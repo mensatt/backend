@@ -41,6 +41,7 @@ type Config struct {
 }
 
 type ResolverRoot interface {
+	Dish() DishResolver
 	Image() ImageResolver
 	Mutation() MutationResolver
 	Occurrence() OccurrenceResolver
@@ -56,8 +57,14 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Dish struct {
-		ID   func(childComplexity int) int
-		Name func(childComplexity int) int
+		Aliases func(childComplexity int) int
+		ID      func(childComplexity int) int
+		Name    func(childComplexity int) int
+	}
+
+	DishAlias struct {
+		AliasName func(childComplexity int) int
+		Dish      func(childComplexity int) int
 	}
 
 	Image struct {
@@ -75,14 +82,17 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddSideDishToOccurrence      func(childComplexity int, occurrenceID uuid.UUID, sideDish uuid.UUID) int
 		AddTagToOccurrence           func(childComplexity int, occurrenceID uuid.UUID, tag string) int
+		CreateAlias                  func(childComplexity int, alias string, dish uuid.UUID) int
 		CreateDish                   func(childComplexity int, name string) int
 		CreateOccurrence             func(childComplexity int, input models.OccurrenceInputHelper) int
 		CreateReview                 func(childComplexity int, review sqlc.CreateReviewParams) int
 		CreateTag                    func(childComplexity int, tag sqlc.CreateTagParams) int
+		DeleteAlias                  func(childComplexity int, alias string, dish uuid.UUID) int
 		DeleteOccurrence             func(childComplexity int, id uuid.UUID) int
 		EditOccurrence               func(childComplexity int, id uuid.UUID, input sqlc.EditOccurrenceParams) int
 		RemoveSideDishFromOccurrence func(childComplexity int, occurrenceID uuid.UUID, sideDish uuid.UUID) int
 		RemoveTagFromOccurrence      func(childComplexity int, occurrenceID uuid.UUID, tag string) int
+		UpdateAlias                  func(childComplexity int, oldAlias string, alias string, dish uuid.UUID) int
 	}
 
 	Occurrence struct {
@@ -157,12 +167,18 @@ type ComplexityRoot struct {
 	}
 }
 
+type DishResolver interface {
+	Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error)
+}
 type ImageResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error)
 }
 type MutationResolver interface {
 	CreateTag(ctx context.Context, tag sqlc.CreateTagParams) (*sqlc.Tag, error)
 	CreateDish(ctx context.Context, name string) (*sqlc.Dish, error)
+	CreateAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
+	UpdateAlias(ctx context.Context, oldAlias string, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
+	DeleteAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
 	CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error)
 	EditOccurrence(ctx context.Context, id uuid.UUID, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error)
@@ -217,6 +233,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
+	case "Dish.aliases":
+		if e.complexity.Dish.Aliases == nil {
+			break
+		}
+
+		return e.complexity.Dish.Aliases(childComplexity), true
+
 	case "Dish.id":
 		if e.complexity.Dish.ID == nil {
 			break
@@ -230,6 +253,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Dish.Name(childComplexity), true
+
+	case "DishAlias.aliasName":
+		if e.complexity.DishAlias.AliasName == nil {
+			break
+		}
+
+		return e.complexity.DishAlias.AliasName(childComplexity), true
+
+	case "DishAlias.dish":
+		if e.complexity.DishAlias.Dish == nil {
+			break
+		}
+
+		return e.complexity.DishAlias.Dish(childComplexity), true
 
 	case "Image.acceptedAt":
 		if e.complexity.Image.AcceptedAt == nil {
@@ -318,6 +355,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.AddTagToOccurrence(childComplexity, args["occurrenceId"].(uuid.UUID), args["tag"].(string)), true
 
+	case "Mutation.createAlias":
+		if e.complexity.Mutation.CreateAlias == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createAlias_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateAlias(childComplexity, args["alias"].(string), args["dish"].(uuid.UUID)), true
+
 	case "Mutation.createDish":
 		if e.complexity.Mutation.CreateDish == nil {
 			break
@@ -366,6 +415,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateTag(childComplexity, args["tag"].(sqlc.CreateTagParams)), true
 
+	case "Mutation.deleteAlias":
+		if e.complexity.Mutation.DeleteAlias == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteAlias_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteAlias(childComplexity, args["alias"].(string), args["dish"].(uuid.UUID)), true
+
 	case "Mutation.deleteOccurrence":
 		if e.complexity.Mutation.DeleteOccurrence == nil {
 			break
@@ -413,6 +474,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RemoveTagFromOccurrence(childComplexity, args["occurrenceId"].(uuid.UUID), args["tag"].(string)), true
+
+	case "Mutation.updateAlias":
+		if e.complexity.Mutation.UpdateAlias == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateAlias_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateAlias(childComplexity, args["oldAlias"].(string), args["alias"].(string), args["dish"].(uuid.UUID)), true
 
 	case "Occurrence.carbohydrates":
 		if e.complexity.Occurrence.Carbohydrates == nil {
@@ -928,6 +1001,11 @@ input ReviewInput {
     # Dish
     createDish(name: String!): Dish! @authenticated
 
+    # DishAlias
+    createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
+    updateAlias(oldAlias: String!, alias: String! dish: UUID!): DishAlias! @authenticated 
+    deleteAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
+
     # Occurrence
     createOccurrence(input: OccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(id: UUID!): Occurrence! @authenticated
@@ -982,6 +1060,12 @@ type Tag {
 type Dish {
     id: UUID!
     name: String!
+    aliases: [String!]!
+}
+
+type DishAlias {
+    dish: UUID!
+    aliasName: String!
 }
 
 type Occurrence {
@@ -1102,6 +1186,30 @@ func (ec *executionContext) field_Mutation_addTagToOccurrence_args(ctx context.C
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createAlias_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["alias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["alias"] = arg0
+	var arg1 uuid.UUID
+	if tmp, ok := rawArgs["dish"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
+		arg1, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["dish"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createDish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1159,6 +1267,30 @@ func (ec *executionContext) field_Mutation_createTag_args(ctx context.Context, r
 		}
 	}
 	args["tag"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteAlias_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["alias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["alias"] = arg0
+	var arg1 uuid.UUID
+	if tmp, ok := rawArgs["dish"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
+		arg1, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["dish"] = arg1
 	return args, nil
 }
 
@@ -1246,6 +1378,39 @@ func (ec *executionContext) field_Mutation_removeTagFromOccurrence_args(ctx cont
 		}
 	}
 	args["tag"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateAlias_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["oldAlias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oldAlias"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["oldAlias"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["alias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["alias"] = arg1
+	var arg2 uuid.UUID
+	if tmp, ok := rawArgs["dish"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
+		arg2, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["dish"] = arg2
 	return args, nil
 }
 
@@ -1419,6 +1584,138 @@ func (ec *executionContext) _Dish_name(ctx context.Context, field graphql.Collec
 func (ec *executionContext) fieldContext_Dish_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Dish",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Dish_aliases(ctx context.Context, field graphql.CollectedField, obj *sqlc.Dish) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dish_aliases(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dish().Aliases(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]string)
+	fc.Result = res
+	return ec.marshalNString2ᚕstringᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dish_aliases(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dish",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DishAlias_dish(ctx context.Context, field graphql.CollectedField, obj *sqlc.DishAlias) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DishAlias_dish(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Dish, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(uuid.UUID)
+	fc.Result = res
+	return ec.marshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DishAlias_dish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DishAlias",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UUID does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DishAlias_aliasName(ctx context.Context, field graphql.CollectedField, obj *sqlc.DishAlias) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DishAlias_aliasName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AliasName, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DishAlias_aliasName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DishAlias",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -2013,6 +2310,8 @@ func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context
 				return ec.fieldContext_Dish_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dish_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -2025,6 +2324,249 @@ func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createAlias(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createAlias(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().CreateAlias(rctx, fc.Args["alias"].(string), fc.Args["dish"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.DishAlias); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.DishAlias)
+	fc.Result = res
+	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createAlias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "dish":
+				return ec.fieldContext_DishAlias_dish(ctx, field)
+			case "aliasName":
+				return ec.fieldContext_DishAlias_aliasName(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DishAlias", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createAlias_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateAlias(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateAlias(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateAlias(rctx, fc.Args["oldAlias"].(string), fc.Args["alias"].(string), fc.Args["dish"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.DishAlias); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.DishAlias)
+	fc.Result = res
+	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateAlias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "dish":
+				return ec.fieldContext_DishAlias_dish(ctx, field)
+			case "aliasName":
+				return ec.fieldContext_DishAlias_aliasName(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DishAlias", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateAlias_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteAlias(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteAlias(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteAlias(rctx, fc.Args["alias"].(string), fc.Args["dish"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.DishAlias); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.DishAlias)
+	fc.Result = res
+	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteAlias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "dish":
+				return ec.fieldContext_DishAlias_dish(ctx, field)
+			case "aliasName":
+				return ec.fieldContext_DishAlias_aliasName(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type DishAlias", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteAlias_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -2870,6 +3412,8 @@ func (ec *executionContext) fieldContext_Occurrence_dish(ctx context.Context, fi
 				return ec.fieldContext_Dish_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dish_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -2920,6 +3464,8 @@ func (ec *executionContext) fieldContext_Occurrence_sideDishes(ctx context.Conte
 				return ec.fieldContext_Dish_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dish_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -3824,6 +4370,8 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_dish(ctx context.Con
 				return ec.fieldContext_Dish_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dish_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -4178,6 +4726,8 @@ func (ec *executionContext) fieldContext_Query_getAllDishes(ctx context.Context,
 				return ec.fieldContext_Dish_id(ctx, field)
 			case "name":
 				return ec.fieldContext_Dish_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -7641,11 +8191,66 @@ func (ec *executionContext) _Dish(ctx context.Context, sel ast.SelectionSet, obj
 			out.Values[i] = ec._Dish_id(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "name":
 
 			out.Values[i] = ec._Dish_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "aliases":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dish_aliases(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var dishAliasImplementors = []string{"DishAlias"}
+
+func (ec *executionContext) _DishAlias(ctx context.Context, sel ast.SelectionSet, obj *sqlc.DishAlias) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, dishAliasImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("DishAlias")
+		case "dish":
+
+			out.Values[i] = ec._DishAlias_dish(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "aliasName":
+
+			out.Values[i] = ec._DishAlias_aliasName(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -7784,6 +8389,33 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDish(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createAlias":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createAlias(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateAlias":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateAlias(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteAlias":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteAlias(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -8988,6 +9620,20 @@ func (ec *executionContext) marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑb
 	return ec._Dish(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNDishAlias2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx context.Context, sel ast.SelectionSet, v sqlc.DishAlias) graphql.Marshaler {
+	return ec._DishAlias(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx context.Context, sel ast.SelectionSet, v *sqlc.DishAlias) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._DishAlias(ctx, sel, v)
+}
+
 func (ec *executionContext) unmarshalNEditOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx context.Context, v interface{}) (sqlc.EditOccurrenceParams, error) {
 	res, err := ec.unmarshalInputEditOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -9259,6 +9905,38 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) unmarshalNString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNString2string(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel ast.SelectionSet, v []string) graphql.Marshaler {
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNString2string(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx context.Context, sel ast.SelectionSet, v sqlc.Tag) graphql.Marshaler {

@@ -5,6 +5,11 @@ type Mutation {
     # Dish
     createDish(name: String!): Dish! @authenticated
 
+    # DishAlias
+    createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
+    updateAlias(oldAlias: String!, alias: String! dish: UUID!): DishAlias! @authenticated 
+    deleteAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
+
     # Occurrence
     createOccurrence(input: OccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(id: UUID!): Occurrence! @authenticated

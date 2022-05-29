@@ -22,6 +22,12 @@ type Tag {
 type Dish {
     id: UUID!
     name: String!
+    aliases: [String!]!
+}
+
+type DishAlias {
+    dish: UUID!
+    aliasName: String!
 }
 
 type Occurrence {

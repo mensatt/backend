@@ -58,6 +58,11 @@ type Dish struct {
 	Name string    `json:"name"`
 }
 
+type DishAlias struct {
+	AliasName string    `json:"alias_name"`
+	Dish      uuid.UUID `json:"dish"`
+}
+
 type Image struct {
 	ID          uuid.UUID      `json:"id"`
 	Occurrence  uuid.UUID      `json:"occurrence"`

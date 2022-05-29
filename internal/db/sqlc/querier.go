@@ -17,11 +17,15 @@ type Querier interface {
 	AddOccurrenceSideDish(ctx context.Context, arg *AddOccurrenceSideDishParams) (*OccurrenceSideDish, error)
 	AddOccurrenceTag(ctx context.Context, arg *AddOccurrenceTagParams) (*OccurrenceTag, error)
 	CreateDish(ctx context.Context, name string) (*Dish, error)
+	CreateDishAlias(ctx context.Context, arg *CreateDishAliasParams) (*DishAlias, error)
 	CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error)
 	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
+	DeleteDishAlias(ctx context.Context, arg *DeleteDishAliasParams) (*DishAlias, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	EditOccurrence(ctx context.Context, arg *EditOccurrenceParams) (*Occurrence, error)
+	GetAliasesForDish(ctx context.Context, dish uuid.UUID) ([]string, error)
+	GetAllAliases(ctx context.Context) ([]*DishAlias, error)
 	GetAllDishes(ctx context.Context) ([]*Dish, error)
 	GetAllImages(ctx context.Context) ([]*Image, error)
 	GetAllOccurrences(ctx context.Context) ([]*Occurrence, error)
@@ -41,6 +45,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 	RemoveOccurrenceSideDish(ctx context.Context, arg *RemoveOccurrenceSideDishParams) (*OccurrenceSideDish, error)
 	RemoveOccurrenceTag(ctx context.Context, arg *RemoveOccurrenceTagParams) (*OccurrenceTag, error)
+	UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error)
 }
 
 var _ Querier = (*Queries)(nil)
