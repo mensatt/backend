@@ -27,6 +27,21 @@ func (r *mutationResolver) CreateAlias(ctx context.Context, alias string, dish u
 	})
 }
 
+func (r *mutationResolver) UpdateAlias(ctx context.Context, oldAlias string, alias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
+	return r.Database.UpdateDishAlias(ctx, &sqlc.UpdateDishAliasParams{
+		OldAliasName: oldAlias,
+		AliasName:    alias,
+		Dish:         dish,
+	})
+}
+
+func (r *mutationResolver) DeleteAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
+	return r.Database.DeleteDishAlias(ctx, &sqlc.DeleteDishAliasParams{
+		AliasName: alias,
+		Dish:      dish,
+	})
+}
+
 func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {
 	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &input.CreateOccurrenceParams, input.SideDishes, input.Tags)
 }

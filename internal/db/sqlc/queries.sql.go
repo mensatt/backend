@@ -226,6 +226,24 @@ func (q *Queries) CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, er
 	return &i, err
 }
 
+const deleteDishAlias = `-- name: DeleteDishAlias :one
+DELETE FROM dish_alias
+WHERE alias_name = $1 AND dish = $2
+RETURNING alias_name, dish
+`
+
+type DeleteDishAliasParams struct {
+	AliasName string    `json:"alias_name"`
+	Dish      uuid.UUID `json:"dish"`
+}
+
+func (q *Queries) DeleteDishAlias(ctx context.Context, arg *DeleteDishAliasParams) (*DishAlias, error) {
+	row := q.db.QueryRow(ctx, deleteDishAlias, arg.AliasName, arg.Dish)
+	var i DishAlias
+	err := row.Scan(&i.AliasName, &i.Dish)
+	return &i, err
+}
+
 const deleteOccurrence = `-- name: DeleteOccurrence :one
 DELETE FROM occurrence
 WHERE id = $1
@@ -862,5 +880,25 @@ func (q *Queries) RemoveOccurrenceTag(ctx context.Context, arg *RemoveOccurrence
 	row := q.db.QueryRow(ctx, removeOccurrenceTag, arg.Occurrence, arg.Tag)
 	var i OccurrenceTag
 	err := row.Scan(&i.Occurrence, &i.Tag)
+	return &i, err
+}
+
+const updateDishAlias = `-- name: UpdateDishAlias :one
+UPDATE dish_alias
+SET alias_name = $3
+WHERE alias_name = $1 AND dish = $2
+RETURNING alias_name, dish
+`
+
+type UpdateDishAliasParams struct {
+	AliasName    string    `json:"alias_name"`
+	Dish         uuid.UUID `json:"dish"`
+	OldAliasName string    `json:"old_alias_name"`
+}
+
+func (q *Queries) UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error) {
+	row := q.db.QueryRow(ctx, updateDishAlias, arg.AliasName, arg.Dish, arg.OldAliasName)
+	var i DishAlias
+	err := row.Scan(&i.AliasName, &i.Dish)
 	return &i, err
 }

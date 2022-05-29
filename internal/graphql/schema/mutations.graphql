@@ -7,6 +7,8 @@ type Mutation {
 
     # DishAlias
     createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
+    updateAlias(oldAlias: String!, alias: String! dish: UUID!): DishAlias! @authenticated 
+    deleteAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
 
     # Occurrence
     createOccurrence(input: OccurrenceInput!): Occurrence! @authenticated

@@ -21,6 +21,7 @@ type Querier interface {
 	CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error)
 	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
+	DeleteDishAlias(ctx context.Context, arg *DeleteDishAliasParams) (*DishAlias, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	EditOccurrence(ctx context.Context, arg *EditOccurrenceParams) (*Occurrence, error)
 	GetAliasesForDish(ctx context.Context, dish uuid.UUID) ([]string, error)
@@ -44,6 +45,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 	RemoveOccurrenceSideDish(ctx context.Context, arg *RemoveOccurrenceSideDishParams) (*OccurrenceSideDish, error)
 	RemoveOccurrenceTag(ctx context.Context, arg *RemoveOccurrenceTagParams) (*OccurrenceTag, error)
+	UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error)
 }
 
 var _ Querier = (*Queries)(nil)

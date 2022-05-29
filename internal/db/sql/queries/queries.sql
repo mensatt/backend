@@ -92,6 +92,17 @@ INSERT INTO dish_alias (alias_name, dish)
 VALUES ($1, $2)
 RETURNING *;
 
+-- name: UpdateDishAlias :one
+UPDATE dish_alias
+SET alias_name = sqlc.arg(old_alias_name)
+WHERE alias_name = $1 AND dish = $2
+RETURNING *;
+
+-- name: DeleteDishAlias :one
+DELETE FROM dish_alias
+WHERE alias_name = $1 AND dish = $2
+RETURNING *;
+
 -- name: CreateOccurrence :one
 INSERT INTO occurrence (dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
