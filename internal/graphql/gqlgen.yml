@@ -87,9 +87,18 @@ models:
   Occurrence:
     model:
       - github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence
+  OccurrenceTag:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceTag
+  OccurrenceSideDish:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceSideDish
   OccurrenceInput:
     model:
       - github.com/mensatt/mensatt-backend/internal/graphql/models.OccurrenceInputHelper
+  EditOccurrenceInput:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.EditOccurrenceParams
   ReviewInput:
     model:
       - github.com/mensatt/mensatt-backend/internal/db/sqlc.CreateReviewParams

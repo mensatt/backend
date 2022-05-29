@@ -53,6 +53,16 @@ type Occurrence {
     images: [Image!]!
 }
 
+type OccurrenceSideDish {
+    occurrence: Occurrence!
+    dish: Dish!  
+}
+
+type OccurrenceTag {
+    occurrence: Occurrence!
+    tag: Tag!  
+}
+
 type Review {
     id: UUID!
     occurrence: Occurrence!

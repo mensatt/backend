@@ -1,11 +1,25 @@
 type Mutation {
-    login(email: String!, password: String!): String!
-
+    # Tag
     createTag(tag: TagInput!): Tag! @authenticated
+
+    # Dish
     createDish(name: String!): Dish! @authenticated
-    createAlias(alias: String! dish: UUID!): DishAlias! @authenticated
-    createOccurrence(occurrence: OccurrenceInput!): Occurrence! @authenticated
-    
+
+    # DishAlias
+    createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
+
+    # Occurrence
+    createOccurrence(input: OccurrenceInput!): Occurrence! @authenticated
+    deleteOccurrence(id: UUID!): Occurrence! @authenticated
+    editOccurrence(id: UUID!, input: EditOccurrenceInput!): Occurrence! @authenticated
+    addTagToOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
+    addSideDishToOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
+    removeTagFromOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
+    removeSideDishFromOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
+
+    # Review
     createReview(review: ReviewInput!): Review! 
+
+    # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/
 }

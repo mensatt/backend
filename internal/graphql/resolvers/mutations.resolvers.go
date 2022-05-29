@@ -5,27 +5,12 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/graphql/models"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
 )
-
-func (r *mutationResolver) Login(ctx context.Context, email string, password string) (string, error) {
-	user, err := r.Database.GetUserByEmail(ctx, email)
-	if err != nil {
-		return "", err
-	}
-
-	if !utils.CheckPasswordHash(password, user.PasswordHash) {
-		return "", fmt.Errorf("wrong password")
-	}
-
-	return r.JWTKeyStore.GenerateJWT(user.ID)
-}
 
 func (r *mutationResolver) CreateTag(ctx context.Context, tag sqlc.CreateTagParams) (*sqlc.Tag, error) {
 	return r.Database.CreateTag(ctx, &tag)
@@ -42,8 +27,45 @@ func (r *mutationResolver) CreateAlias(ctx context.Context, alias string, dish u
 	})
 }
 
-func (r *mutationResolver) CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {
-	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &occurrence.CreateOccurrenceParams, occurrence.SideDishes, occurrence.Tags)
+func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {
+	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &input.CreateOccurrenceParams, input.SideDishes, input.Tags)
+}
+
+func (r *mutationResolver) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error) {
+	return r.Database.DeleteOccurrence(ctx, id)
+}
+
+func (r *mutationResolver) EditOccurrence(ctx context.Context, id uuid.UUID, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
+	input.ID = id
+	return r.Database.EditOccurrence(ctx, &input)
+}
+
+func (r *mutationResolver) AddTagToOccurrence(ctx context.Context, occurrenceID uuid.UUID, tag string) (*sqlc.OccurrenceTag, error) {
+	return r.Database.AddOccurrenceTag(ctx, &sqlc.AddOccurrenceTagParams{
+		Occurrence: occurrenceID,
+		Tag:        tag,
+	})
+}
+
+func (r *mutationResolver) AddSideDishToOccurrence(ctx context.Context, occurrenceID uuid.UUID, sideDish uuid.UUID) (*sqlc.OccurrenceSideDish, error) {
+	return r.Database.AddOccurrenceSideDish(ctx, &sqlc.AddOccurrenceSideDishParams{
+		Occurrence: occurrenceID,
+		Dish:       sideDish,
+	})
+}
+
+func (r *mutationResolver) RemoveTagFromOccurrence(ctx context.Context, occurrenceID uuid.UUID, tag string) (*sqlc.OccurrenceTag, error) {
+	return r.Database.RemoveOccurrenceTag(ctx, &sqlc.RemoveOccurrenceTagParams{
+		Occurrence: occurrenceID,
+		Tag:        tag,
+	})
+}
+
+func (r *mutationResolver) RemoveSideDishFromOccurrence(ctx context.Context, occurrenceID uuid.UUID, sideDish uuid.UUID) (*sqlc.OccurrenceSideDish, error) {
+	return r.Database.RemoveOccurrenceSideDish(ctx, &sqlc.RemoveOccurrenceSideDishParams{
+		Occurrence: occurrenceID,
+		Dish:       sideDish,
+	})
 }
 
 func (r *mutationResolver) CreateReview(ctx context.Context, review sqlc.CreateReviewParams) (*sqlc.Review, error) {
