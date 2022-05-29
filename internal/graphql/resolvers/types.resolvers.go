@@ -5,7 +5,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
@@ -40,19 +39,19 @@ func (r *occurrenceResolver) Images(ctx context.Context, obj *sqlc.Occurrence) (
 }
 
 func (r *occurrenceSideDishResolver) Occurrence(ctx context.Context, obj *sqlc.OccurrenceSideDish) (*sqlc.Occurrence, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
 func (r *occurrenceSideDishResolver) Dish(ctx context.Context, obj *sqlc.OccurrenceSideDish) (*sqlc.Dish, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Database.GetDishByID(ctx, obj.Dish)
 }
 
 func (r *occurrenceTagResolver) Occurrence(ctx context.Context, obj *sqlc.OccurrenceTag) (*sqlc.Occurrence, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
 func (r *occurrenceTagResolver) Tag(ctx context.Context, obj *sqlc.OccurrenceTag) (*sqlc.Tag, error) {
-	panic(fmt.Errorf("not implemented"))
+	return r.Database.GetTagByKey(ctx, obj.Tag)
 }
 
 func (r *reviewResolver) Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error) {
