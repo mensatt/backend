@@ -1,5 +1,4 @@
 type Mutation {
-    # --- admin only ---
     # Tag
     createTag(tag: TagInput!): Tag! @authenticated
 
@@ -7,14 +6,17 @@ type Mutation {
     createDish(name: String!): Dish! @authenticated
 
     # Occurrence
-    createOccurrence(occurrence: OccurrenceInput!): Occurrence! @authenticated
+    createOccurrence(input: OccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(id: UUID!): Occurrence! @authenticated
-    
-    # --- public ---
+    editOccurrence(id: UUID!, input: EditOccurrenceInput!): Occurrence! @authenticated
+    addTagToOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
+    addSideDishToOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
+    removeTagFromOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
+    removeSideDishFromOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
+
     # Review
     createReview(review: ReviewInput!): Review! 
 
     # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/
-
 }

@@ -27,6 +27,24 @@ input OccurrenceInput {
     tags: [String!]
 }
 
+input EditOccurrenceInput {
+    dish: UUID!
+    date: Time!
+    reviewStatus: ReviewStatus!
+    kj: Int,
+    kcal: Int,
+    fat: Int,
+    saturatedFat: Int,
+    carbohydrates: Int,
+    sugar: Int,
+    fiber: Int,
+    protein: Int,
+    salt: Int,
+    priceStudent: Int
+    priceStaff: Int
+    priceGuest: Int
+}
+
 input ReviewInput {
     occurrence: UUID!
     displayName: String!

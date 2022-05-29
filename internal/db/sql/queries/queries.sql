@@ -83,6 +83,11 @@ INSERT INTO occurrence (dish, date, review_status, kj, kcal, fat, saturated_fat,
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 RETURNING *;
 
+-- name: RemoveOccurrenceSideDish :one
+DELETE FROM occurrence_side_dishes
+WHERE occurrence = $1 AND dish = $2
+RETURNING *;
+
 -- name: AddOccurrenceSideDish :one
 INSERT INTO occurrence_side_dishes (occurrence, dish)
 VALUES ($1, $2)
@@ -91,6 +96,11 @@ RETURNING *;
 -- name: AddMultipleOccurrenceSideDishes :copyfrom
 INSERT INTO occurrence_side_dishes (occurrence, dish)
 VALUES ($1, $2);
+
+-- name: RemoveOccurrenceTag :one
+DELETE FROM occurrence_tag
+WHERE occurrence = $1 AND tag = $2
+RETURNING *;
 
 -- name: AddOccurrenceTag :one
 INSERT INTO occurrence_tag (occurrence, tag)
@@ -109,4 +119,10 @@ RETURNING *;
 -- name: DeleteOccurrence :one
 DELETE FROM occurrence
 WHERE id = $1
+RETURNING *;
+
+-- name: EditOccurrence :one
+UPDATE occurrence
+SET dish = $1, date = $2, review_status = $3, kj = $4, kcal = $5, fat = $6, saturated_fat = $7, carbohydrates = $8, sugar = $9, fiber = $10, protein = $11, salt = $12, price_student = $13, price_staff = $14, price_guest = $15
+WHERE id = $16
 RETURNING *;
