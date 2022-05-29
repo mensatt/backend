@@ -5,12 +5,27 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/middleware"
+	"github.com/mensatt/mensatt-backend/pkg/utils"
 )
+
+func (r *queryResolver) Login(ctx context.Context, email string, password string) (string, error) {
+	user, err := r.Database.GetUserByEmail(ctx, email)
+	if err != nil {
+		return "", err
+	}
+
+	if !utils.CheckPasswordHash(password, user.PasswordHash) {
+		return "", fmt.Errorf("wrong password")
+	}
+
+	return r.JWTKeyStore.GenerateJWT(user.ID)
+}
 
 func (r *queryResolver) GetCurrentUser(ctx context.Context) (*sqlc.User, error) {
 	return middleware.GetUserIDFromCtx(ctx), nil
