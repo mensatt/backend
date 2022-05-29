@@ -25,6 +25,11 @@ type Dish {
     aliases: [String!]!
 }
 
+type DishAlias {
+    dish: UUID!
+    aliasName: String!
+}
+
 type Occurrence {
     id: UUID!
     dish: Dish!

@@ -72,6 +72,24 @@ func (q *Queries) CreateDish(ctx context.Context, name string) (*Dish, error) {
 	return &i, err
 }
 
+const createDishAlias = `-- name: CreateDishAlias :one
+INSERT INTO dish_alias (alias_name, dish)
+VALUES ($1, $2)
+RETURNING alias_name, dish
+`
+
+type CreateDishAliasParams struct {
+	AliasName string    `json:"alias_name"`
+	Dish      uuid.UUID `json:"dish"`
+}
+
+func (q *Queries) CreateDishAlias(ctx context.Context, arg *CreateDishAliasParams) (*DishAlias, error) {
+	row := q.db.QueryRow(ctx, createDishAlias, arg.AliasName, arg.Dish)
+	var i DishAlias
+	err := row.Scan(&i.AliasName, &i.Dish)
+	return &i, err
+}
+
 const createOccurrence = `-- name: CreateOccurrence :one
 INSERT INTO occurrence (dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
@@ -206,6 +224,57 @@ func (q *Queries) CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, er
 		&i.IsAllergy,
 	)
 	return &i, err
+}
+
+const getAliasesForDish = `-- name: GetAliasesForDish :many
+SELECT alias_name
+FROM dish_alias
+WHERE dish = $1
+`
+
+func (q *Queries) GetAliasesForDish(ctx context.Context, dish uuid.UUID) ([]string, error) {
+	rows, err := q.db.Query(ctx, getAliasesForDish, dish)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var alias_name string
+		if err := rows.Scan(&alias_name); err != nil {
+			return nil, err
+		}
+		items = append(items, alias_name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const getAllAliases = `-- name: GetAllAliases :many
+SELECT alias_name, dish
+FROM dish_alias
+`
+
+func (q *Queries) GetAllAliases(ctx context.Context) ([]*DishAlias, error) {
+	rows, err := q.db.Query(ctx, getAllAliases)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*DishAlias
+	for rows.Next() {
+		var i DishAlias
+		if err := rows.Scan(&i.AliasName, &i.Dish); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const getAllDishes = `-- name: GetAllDishes :many

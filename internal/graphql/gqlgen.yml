@@ -72,6 +72,9 @@ models:
   Dish:
     model:
       - github.com/mensatt/mensatt-backend/internal/db/sqlc.Dish
+  DishAlias:
+    model:
+      - github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias
   TagInput:
     model:
       - github.com/mensatt/mensatt-backend/internal/db/sqlc.CreateTagParams

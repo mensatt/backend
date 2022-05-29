@@ -20,8 +20,8 @@ WHERE id = $1;
 SELECT *
 FROM dish_alias;
 
--- name: GetAliasesByDishID :many
-SELECT *
+-- name: GetAliasesForDish :many
+SELECT alias_name
 FROM dish_alias
 WHERE dish = $1;
 

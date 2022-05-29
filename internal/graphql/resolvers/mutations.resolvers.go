@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/graphql/models"
@@ -32,6 +33,13 @@ func (r *mutationResolver) CreateTag(ctx context.Context, tag sqlc.CreateTagPara
 
 func (r *mutationResolver) CreateDish(ctx context.Context, name string) (*sqlc.Dish, error) {
 	return r.Database.CreateDish(ctx, name)
+}
+
+func (r *mutationResolver) CreateAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
+	return r.Database.CreateDishAlias(ctx, &sqlc.CreateDishAliasParams{
+		AliasName: alias,
+		Dish:      dish,
+	})
 }
 
 func (r *mutationResolver) CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {

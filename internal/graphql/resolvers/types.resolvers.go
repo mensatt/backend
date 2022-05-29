@@ -10,6 +10,10 @@ import (
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 )
 
+func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error) {
+	return r.Database.GetAliasesForDish(ctx, obj.ID)
+}
+
 func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
@@ -38,6 +42,9 @@ func (r *reviewResolver) Occurrence(ctx context.Context, obj *sqlc.Review) (*sql
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
+// Dish returns gqlserver.DishResolver implementation.
+func (r *Resolver) Dish() gqlserver.DishResolver { return &dishResolver{r} }
+
 // Image returns gqlserver.ImageResolver implementation.
 func (r *Resolver) Image() gqlserver.ImageResolver { return &imageResolver{r} }
 
@@ -47,6 +54,7 @@ func (r *Resolver) Occurrence() gqlserver.OccurrenceResolver { return &occurrenc
 // Review returns gqlserver.ReviewResolver implementation.
 func (r *Resolver) Review() gqlserver.ReviewResolver { return &reviewResolver{r} }
 
+type dishResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type occurrenceResolver struct{ *Resolver }
 type reviewResolver struct{ *Resolver }
