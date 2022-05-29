@@ -75,6 +75,7 @@ type ComplexityRoot struct {
 		CreateOccurrence func(childComplexity int, occurrence models.OccurrenceInputHelper) int
 		CreateReview     func(childComplexity int, review sqlc.CreateReviewParams) int
 		CreateTag        func(childComplexity int, tag sqlc.CreateTagParams) int
+		DeleteOccurrence func(childComplexity int, id uuid.UUID) int
 	}
 
 	Occurrence struct {
@@ -146,6 +147,7 @@ type MutationResolver interface {
 	CreateTag(ctx context.Context, tag sqlc.CreateTagParams) (*sqlc.Tag, error)
 	CreateDish(ctx context.Context, name string) (*sqlc.Dish, error)
 	CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInputHelper) (*sqlc.Occurrence, error)
+	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error)
 	CreateReview(ctx context.Context, review sqlc.CreateReviewParams) (*sqlc.Review, error)
 }
 type OccurrenceResolver interface {
@@ -309,6 +311,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateTag(childComplexity, args["tag"].(sqlc.CreateTagParams)), true
+
+	case "Mutation.deleteOccurrence":
+		if e.complexity.Mutation.DeleteOccurrence == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteOccurrence_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteOccurrence(childComplexity, args["id"].(uuid.UUID)), true
 
 	case "Occurrence.carbohydrates":
 		if e.complexity.Occurrence.Carbohydrates == nil {
@@ -771,13 +785,26 @@ input ReviewInput {
 #    description: String
 #}`, BuiltIn: false},
 	{Name: "../schema/mutations.graphql", Input: `type Mutation {
+    # --- admin only ---
+    # Tag
     createTag(tag: TagInput!): Tag! @authenticated
+
+    # Dish
     createDish(name: String!): Dish! @authenticated
+
+    # Occurrence
     createOccurrence(occurrence: OccurrenceInput!): Occurrence! @authenticated
+    deleteOccurrence(id: UUID!): Occurrence! @authenticated
     
+    # --- public ---
+    # Review
     createReview(review: ReviewInput!): Review! 
+
+    # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/
-}`, BuiltIn: false},
+
+}
+`, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
     login(email: String!, password: String!): String!
     getCurrentUser: User
@@ -935,6 +962,21 @@ func (ec *executionContext) field_Mutation_createTag_args(ctx context.Context, r
 		}
 	}
 	args["tag"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
 	return args, nil
 }
 
@@ -1831,6 +1873,123 @@ func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.C
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createOccurrence_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteOccurrence(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteOccurrence(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().DeleteOccurrence(rctx, fc.Args["id"].(uuid.UUID))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.Occurrence); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.Occurrence)
+	fc.Result = res
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "dish":
+				return ec.fieldContext_Occurrence_dish(ctx, field)
+			case "sideDishes":
+				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
+			case "date":
+				return ec.fieldContext_Occurrence_date(ctx, field)
+			case "reviewStatus":
+				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "kj":
+				return ec.fieldContext_Occurrence_kj(ctx, field)
+			case "kcal":
+				return ec.fieldContext_Occurrence_kcal(ctx, field)
+			case "fat":
+				return ec.fieldContext_Occurrence_fat(ctx, field)
+			case "saturatedFat":
+				return ec.fieldContext_Occurrence_saturatedFat(ctx, field)
+			case "carbohydrates":
+				return ec.fieldContext_Occurrence_carbohydrates(ctx, field)
+			case "sugar":
+				return ec.fieldContext_Occurrence_sugar(ctx, field)
+			case "fiber":
+				return ec.fieldContext_Occurrence_fiber(ctx, field)
+			case "protein":
+				return ec.fieldContext_Occurrence_protein(ctx, field)
+			case "salt":
+				return ec.fieldContext_Occurrence_salt(ctx, field)
+			case "priceStudent":
+				return ec.fieldContext_Occurrence_priceStudent(ctx, field)
+			case "priceStaff":
+				return ec.fieldContext_Occurrence_priceStaff(ctx, field)
+			case "priceGuest":
+				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
+			case "tags":
+				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "images":
+				return ec.fieldContext_Occurrence_images(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteOccurrence_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -6509,6 +6668,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createOccurrence(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteOccurrence":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteOccurrence(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

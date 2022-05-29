@@ -6,6 +6,7 @@ package resolvers
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
 	"github.com/mensatt/mensatt-backend/internal/graphql/models"
@@ -21,6 +22,10 @@ func (r *mutationResolver) CreateDish(ctx context.Context, name string) (*sqlc.D
 
 func (r *mutationResolver) CreateOccurrence(ctx context.Context, occurrence models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {
 	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &occurrence.CreateOccurrenceParams, occurrence.SideDishes, occurrence.Tags)
+}
+
+func (r *mutationResolver) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error) {
+	return r.Database.DeleteOccurrence(ctx, id)
 }
 
 func (r *mutationResolver) CreateReview(ctx context.Context, review sqlc.CreateReviewParams) (*sqlc.Review, error) {

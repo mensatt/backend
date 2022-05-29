@@ -1,8 +1,20 @@
 type Mutation {
+    # --- admin only ---
+    # Tag
     createTag(tag: TagInput!): Tag! @authenticated
+
+    # Dish
     createDish(name: String!): Dish! @authenticated
+
+    # Occurrence
     createOccurrence(occurrence: OccurrenceInput!): Occurrence! @authenticated
+    deleteOccurrence(id: UUID!): Occurrence! @authenticated
     
+    # --- public ---
+    # Review
     createReview(review: ReviewInput!): Review! 
+
+    # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/
+
 }

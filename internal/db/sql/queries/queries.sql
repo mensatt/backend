@@ -106,3 +106,7 @@ INSERT INTO review (occurrence, display_name, stars, text)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
 
+-- name: DeleteOccurrence :one
+DELETE FROM occurrence
+WHERE id = $1
+RETURNING *;

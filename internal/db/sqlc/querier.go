@@ -20,6 +20,7 @@ type Querier interface {
 	CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error)
 	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
+	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	GetAllDishes(ctx context.Context) ([]*Dish, error)
 	GetAllImages(ctx context.Context) ([]*Image, error)
 	GetAllOccurrences(ctx context.Context) ([]*Occurrence, error)

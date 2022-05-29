@@ -208,6 +208,36 @@ func (q *Queries) CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, er
 	return &i, err
 }
 
+const deleteOccurrence = `-- name: DeleteOccurrence :one
+DELETE FROM occurrence
+WHERE id = $1
+RETURNING id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+`
+
+func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error) {
+	row := q.db.QueryRow(ctx, deleteOccurrence, id)
+	var i Occurrence
+	err := row.Scan(
+		&i.ID,
+		&i.Dish,
+		&i.Date,
+		&i.ReviewStatus,
+		&i.Kj,
+		&i.Kcal,
+		&i.Fat,
+		&i.SaturatedFat,
+		&i.Carbohydrates,
+		&i.Sugar,
+		&i.Fiber,
+		&i.Protein,
+		&i.Salt,
+		&i.PriceStudent,
+		&i.PriceStaff,
+		&i.PriceGuest,
+	)
+	return &i, err
+}
+
 const getAllDishes = `-- name: GetAllDishes :many
 SELECT id, name
 FROM dish
