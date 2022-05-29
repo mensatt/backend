@@ -1,6 +1,4 @@
 type Mutation {
-    login(email: String!, password: String!): String!
-
     createTag(tag: TagInput!): Tag! @authenticated
     createDish(name: String!): Dish! @authenticated
     createOccurrence(occurrence: OccurrenceInput!): Occurrence! @authenticated

@@ -1,4 +1,5 @@
 type Query {
+    login(email: String!, password: String!): String!
     getCurrentUser: User
 
     getAllTags: [Tag!]!
