@@ -3,7 +3,7 @@ module github.com/mensatt/mensatt-backend
 go 1.17
 
 require (
-	github.com/99designs/gqlgen v0.17.8
+	github.com/99designs/gqlgen v0.17.9
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.7.7
@@ -14,7 +14,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/kyleconroy/sqlc v1.13.0
 	github.com/lib/pq v1.10.6
-	github.com/vektah/gqlparser/v2 v2.4.3
+	github.com/vektah/gqlparser/v2 v2.4.4
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
 )
 
