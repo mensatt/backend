@@ -8,4 +8,7 @@ type Query {
     getAllReviews: [Review!]!
     getAllImages: [Image!]!
     getOccurrencesByDate(date: Time!): [Occurrence!]!
+
+    # only enabled in debug mode
+    getVcsBuildInfo: VcsBuildInfo
 }

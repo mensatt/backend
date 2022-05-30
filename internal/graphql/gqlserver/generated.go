@@ -19,6 +19,7 @@ import (
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
 	"github.com/mensatt/mensatt-backend/internal/graphql/models"
 	"github.com/mensatt/mensatt-backend/internal/graphql/scalars"
+	"github.com/mensatt/mensatt-backend/pkg/utils"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -137,6 +138,7 @@ type ComplexityRoot struct {
 		GetAllTags           func(childComplexity int) int
 		GetCurrentUser       func(childComplexity int) int
 		GetOccurrencesByDate func(childComplexity int, date time.Time) int
+		GetVcsBuildInfo      func(childComplexity int) int
 		Login                func(childComplexity int, email string, password string) int
 	}
 
@@ -165,6 +167,12 @@ type ComplexityRoot struct {
 	User struct {
 		Email func(childComplexity int) int
 		ID    func(childComplexity int) int
+	}
+
+	VcsBuildInfo struct {
+		Commit     func(childComplexity int) int
+		CommitTime func(childComplexity int) int
+		Modified   func(childComplexity int) int
 	}
 }
 
@@ -215,6 +223,7 @@ type QueryResolver interface {
 	GetAllReviews(ctx context.Context) ([]*sqlc.Review, error)
 	GetAllImages(ctx context.Context) ([]*sqlc.Image, error)
 	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error)
+	GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error)
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error)
@@ -723,6 +732,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetOccurrencesByDate(childComplexity, args["date"].(time.Time)), true
 
+	case "Query.getVcsBuildInfo":
+		if e.complexity.Query.GetVcsBuildInfo == nil {
+			break
+		}
+
+		return e.complexity.Query.GetVcsBuildInfo(childComplexity), true
+
 	case "Query.login":
 		if e.complexity.Query.Login == nil {
 			break
@@ -860,6 +876,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.ID(childComplexity), true
+
+	case "VcsBuildInfo.commit":
+		if e.complexity.VcsBuildInfo.Commit == nil {
+			break
+		}
+
+		return e.complexity.VcsBuildInfo.Commit(childComplexity), true
+
+	case "VcsBuildInfo.commitTime":
+		if e.complexity.VcsBuildInfo.CommitTime == nil {
+			break
+		}
+
+		return e.complexity.VcsBuildInfo.CommitTime(childComplexity), true
+
+	case "VcsBuildInfo.modified":
+		if e.complexity.VcsBuildInfo.Modified == nil {
+			break
+		}
+
+		return e.complexity.VcsBuildInfo.Modified(childComplexity), true
 
 	}
 	return 0, false
@@ -1047,6 +1084,9 @@ input ReviewInput {
     getAllReviews: [Review!]!
     getAllImages: [Image!]!
     getOccurrencesByDate(date: Time!): [Occurrence!]!
+
+    # only enabled in debug mode
+    getVcsBuildInfo: VcsBuildInfo
 }
 `, BuiltIn: false},
 	{Name: "../schema/scalars.graphql", Input: `scalar Time
@@ -1144,6 +1184,12 @@ type Image {
 type User {
     id: UUID!
     email: String!
+}
+
+type VcsBuildInfo {
+    commitTime: String!
+    commit: String!
+    modified: String!
 }
 `, BuiltIn: false},
 }
@@ -5170,6 +5216,55 @@ func (ec *executionContext) fieldContext_Query_getOccurrencesByDate(ctx context.
 	return fc, nil
 }
 
+func (ec *executionContext) _Query_getVcsBuildInfo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getVcsBuildInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetVcsBuildInfo(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*utils.VCSBuildInfo)
+	fc.Result = res
+	return ec.marshalOVcsBuildInfo2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋpkgᚋutilsᚐVCSBuildInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getVcsBuildInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "commitTime":
+				return ec.fieldContext_VcsBuildInfo_commitTime(ctx, field)
+			case "commit":
+				return ec.fieldContext_VcsBuildInfo_commit(ctx, field)
+			case "modified":
+				return ec.fieldContext_VcsBuildInfo_modified(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type VcsBuildInfo", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Query___type(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query___type(ctx, field)
 	if err != nil {
@@ -6111,6 +6206,138 @@ func (ec *executionContext) _User_email(ctx context.Context, field graphql.Colle
 func (ec *executionContext) fieldContext_User_email(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VcsBuildInfo_commitTime(ctx context.Context, field graphql.CollectedField, obj *utils.VCSBuildInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VcsBuildInfo_commitTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommitTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VcsBuildInfo_commitTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VcsBuildInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VcsBuildInfo_commit(ctx context.Context, field graphql.CollectedField, obj *utils.VCSBuildInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VcsBuildInfo_commit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Commit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VcsBuildInfo_commit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VcsBuildInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VcsBuildInfo_modified(ctx context.Context, field graphql.CollectedField, obj *utils.VCSBuildInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VcsBuildInfo_modified(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Modified, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VcsBuildInfo_modified(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VcsBuildInfo",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -9147,6 +9374,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "getVcsBuildInfo":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getVcsBuildInfo(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -9345,6 +9592,48 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "email":
 
 			out.Values[i] = ec._User_email(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var vcsBuildInfoImplementors = []string{"VcsBuildInfo"}
+
+func (ec *executionContext) _VcsBuildInfo(ctx context.Context, sel ast.SelectionSet, obj *utils.VCSBuildInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, vcsBuildInfoImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("VcsBuildInfo")
+		case "commitTime":
+
+			out.Values[i] = ec._VcsBuildInfo_commitTime(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "commit":
+
+			out.Values[i] = ec._VcsBuildInfo_commit(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "modified":
+
+			out.Values[i] = ec._VcsBuildInfo_modified(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -10579,6 +10868,13 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋmensattᚋmensattᚑb
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOVcsBuildInfo2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋpkgᚋutilsᚐVCSBuildInfo(ctx context.Context, sel ast.SelectionSet, v *utils.VCSBuildInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._VcsBuildInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

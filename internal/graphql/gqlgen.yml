@@ -108,3 +108,6 @@ models:
   User:
     model:
       - github.com/mensatt/mensatt-backend/internal/db/sqlc.User
+  VcsBuildInfo:
+    model:
+      - github.com/mensatt/mensatt-backend/pkg/utils.VCSBuildInfo
