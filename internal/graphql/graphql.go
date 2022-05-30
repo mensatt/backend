@@ -3,6 +3,8 @@
 package graphql
 
 import (
+	"log"
+
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
@@ -20,20 +22,32 @@ type GraphQLParams struct {
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) {
-	g.POST("", graphqlHandler(params.Database, params.JWTKeyStore))
+	g.POST("", graphqlHandler(params))
 	if params.DebugEnabled {
 		g.GET("/playground", playgroundHandler(g.BasePath()))
 	}
 }
 
 // graphqlHandler defines the GQLGen GraphQL server handler
-func graphqlHandler(database db.ExtendedQuerier, jwtKeyStore *utils.JWTKeyStore) gin.HandlerFunc {
+func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
+	var vscBuildInfo *utils.VCSBuildInfo
+
+	// if debug is not enabled, hide vsc build info
+	if params.DebugEnabled {
+		var err error
+		vscBuildInfo, err = utils.GetVscBuildInfo()
+		if err != nil {
+			log.Println("Error: VCS build info could not be retrieved:", err)
+		}
+	}
+
 	h := handler.NewDefaultServer(
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
 				Resolvers: &resolvers.Resolver{
-					Database:    database,
-					JWTKeyStore: jwtKeyStore,
+					Database:     params.Database,
+					JWTKeyStore:  params.JWTKeyStore,
+					VCSBuildInfo: vscBuildInfo,
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,

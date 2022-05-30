@@ -92,3 +92,9 @@ type User {
     id: UUID!
     email: String!
 }
+
+type VcsBuildInfo {
+    commitTime: String!
+    commit: String!
+    modified: String!
+}

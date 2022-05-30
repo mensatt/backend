@@ -5,7 +5,7 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
+	"errors"
 	"time"
 
 	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
@@ -21,7 +21,7 @@ func (r *queryResolver) Login(ctx context.Context, email string, password string
 	}
 
 	if !utils.CheckPasswordHash(password, user.PasswordHash) {
-		return "", fmt.Errorf("wrong password")
+		return "", errors.New("wrong password")
 	}
 
 	return r.JWTKeyStore.GenerateJWT(user.ID)
@@ -53,6 +53,13 @@ func (r *queryResolver) GetAllImages(ctx context.Context) ([]*sqlc.Image, error)
 
 func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrencesByDate(ctx, date)
+}
+
+func (r *queryResolver) GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error) {
+	if r.VCSBuildInfo == nil {
+		return nil, errors.New("VCSBuildInfo not enabled/found")
+	}
+	return r.VCSBuildInfo, nil
 }
 
 // Query returns gqlserver.QueryResolver implementation.
