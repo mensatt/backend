@@ -8,10 +8,10 @@ import (
 	"errors"
 	"time"
 
-	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
-	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
-	"github.com/mensatt/mensatt-backend/internal/middleware"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/internal/db/sqlc"
+	"github.com/mensatt/backend/internal/graphql/gqlserver"
+	"github.com/mensatt/backend/internal/middleware"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 func (r *queryResolver) Login(ctx context.Context, email string, password string) (string, error) {

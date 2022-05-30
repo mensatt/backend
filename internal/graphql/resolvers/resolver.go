@@ -1,8 +1,8 @@
 package resolvers
 
 import (
-	"github.com/mensatt/mensatt-backend/internal/db"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/internal/db"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 // This file will not be regenerated automatically.

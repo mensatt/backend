@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
+	"github.com/mensatt/backend/internal/db/sqlc"
 )
 
 type ExtendedQuerier interface {

@@ -49,65 +49,65 @@ models:
   String:
     model:
       - github.com/99designs/gqlgen/graphql.String
-      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullString
+      - github.com/mensatt/backend/internal/graphql/scalars.NullString
   Int:
     model:
       - github.com/99designs/gqlgen/graphql.Int
       - github.com/99designs/gqlgen/graphql.Int32
       - github.com/99designs/gqlgen/graphql.Int64
-      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullInt
+      - github.com/mensatt/backend/internal/graphql/scalars.NullInt
   Time:
     model:
       - github.com/99designs/gqlgen/graphql.Time
-      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.NullTime
+      - github.com/mensatt/backend/internal/graphql/scalars.NullTime
   UUID:
     model:
-      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.UUID
+      - github.com/mensatt/backend/internal/graphql/scalars.UUID
   Priority:
     model:
-      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.Priority
+      - github.com/mensatt/backend/internal/graphql/scalars.Priority
   ReviewStatus:
     model:
-      - github.com/mensatt/mensatt-backend/internal/graphql/scalars.ReviewStatus
+      - github.com/mensatt/backend/internal/graphql/scalars.ReviewStatus
   Dish:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Dish
+      - github.com/mensatt/backend/internal/db/sqlc.Dish
   DishAlias:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias
+      - github.com/mensatt/backend/internal/db/sqlc.DishAlias
   TagInput:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.CreateTagParams
+      - github.com/mensatt/backend/internal/db/sqlc.CreateTagParams
   Tag:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Tag
+      - github.com/mensatt/backend/internal/db/sqlc.Tag
   Image:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Image
+      - github.com/mensatt/backend/internal/db/sqlc.Image
   Occurrence:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence
+      - github.com/mensatt/backend/internal/db/sqlc.Occurrence
   OccurrenceTag:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceTag
+      - github.com/mensatt/backend/internal/db/sqlc.OccurrenceTag
   OccurrenceSideDish:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceSideDish
+      - github.com/mensatt/backend/internal/db/sqlc.OccurrenceSideDish
   OccurrenceInput:
     model:
-      - github.com/mensatt/mensatt-backend/internal/graphql/models.OccurrenceInputHelper
+      - github.com/mensatt/backend/internal/graphql/models.OccurrenceInputHelper
   EditOccurrenceInput:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.EditOccurrenceParams
+      - github.com/mensatt/backend/internal/db/sqlc.EditOccurrenceParams
   ReviewInput:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.CreateReviewParams
+      - github.com/mensatt/backend/internal/db/sqlc.CreateReviewParams
   Review:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.Review
+      - github.com/mensatt/backend/internal/db/sqlc.Review
   User:
     model:
-      - github.com/mensatt/mensatt-backend/internal/db/sqlc.User
+      - github.com/mensatt/backend/internal/db/sqlc.User
   VcsBuildInfo:
     model:
-      - github.com/mensatt/mensatt-backend/pkg/utils.VCSBuildInfo
+      - github.com/mensatt/backend/pkg/utils.VCSBuildInfo

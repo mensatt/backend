@@ -8,11 +8,11 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/mensatt-backend/internal/db"
-	"github.com/mensatt/mensatt-backend/internal/graphql/directives"
-	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
-	"github.com/mensatt/mensatt-backend/internal/graphql/resolvers"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/internal/db"
+	"github.com/mensatt/backend/internal/graphql/directives"
+	"github.com/mensatt/backend/internal/graphql/gqlserver"
+	"github.com/mensatt/backend/internal/graphql/resolvers"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 type GraphQLParams struct {

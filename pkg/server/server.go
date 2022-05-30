@@ -8,11 +8,11 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/mensatt-backend/internal/db"
-	"github.com/mensatt/mensatt-backend/internal/graphql"
-	"github.com/mensatt/mensatt-backend/internal/middleware"
-	"github.com/mensatt/mensatt-backend/internal/misc"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/internal/db"
+	"github.com/mensatt/backend/internal/graphql"
+	"github.com/mensatt/backend/internal/middleware"
+	"github.com/mensatt/backend/internal/misc"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 func Run(config *ServerConfig, pool *pgxpool.Pool) error {

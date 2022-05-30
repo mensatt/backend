@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
-	"github.com/mensatt/mensatt-backend/internal/db"
+	"github.com/mensatt/backend/internal/db"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mensatt/mensatt-backend/pkg/server"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/pkg/server"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 func main() {

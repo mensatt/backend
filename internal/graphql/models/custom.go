@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/google/uuid"
-	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
+	"github.com/mensatt/backend/internal/db/sqlc"
 )
 
 type OccurrenceInputHelper struct {
