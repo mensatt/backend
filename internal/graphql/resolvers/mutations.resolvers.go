@@ -99,6 +99,7 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, id uuid.UUID) (*sql
 }
 
 func (r *mutationResolver) EditReview(ctx context.Context, id uuid.UUID, review sqlc.EditReviewParams) (*sqlc.Review, error) {
+	review.ID = id
 	return r.Database.EditReview(ctx, &review)
 }
 
