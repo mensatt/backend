@@ -4,6 +4,7 @@ type Mutation {
 
     # Dish
     createDish(name: String!): Dish! @authenticated
+    renameDish(id: UUID!, name: String!): Dish! @authenticated
 
     # DishAlias
     createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 

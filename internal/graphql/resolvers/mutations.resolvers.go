@@ -20,6 +20,13 @@ func (r *mutationResolver) CreateDish(ctx context.Context, name string) (*sqlc.D
 	return r.Database.CreateDish(ctx, name)
 }
 
+func (r *mutationResolver) RenameDish(ctx context.Context, id uuid.UUID, name string) (*sqlc.Dish, error) {
+	return r.Database.RenameDish(ctx, &sqlc.RenameDishParams{
+		ID:   id,
+		Name: name,
+	})
+}
+
 func (r *mutationResolver) CreateAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
 	return r.Database.CreateDishAlias(ctx, &sqlc.CreateDishAliasParams{
 		AliasName: alias,

@@ -61,3 +61,22 @@ func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) 
 	err := row.Scan(&i.ID, &i.Name)
 	return &i, err
 }
+
+const renameDish = `-- name: RenameDish :one
+UPDATE dish
+SET name = $1
+WHERE id = $2
+RETURNING id, name
+`
+
+type RenameDishParams struct {
+	Name string    `json:"name"`
+	ID   uuid.UUID `json:"id"`
+}
+
+func (q *Queries) RenameDish(ctx context.Context, arg *RenameDishParams) (*Dish, error) {
+	row := q.db.QueryRow(ctx, renameDish, arg.Name, arg.ID)
+	var i Dish
+	err := row.Scan(&i.ID, &i.Name)
+	return &i, err
+}

@@ -92,6 +92,7 @@ type ComplexityRoot struct {
 		EditOccurrence               func(childComplexity int, id uuid.UUID, input sqlc.EditOccurrenceParams) int
 		RemoveSideDishFromOccurrence func(childComplexity int, occurrenceID uuid.UUID, sideDish uuid.UUID) int
 		RemoveTagFromOccurrence      func(childComplexity int, occurrenceID uuid.UUID, tag string) int
+		RenameDish                   func(childComplexity int, id uuid.UUID, name string) int
 		UpdateAlias                  func(childComplexity int, oldAlias string, alias string, dish uuid.UUID) int
 	}
 
@@ -176,6 +177,7 @@ type ImageResolver interface {
 type MutationResolver interface {
 	CreateTag(ctx context.Context, tag sqlc.CreateTagParams) (*sqlc.Tag, error)
 	CreateDish(ctx context.Context, name string) (*sqlc.Dish, error)
+	RenameDish(ctx context.Context, id uuid.UUID, name string) (*sqlc.Dish, error)
 	CreateAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
 	UpdateAlias(ctx context.Context, oldAlias string, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
 	DeleteAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
@@ -474,6 +476,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RemoveTagFromOccurrence(childComplexity, args["occurrenceId"].(uuid.UUID), args["tag"].(string)), true
+
+	case "Mutation.renameDish":
+		if e.complexity.Mutation.RenameDish == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_renameDish_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RenameDish(childComplexity, args["id"].(uuid.UUID), args["name"].(string)), true
 
 	case "Mutation.updateAlias":
 		if e.complexity.Mutation.UpdateAlias == nil {
@@ -1000,6 +1014,7 @@ input ReviewInput {
 
     # Dish
     createDish(name: String!): Dish! @authenticated
+    renameDish(id: UUID!, name: String!): Dish! @authenticated
 
     # DishAlias
     createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
@@ -1378,6 +1393,30 @@ func (ec *executionContext) field_Mutation_removeTagFromOccurrence_args(ctx cont
 		}
 	}
 	args["tag"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_renameDish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -2324,6 +2363,89 @@ func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_renameDish(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_renameDish(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RenameDish(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.Dish); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Dish`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.Dish)
+	fc.Result = res
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_renameDish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Dish_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Dish_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_renameDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -8389,6 +8511,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDish(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "renameDish":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_renameDish(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {

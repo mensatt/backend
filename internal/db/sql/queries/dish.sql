@@ -11,3 +11,9 @@ WHERE id = $1;
 INSERT INTO dish (name)
 VALUES ($1)
 RETURNING *;
+
+-- name: RenameDish :one
+UPDATE dish
+SET name = $1
+WHERE id = $2
+RETURNING *;
