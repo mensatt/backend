@@ -21,7 +21,9 @@ type Mutation {
     removeSideDishFromOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
 
     # Review
-    createReview(review: ReviewInput!): Review! 
+    createReview(review: ReviewInput!): Review!
+    deleteReview(id: UUID!): Review! @authenticated
+    editReview(id: UUID!, review: EditReviewInput!): Review! @authenticated
 
     # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/

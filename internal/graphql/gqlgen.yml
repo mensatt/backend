@@ -102,6 +102,9 @@ models:
   ReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.CreateReviewParams
+  EditReviewInput:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.EditReviewParams
   Review:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.Review
