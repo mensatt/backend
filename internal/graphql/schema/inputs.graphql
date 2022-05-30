@@ -52,6 +52,14 @@ input ReviewInput {
     text: String
 }
 
+input EditReviewInput {
+    occurrence: UUID
+    displayName: String
+    stars: Int
+    text: String
+    acceptedAt: Time
+}
+
 #input ImageInput {
 #    occurrence: UUID!
 #    displayName: String!

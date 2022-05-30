@@ -22,4 +22,3 @@ RETURNING *;
 DELETE FROM dish_alias
 WHERE alias_name = $1 AND dish = $2
 RETURNING *;
-

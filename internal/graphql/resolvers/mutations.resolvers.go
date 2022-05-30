@@ -94,6 +94,14 @@ func (r *mutationResolver) CreateReview(ctx context.Context, review sqlc.CreateR
 	return r.Database.CreateReview(ctx, &review)
 }
 
+func (r *mutationResolver) DeleteReview(ctx context.Context, id uuid.UUID) (*sqlc.Review, error) {
+	return r.Database.DeleteReview(ctx, id)
+}
+
+func (r *mutationResolver) EditReview(ctx context.Context, id uuid.UUID, review sqlc.EditReviewParams) (*sqlc.Review, error) {
+	return r.Database.EditReview(ctx, &review)
+}
+
 // Mutation returns gqlserver.MutationResolver implementation.
 func (r *Resolver) Mutation() gqlserver.MutationResolver { return &mutationResolver{r} }
 
