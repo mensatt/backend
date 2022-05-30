@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/mensatt-backend/internal/middleware"
+	"github.com/mensatt/backend/internal/middleware"
 )
 
 func Run(g *gin.RouterGroup) error {

@@ -3,7 +3,7 @@ package server
 import (
 	"fmt"
 
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 // ServerConfig defines the configuration for the server

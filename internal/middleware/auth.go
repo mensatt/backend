@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/mensatt-backend/internal/db"
-	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/internal/db"
+	"github.com/mensatt/backend/internal/db/sqlc"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 // A private key for context that only this package can access. This is important

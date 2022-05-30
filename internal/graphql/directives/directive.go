@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/mensatt/mensatt-backend/internal/middleware"
+	"github.com/mensatt/backend/internal/middleware"
 )
 
 func Authenticated(ctx context.Context, obj interface{}, next graphql.Resolver) (interface{}, error) {

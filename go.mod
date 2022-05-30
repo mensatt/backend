@@ -1,4 +1,4 @@
-module github.com/mensatt/mensatt-backend
+module github.com/mensatt/backend
 
 go 1.18
 
