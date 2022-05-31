@@ -6,8 +6,8 @@ package resolvers
 import (
 	"context"
 
-	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
-	"github.com/mensatt/mensatt-backend/internal/graphql/gqlserver"
+	"github.com/mensatt/backend/internal/db/sqlc"
+	"github.com/mensatt/backend/internal/graphql/gqlserver"
 )
 
 func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error) {

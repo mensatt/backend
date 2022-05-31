@@ -16,9 +16,10 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
 	"github.com/google/uuid"
-	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
-	"github.com/mensatt/mensatt-backend/internal/graphql/models"
-	"github.com/mensatt/mensatt-backend/internal/graphql/scalars"
+	"github.com/mensatt/backend/internal/db/sqlc"
+	"github.com/mensatt/backend/internal/graphql/models"
+	"github.com/mensatt/backend/internal/graphql/scalars"
+	"github.com/mensatt/backend/pkg/utils"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -92,6 +93,7 @@ type ComplexityRoot struct {
 		EditOccurrence               func(childComplexity int, id uuid.UUID, input sqlc.EditOccurrenceParams) int
 		RemoveSideDishFromOccurrence func(childComplexity int, occurrenceID uuid.UUID, sideDish uuid.UUID) int
 		RemoveTagFromOccurrence      func(childComplexity int, occurrenceID uuid.UUID, tag string) int
+		RenameDish                   func(childComplexity int, id uuid.UUID, name string) int
 		UpdateAlias                  func(childComplexity int, oldAlias string, alias string, dish uuid.UUID) int
 	}
 
@@ -136,6 +138,7 @@ type ComplexityRoot struct {
 		GetAllTags           func(childComplexity int) int
 		GetCurrentUser       func(childComplexity int) int
 		GetOccurrencesByDate func(childComplexity int, date time.Time) int
+		GetVcsBuildInfo      func(childComplexity int) int
 		Login                func(childComplexity int, email string, password string) int
 	}
 
@@ -165,6 +168,12 @@ type ComplexityRoot struct {
 		Email func(childComplexity int) int
 		ID    func(childComplexity int) int
 	}
+
+	VcsBuildInfo struct {
+		Commit     func(childComplexity int) int
+		CommitTime func(childComplexity int) int
+		Modified   func(childComplexity int) int
+	}
 }
 
 type DishResolver interface {
@@ -176,6 +185,7 @@ type ImageResolver interface {
 type MutationResolver interface {
 	CreateTag(ctx context.Context, tag sqlc.CreateTagParams) (*sqlc.Tag, error)
 	CreateDish(ctx context.Context, name string) (*sqlc.Dish, error)
+	RenameDish(ctx context.Context, id uuid.UUID, name string) (*sqlc.Dish, error)
 	CreateAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
 	UpdateAlias(ctx context.Context, oldAlias string, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
 	DeleteAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
@@ -213,6 +223,7 @@ type QueryResolver interface {
 	GetAllReviews(ctx context.Context) ([]*sqlc.Review, error)
 	GetAllImages(ctx context.Context) ([]*sqlc.Image, error)
 	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error)
+	GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error)
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error)
@@ -475,6 +486,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.RemoveTagFromOccurrence(childComplexity, args["occurrenceId"].(uuid.UUID), args["tag"].(string)), true
 
+	case "Mutation.renameDish":
+		if e.complexity.Mutation.RenameDish == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_renameDish_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.RenameDish(childComplexity, args["id"].(uuid.UUID), args["name"].(string)), true
+
 	case "Mutation.updateAlias":
 		if e.complexity.Mutation.UpdateAlias == nil {
 			break
@@ -709,6 +732,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetOccurrencesByDate(childComplexity, args["date"].(time.Time)), true
 
+	case "Query.getVcsBuildInfo":
+		if e.complexity.Query.GetVcsBuildInfo == nil {
+			break
+		}
+
+		return e.complexity.Query.GetVcsBuildInfo(childComplexity), true
+
 	case "Query.login":
 		if e.complexity.Query.Login == nil {
 			break
@@ -846,6 +876,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.User.ID(childComplexity), true
+
+	case "VcsBuildInfo.commit":
+		if e.complexity.VcsBuildInfo.Commit == nil {
+			break
+		}
+
+		return e.complexity.VcsBuildInfo.Commit(childComplexity), true
+
+	case "VcsBuildInfo.commitTime":
+		if e.complexity.VcsBuildInfo.CommitTime == nil {
+			break
+		}
+
+		return e.complexity.VcsBuildInfo.CommitTime(childComplexity), true
+
+	case "VcsBuildInfo.modified":
+		if e.complexity.VcsBuildInfo.Modified == nil {
+			break
+		}
+
+		return e.complexity.VcsBuildInfo.Modified(childComplexity), true
 
 	}
 	return 0, false
@@ -1000,6 +1051,7 @@ input ReviewInput {
 
     # Dish
     createDish(name: String!): Dish! @authenticated
+    renameDish(id: UUID!, name: String!): Dish! @authenticated
 
     # DishAlias
     createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
@@ -1032,6 +1084,9 @@ input ReviewInput {
     getAllReviews: [Review!]!
     getAllImages: [Image!]!
     getOccurrencesByDate(date: Time!): [Occurrence!]!
+
+    # only enabled in debug mode
+    getVcsBuildInfo: VcsBuildInfo
 }
 `, BuiltIn: false},
 	{Name: "../schema/scalars.graphql", Input: `scalar Time
@@ -1129,6 +1184,12 @@ type Image {
 type User {
     id: UUID!
     email: String!
+}
+
+type VcsBuildInfo {
+    commitTime: String!
+    commit: String!
+    modified: String!
 }
 `, BuiltIn: false},
 }
@@ -1231,7 +1292,7 @@ func (ec *executionContext) field_Mutation_createOccurrence_args(ctx context.Con
 	var arg0 models.OccurrenceInputHelper
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx, tmp)
+		arg0, err = ec.unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1246,7 +1307,7 @@ func (ec *executionContext) field_Mutation_createReview_args(ctx context.Context
 	var arg0 sqlc.CreateReviewParams
 	if tmp, ok := rawArgs["review"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("review"))
-		arg0, err = ec.unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐCreateReviewParams(ctx, tmp)
+		arg0, err = ec.unmarshalNReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐCreateReviewParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1261,7 +1322,7 @@ func (ec *executionContext) field_Mutation_createTag_args(ctx context.Context, r
 	var arg0 sqlc.CreateTagParams
 	if tmp, ok := rawArgs["tag"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag"))
-		arg0, err = ec.unmarshalNTagInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐCreateTagParams(ctx, tmp)
+		arg0, err = ec.unmarshalNTagInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐCreateTagParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1324,7 +1385,7 @@ func (ec *executionContext) field_Mutation_editOccurrence_args(ctx context.Conte
 	var arg1 sqlc.EditOccurrenceParams
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNEditOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx, tmp)
+		arg1, err = ec.unmarshalNEditOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1378,6 +1439,30 @@ func (ec *executionContext) field_Mutation_removeTagFromOccurrence_args(ctx cont
 		}
 	}
 	args["tag"] = arg1
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_renameDish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 uuid.UUID
+	if tmp, ok := rawArgs["id"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+		arg0, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["id"] = arg0
+	var arg1 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg1
 	return args, nil
 }
 
@@ -1798,7 +1883,7 @@ func (ec *executionContext) _Image_occurrence(ctx context.Context, field graphql
 	}
 	res := resTmp.(*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Image_occurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2192,7 +2277,7 @@ func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graph
 		if data, ok := tmp.(*sqlc.Tag); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Tag`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Tag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2206,7 +2291,7 @@ func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graph
 	}
 	res := resTmp.(*sqlc.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createTag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2281,7 +2366,7 @@ func (ec *executionContext) _Mutation_createDish(ctx context.Context, field grap
 		if data, ok := tmp.(*sqlc.Dish); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Dish`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Dish`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2295,7 +2380,7 @@ func (ec *executionContext) _Mutation_createDish(ctx context.Context, field grap
 	}
 	res := resTmp.(*sqlc.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2324,6 +2409,89 @@ func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_renameDish(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_renameDish(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().RenameDish(rctx, fc.Args["id"].(uuid.UUID), fc.Args["name"].(string))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.Dish); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Dish`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.Dish)
+	fc.Result = res
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_renameDish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Dish_id(ctx, field)
+			case "name":
+				return ec.fieldContext_Dish_name(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_renameDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -2364,7 +2532,7 @@ func (ec *executionContext) _Mutation_createAlias(ctx context.Context, field gra
 		if data, ok := tmp.(*sqlc.DishAlias); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.DishAlias`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2378,7 +2546,7 @@ func (ec *executionContext) _Mutation_createAlias(ctx context.Context, field gra
 	}
 	res := resTmp.(*sqlc.DishAlias)
 	fc.Result = res
-	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
+	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createAlias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2445,7 +2613,7 @@ func (ec *executionContext) _Mutation_updateAlias(ctx context.Context, field gra
 		if data, ok := tmp.(*sqlc.DishAlias); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.DishAlias`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2459,7 +2627,7 @@ func (ec *executionContext) _Mutation_updateAlias(ctx context.Context, field gra
 	}
 	res := resTmp.(*sqlc.DishAlias)
 	fc.Result = res
-	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
+	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateAlias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2526,7 +2694,7 @@ func (ec *executionContext) _Mutation_deleteAlias(ctx context.Context, field gra
 		if data, ok := tmp.(*sqlc.DishAlias); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.DishAlias`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.DishAlias`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2540,7 +2708,7 @@ func (ec *executionContext) _Mutation_deleteAlias(ctx context.Context, field gra
 	}
 	res := resTmp.(*sqlc.DishAlias)
 	fc.Result = res
-	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
+	return ec.marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteAlias(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2607,7 +2775,7 @@ func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, fiel
 		if data, ok := tmp.(*sqlc.Occurrence); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Occurrence`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2621,7 +2789,7 @@ func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, fiel
 	}
 	res := resTmp.(*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2724,7 +2892,7 @@ func (ec *executionContext) _Mutation_deleteOccurrence(ctx context.Context, fiel
 		if data, ok := tmp.(*sqlc.Occurrence); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Occurrence`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2738,7 +2906,7 @@ func (ec *executionContext) _Mutation_deleteOccurrence(ctx context.Context, fiel
 	}
 	res := resTmp.(*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2841,7 +3009,7 @@ func (ec *executionContext) _Mutation_editOccurrence(ctx context.Context, field 
 		if data, ok := tmp.(*sqlc.Occurrence); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.Occurrence`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Occurrence`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2855,7 +3023,7 @@ func (ec *executionContext) _Mutation_editOccurrence(ctx context.Context, field 
 	}
 	res := resTmp.(*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_editOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2958,7 +3126,7 @@ func (ec *executionContext) _Mutation_addTagToOccurrence(ctx context.Context, fi
 		if data, ok := tmp.(*sqlc.OccurrenceTag); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceTag`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.OccurrenceTag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2972,7 +3140,7 @@ func (ec *executionContext) _Mutation_addTagToOccurrence(ctx context.Context, fi
 	}
 	res := resTmp.(*sqlc.OccurrenceTag)
 	fc.Result = res
-	return ec.marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx, field.Selections, res)
+	return ec.marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addTagToOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3039,7 +3207,7 @@ func (ec *executionContext) _Mutation_addSideDishToOccurrence(ctx context.Contex
 		if data, ok := tmp.(*sqlc.OccurrenceSideDish); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceSideDish`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.OccurrenceSideDish`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3053,7 +3221,7 @@ func (ec *executionContext) _Mutation_addSideDishToOccurrence(ctx context.Contex
 	}
 	res := resTmp.(*sqlc.OccurrenceSideDish)
 	fc.Result = res
-	return ec.marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx, field.Selections, res)
+	return ec.marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addSideDishToOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3120,7 +3288,7 @@ func (ec *executionContext) _Mutation_removeTagFromOccurrence(ctx context.Contex
 		if data, ok := tmp.(*sqlc.OccurrenceTag); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceTag`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.OccurrenceTag`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3134,7 +3302,7 @@ func (ec *executionContext) _Mutation_removeTagFromOccurrence(ctx context.Contex
 	}
 	res := resTmp.(*sqlc.OccurrenceTag)
 	fc.Result = res
-	return ec.marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx, field.Selections, res)
+	return ec.marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_removeTagFromOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3201,7 +3369,7 @@ func (ec *executionContext) _Mutation_removeSideDishFromOccurrence(ctx context.C
 		if data, ok := tmp.(*sqlc.OccurrenceSideDish); ok {
 			return data, nil
 		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/mensatt-backend/internal/db/sqlc.OccurrenceSideDish`, tmp)
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.OccurrenceSideDish`, tmp)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -3215,7 +3383,7 @@ func (ec *executionContext) _Mutation_removeSideDishFromOccurrence(ctx context.C
 	}
 	res := resTmp.(*sqlc.OccurrenceSideDish)
 	fc.Result = res
-	return ec.marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx, field.Selections, res)
+	return ec.marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_removeSideDishFromOccurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3276,7 +3444,7 @@ func (ec *executionContext) _Mutation_createReview(ctx context.Context, field gr
 	}
 	res := resTmp.(*sqlc.Review)
 	fc.Result = res
-	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx, field.Selections, res)
+	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createReview(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3397,7 +3565,7 @@ func (ec *executionContext) _Occurrence_dish(ctx context.Context, field graphql.
 	}
 	res := resTmp.(*sqlc.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_dish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3449,7 +3617,7 @@ func (ec *executionContext) _Occurrence_sideDishes(ctx context.Context, field gr
 	}
 	res := resTmp.([]*sqlc.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishᚄ(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_sideDishes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3545,7 +3713,7 @@ func (ec *executionContext) _Occurrence_reviewStatus(ctx context.Context, field 
 	}
 	res := resTmp.(sqlc.ReviewStatus)
 	fc.Result = res
-	return ec.marshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, field.Selections, res)
+	return ec.marshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_reviewStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4081,7 +4249,7 @@ func (ec *executionContext) _Occurrence_tags(ctx context.Context, field graphql.
 	}
 	res := resTmp.([]*sqlc.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4139,7 +4307,7 @@ func (ec *executionContext) _Occurrence_reviews(ctx context.Context, field graph
 	}
 	res := resTmp.([]*sqlc.Review)
 	fc.Result = res
-	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx, field.Selections, res)
+	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_reviews(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4205,7 +4373,7 @@ func (ec *executionContext) _Occurrence_images(ctx context.Context, field graphq
 	}
 	res := resTmp.([]*sqlc.Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_images(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4269,7 +4437,7 @@ func (ec *executionContext) _OccurrenceSideDish_occurrence(ctx context.Context, 
 	}
 	res := resTmp.(*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OccurrenceSideDish_occurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4355,7 +4523,7 @@ func (ec *executionContext) _OccurrenceSideDish_dish(ctx context.Context, field 
 	}
 	res := resTmp.(*sqlc.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OccurrenceSideDish_dish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4407,7 +4575,7 @@ func (ec *executionContext) _OccurrenceTag_occurrence(ctx context.Context, field
 	}
 	res := resTmp.(*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OccurrenceTag_occurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4493,7 +4661,7 @@ func (ec *executionContext) _OccurrenceTag_tag(ctx context.Context, field graphq
 	}
 	res := resTmp.(*sqlc.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_OccurrenceTag_tag(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4603,7 +4771,7 @@ func (ec *executionContext) _Query_getCurrentUser(ctx context.Context, field gra
 	}
 	res := resTmp.(*sqlc.User)
 	fc.Result = res
-	return ec.marshalOUser2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getCurrentUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4653,7 +4821,7 @@ func (ec *executionContext) _Query_getAllTags(ctx context.Context, field graphql
 	}
 	res := resTmp.([]*sqlc.Tag)
 	fc.Result = res
-	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTagᚄ(ctx, field.Selections, res)
+	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTagᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getAllTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4711,7 +4879,7 @@ func (ec *executionContext) _Query_getAllDishes(ctx context.Context, field graph
 	}
 	res := resTmp.([]*sqlc.Dish)
 	fc.Result = res
-	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishᚄ(ctx, field.Selections, res)
+	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getAllDishes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4763,7 +4931,7 @@ func (ec *executionContext) _Query_getAllOccurrences(ctx context.Context, field 
 	}
 	res := resTmp.([]*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getAllOccurrences(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4849,7 +5017,7 @@ func (ec *executionContext) _Query_getAllReviews(ctx context.Context, field grap
 	}
 	res := resTmp.([]*sqlc.Review)
 	fc.Result = res
-	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx, field.Selections, res)
+	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getAllReviews(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4915,7 +5083,7 @@ func (ec *executionContext) _Query_getAllImages(ctx context.Context, field graph
 	}
 	res := resTmp.([]*sqlc.Image)
 	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getAllImages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4979,7 +5147,7 @@ func (ec *executionContext) _Query_getOccurrencesByDate(ctx context.Context, fie
 	}
 	res := resTmp.([]*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_getOccurrencesByDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5044,6 +5212,55 @@ func (ec *executionContext) fieldContext_Query_getOccurrencesByDate(ctx context.
 	if fc.Args, err = ec.field_Query_getOccurrencesByDate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_getVcsBuildInfo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getVcsBuildInfo(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().GetVcsBuildInfo(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*utils.VCSBuildInfo)
+	fc.Result = res
+	return ec.marshalOVcsBuildInfo2ᚖgithubᚗcomᚋmensattᚋbackendᚋpkgᚋutilsᚐVCSBuildInfo(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_getVcsBuildInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "commitTime":
+				return ec.fieldContext_VcsBuildInfo_commitTime(ctx, field)
+			case "commit":
+				return ec.fieldContext_VcsBuildInfo_commit(ctx, field)
+			case "modified":
+				return ec.fieldContext_VcsBuildInfo_modified(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type VcsBuildInfo", field.Name)
+		},
 	}
 	return fc, nil
 }
@@ -5249,7 +5466,7 @@ func (ec *executionContext) _Review_occurrence(ctx context.Context, field graphq
 	}
 	res := resTmp.(*sqlc.Occurrence)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_occurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5851,7 +6068,7 @@ func (ec *executionContext) _Tag_priority(ctx context.Context, field graphql.Col
 	}
 	res := resTmp.(sqlc.Priority)
 	fc.Result = res
-	return ec.marshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx, field.Selections, res)
+	return ec.marshalOPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_priority(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5989,6 +6206,138 @@ func (ec *executionContext) _User_email(ctx context.Context, field graphql.Colle
 func (ec *executionContext) fieldContext_User_email(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VcsBuildInfo_commitTime(ctx context.Context, field graphql.CollectedField, obj *utils.VCSBuildInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VcsBuildInfo_commitTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CommitTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VcsBuildInfo_commitTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VcsBuildInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VcsBuildInfo_commit(ctx context.Context, field graphql.CollectedField, obj *utils.VCSBuildInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VcsBuildInfo_commit(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Commit, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VcsBuildInfo_commit(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VcsBuildInfo",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _VcsBuildInfo_modified(ctx context.Context, field graphql.CollectedField, obj *utils.VCSBuildInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_VcsBuildInfo_modified(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Modified, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_VcsBuildInfo_modified(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "VcsBuildInfo",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -7801,7 +8150,7 @@ func (ec *executionContext) unmarshalInputEditOccurrenceInput(ctx context.Contex
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewStatus"))
-			it.ReviewStatus, err = ec.unmarshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, v)
+			it.ReviewStatus, err = ec.unmarshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -7944,7 +8293,7 @@ func (ec *executionContext) unmarshalInputOccurrenceInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewStatus"))
-			it.ReviewStatus, err = ec.unmarshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, v)
+			it.ReviewStatus, err = ec.unmarshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8150,7 +8499,7 @@ func (ec *executionContext) unmarshalInputTagInput(ctx context.Context, obj inte
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
-			it.Priority, err = ec.unmarshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx, v)
+			it.Priority, err = ec.unmarshalOPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -8389,6 +8738,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDish(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "renameDish":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_renameDish(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -9016,6 +9374,26 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
+		case "getVcsBuildInfo":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_getVcsBuildInfo(ctx, field)
+				return res
+			}
+
+			rrm := func(ctx context.Context) graphql.Marshaler {
+				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return rrm(innerCtx)
+			})
 		case "__type":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -9214,6 +9592,48 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 		case "email":
 
 			out.Values[i] = ec._User_email(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var vcsBuildInfoImplementors = []string{"VcsBuildInfo"}
+
+func (ec *executionContext) _VcsBuildInfo(ctx context.Context, sel ast.SelectionSet, obj *utils.VCSBuildInfo) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, vcsBuildInfoImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("VcsBuildInfo")
+		case "commitTime":
+
+			out.Values[i] = ec._VcsBuildInfo_commitTime(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "commit":
+
+			out.Values[i] = ec._VcsBuildInfo_commit(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "modified":
+
+			out.Values[i] = ec._VcsBuildInfo_modified(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -9562,11 +9982,11 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNDish2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx context.Context, sel ast.SelectionSet, v sqlc.Dish) graphql.Marshaler {
+func (ec *executionContext) marshalNDish2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx context.Context, sel ast.SelectionSet, v sqlc.Dish) graphql.Marshaler {
 	return ec._Dish(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Dish) graphql.Marshaler {
+func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Dish) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9590,7 +10010,7 @@ func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensatt�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, sel, v[i])
+			ret[i] = ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9610,7 +10030,7 @@ func (ec *executionContext) marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋmensatt�
 	return ret
 }
 
-func (ec *executionContext) marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx context.Context, sel ast.SelectionSet, v *sqlc.Dish) graphql.Marshaler {
+func (ec *executionContext) marshalNDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx context.Context, sel ast.SelectionSet, v *sqlc.Dish) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9620,11 +10040,11 @@ func (ec *executionContext) marshalNDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑb
 	return ec._Dish(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNDishAlias2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx context.Context, sel ast.SelectionSet, v sqlc.DishAlias) graphql.Marshaler {
+func (ec *executionContext) marshalNDishAlias2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx context.Context, sel ast.SelectionSet, v sqlc.DishAlias) graphql.Marshaler {
 	return ec._DishAlias(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx context.Context, sel ast.SelectionSet, v *sqlc.DishAlias) graphql.Marshaler {
+func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishAlias(ctx context.Context, sel ast.SelectionSet, v *sqlc.DishAlias) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9634,12 +10054,12 @@ func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋmensat
 	return ec._DishAlias(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNEditOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx context.Context, v interface{}) (sqlc.EditOccurrenceParams, error) {
+func (ec *executionContext) unmarshalNEditOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx context.Context, v interface{}) (sqlc.EditOccurrenceParams, error) {
 	res, err := ec.unmarshalInputEditOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Image) graphql.Marshaler {
+func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Image) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9663,7 +10083,7 @@ func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋmensatt
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx, sel, v[i])
+			ret[i] = ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9683,7 +10103,7 @@ func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋmensatt
 	return ret
 }
 
-func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx context.Context, sel ast.SelectionSet, v *sqlc.Image) graphql.Marshaler {
+func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx context.Context, sel ast.SelectionSet, v *sqlc.Image) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9708,11 +10128,11 @@ func (ec *executionContext) marshalNInt2int32(ctx context.Context, sel ast.Selec
 	return res
 }
 
-func (ec *executionContext) marshalNOccurrence2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v sqlc.Occurrence) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrence2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v sqlc.Occurrence) graphql.Marshaler {
 	return ec._Occurrence(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Occurrence) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Occurrence) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9736,7 +10156,7 @@ func (ec *executionContext) marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋme
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, sel, v[i])
+			ret[i] = ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9756,7 +10176,7 @@ func (ec *executionContext) marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋme
 	return ret
 }
 
-func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v *sqlc.Occurrence) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v *sqlc.Occurrence) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9766,16 +10186,16 @@ func (ec *executionContext) marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋmensa
 	return ec._Occurrence(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx context.Context, v interface{}) (models.OccurrenceInputHelper, error) {
+func (ec *executionContext) unmarshalNOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx context.Context, v interface{}) (models.OccurrenceInputHelper, error) {
 	res, err := ec.unmarshalInputOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNOccurrenceSideDish2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx context.Context, sel ast.SelectionSet, v sqlc.OccurrenceSideDish) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrenceSideDish2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx context.Context, sel ast.SelectionSet, v sqlc.OccurrenceSideDish) graphql.Marshaler {
 	return ec._OccurrenceSideDish(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx context.Context, sel ast.SelectionSet, v *sqlc.OccurrenceSideDish) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceSideDish(ctx context.Context, sel ast.SelectionSet, v *sqlc.OccurrenceSideDish) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9785,11 +10205,11 @@ func (ec *executionContext) marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensatt
 	return ec._OccurrenceSideDish(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNOccurrenceTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx context.Context, sel ast.SelectionSet, v sqlc.OccurrenceTag) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrenceTag2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx context.Context, sel ast.SelectionSet, v sqlc.OccurrenceTag) graphql.Marshaler {
 	return ec._OccurrenceTag(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx context.Context, sel ast.SelectionSet, v *sqlc.OccurrenceTag) graphql.Marshaler {
+func (ec *executionContext) marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx context.Context, sel ast.SelectionSet, v *sqlc.OccurrenceTag) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9799,11 +10219,11 @@ func (ec *executionContext) marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋme
 	return ec._OccurrenceTag(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNReview2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx context.Context, sel ast.SelectionSet, v sqlc.Review) graphql.Marshaler {
+func (ec *executionContext) marshalNReview2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx context.Context, sel ast.SelectionSet, v sqlc.Review) graphql.Marshaler {
 	return ec._Review(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Review) graphql.Marshaler {
+func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Review) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9827,7 +10247,7 @@ func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensat
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx, sel, v[i])
+			ret[i] = ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9847,7 +10267,7 @@ func (ec *executionContext) marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋmensat
 	return ret
 }
 
-func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx context.Context, sel ast.SelectionSet, v *sqlc.Review) graphql.Marshaler {
+func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx context.Context, sel ast.SelectionSet, v *sqlc.Review) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9857,17 +10277,17 @@ func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋmensattᚋmensatt�
 	return ec._Review(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNReviewInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐCreateReviewParams(ctx context.Context, v interface{}) (sqlc.CreateReviewParams, error) {
+func (ec *executionContext) unmarshalNReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐCreateReviewParams(ctx context.Context, v interface{}) (sqlc.CreateReviewParams, error) {
 	res, err := ec.unmarshalInputReviewInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, v interface{}) (sqlc.ReviewStatus, error) {
+func (ec *executionContext) unmarshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, v interface{}) (sqlc.ReviewStatus, error) {
 	res, err := scalars.UnmarshalReviewStatus(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNReviewStatus2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.ReviewStatus) graphql.Marshaler {
+func (ec *executionContext) marshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.ReviewStatus) graphql.Marshaler {
 	res := scalars.MarshalReviewStatus(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -9939,11 +10359,11 @@ func (ec *executionContext) marshalNString2ᚕstringᚄ(ctx context.Context, sel
 	return ret
 }
 
-func (ec *executionContext) marshalNTag2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx context.Context, sel ast.SelectionSet, v sqlc.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx context.Context, sel ast.SelectionSet, v sqlc.Tag) graphql.Marshaler {
 	return ec._Tag(ctx, sel, &v)
 }
 
-func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTagᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Tag) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
 	isLen1 := len(v) == 1
@@ -9967,7 +10387,7 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensatt�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx, sel, v[i])
+			ret[i] = ec.marshalNTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -9987,7 +10407,7 @@ func (ec *executionContext) marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋmensatt�
 	return ret
 }
 
-func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx context.Context, sel ast.SelectionSet, v *sqlc.Tag) graphql.Marshaler {
+func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTag(ctx context.Context, sel ast.SelectionSet, v *sqlc.Tag) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
@@ -9997,7 +10417,7 @@ func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋmensattᚋmensattᚑba
 	return ec._Tag(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNTagInput2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐCreateTagParams(ctx context.Context, v interface{}) (sqlc.CreateTagParams, error) {
+func (ec *executionContext) unmarshalNTagInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐCreateTagParams(ctx context.Context, v interface{}) (sqlc.CreateTagParams, error) {
 	res, err := ec.unmarshalInputTagInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -10321,12 +10741,12 @@ func (ec *executionContext) marshalOInt2databaseᚋsqlᚐNullInt32(ctx context.C
 	return res
 }
 
-func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, v interface{}) (sqlc.Priority, error) {
+func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, v interface{}) (sqlc.Priority, error) {
 	res, err := scalars.UnmarshalPriority(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOPriority2githubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, sel ast.SelectionSet, v sqlc.Priority) graphql.Marshaler {
+func (ec *executionContext) marshalOPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, sel ast.SelectionSet, v sqlc.Priority) graphql.Marshaler {
 	res := scalars.MarshalPriority(v)
 	return res
 }
@@ -10443,11 +10863,18 @@ func (ec *executionContext) marshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUID�
 	return ret
 }
 
-func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋmensattᚋmensattᚑbackendᚋinternalᚋdbᚋsqlcᚐUser(ctx context.Context, sel ast.SelectionSet, v *sqlc.User) graphql.Marshaler {
+func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUser(ctx context.Context, sel ast.SelectionSet, v *sqlc.User) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOVcsBuildInfo2ᚖgithubᚗcomᚋmensattᚋbackendᚋpkgᚋutilsᚐVCSBuildInfo(ctx context.Context, sel ast.SelectionSet, v *utils.VCSBuildInfo) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._VcsBuildInfo(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/99designs/gqlgen/graphql"
-	"github.com/mensatt/mensatt-backend/internal/db/sqlc"
+	"github.com/mensatt/backend/internal/db/sqlc"
 )
 
 func MarshalReviewStatus(p sqlc.ReviewStatus) graphql.Marshaler {

@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mensatt/mensatt-backend/pkg/utils"
+	"github.com/mensatt/backend/pkg/utils"
 )
 
 func main() {
