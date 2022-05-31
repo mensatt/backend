@@ -27,7 +27,7 @@ input CreateOccurrenceInput {
     tags: [String!]
 }
 
-input EditOccurrenceInput {
+input UpdateOccurrenceInput {
     id: UUID!
     dish: UUID!
     date: Time!
@@ -53,7 +53,7 @@ input CreateReviewInput {
     text: String
 }
 
-input EditReviewInput {
+input UpdateReviewInput {
     id: UUID!
     occurrence: UUID
     displayName: String!

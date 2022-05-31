@@ -13,17 +13,18 @@ type Mutation {
 
     # Occurrence
     createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
+    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(id: UUID!): Occurrence! @authenticated
-    editOccurrence(input: EditOccurrenceInput!): Occurrence! @authenticated
+    
     addTagToOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
-    addSideDishToOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
     removeTagFromOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
+    addSideDishToOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
     removeSideDishFromOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
 
     # Review
     createReview(review: CreateReviewInput!): Review!
+    updateReview(input: UpdateReviewInput!): Review! @authenticated
     deleteReview(id: UUID!): Review! @authenticated
-    editReview(input: EditReviewInput!): Review! @authenticated
 
     # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/

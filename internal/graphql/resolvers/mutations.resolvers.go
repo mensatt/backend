@@ -51,12 +51,12 @@ func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.Oc
 	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &input.CreateOccurrenceParams, input.SideDishes, input.Tags)
 }
 
-func (r *mutationResolver) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error) {
-	return r.Database.DeleteOccurrence(ctx, id)
+func (r *mutationResolver) UpdateOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
+	return r.Database.EditOccurrence(ctx, &input)
 }
 
-func (r *mutationResolver) EditOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
-	return r.Database.EditOccurrence(ctx, &input)
+func (r *mutationResolver) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error) {
+	return r.Database.DeleteOccurrence(ctx, id)
 }
 
 func (r *mutationResolver) AddTagToOccurrence(ctx context.Context, occurrenceID uuid.UUID, tag string) (*sqlc.OccurrenceTag, error) {
@@ -66,17 +66,17 @@ func (r *mutationResolver) AddTagToOccurrence(ctx context.Context, occurrenceID 
 	})
 }
 
-func (r *mutationResolver) AddSideDishToOccurrence(ctx context.Context, occurrenceID uuid.UUID, sideDish uuid.UUID) (*sqlc.OccurrenceSideDish, error) {
-	return r.Database.AddOccurrenceSideDish(ctx, &sqlc.AddOccurrenceSideDishParams{
-		Occurrence: occurrenceID,
-		Dish:       sideDish,
-	})
-}
-
 func (r *mutationResolver) RemoveTagFromOccurrence(ctx context.Context, occurrenceID uuid.UUID, tag string) (*sqlc.OccurrenceTag, error) {
 	return r.Database.RemoveOccurrenceTag(ctx, &sqlc.RemoveOccurrenceTagParams{
 		Occurrence: occurrenceID,
 		Tag:        tag,
+	})
+}
+
+func (r *mutationResolver) AddSideDishToOccurrence(ctx context.Context, occurrenceID uuid.UUID, sideDish uuid.UUID) (*sqlc.OccurrenceSideDish, error) {
+	return r.Database.AddOccurrenceSideDish(ctx, &sqlc.AddOccurrenceSideDishParams{
+		Occurrence: occurrenceID,
+		Dish:       sideDish,
 	})
 }
 
@@ -91,12 +91,12 @@ func (r *mutationResolver) CreateReview(ctx context.Context, review sqlc.CreateR
 	return r.Database.CreateReview(ctx, &review)
 }
 
-func (r *mutationResolver) DeleteReview(ctx context.Context, id uuid.UUID) (*sqlc.Review, error) {
-	return r.Database.DeleteReview(ctx, id)
+func (r *mutationResolver) UpdateReview(ctx context.Context, input sqlc.EditReviewParams) (*sqlc.Review, error) {
+	return r.Database.EditReview(ctx, &input)
 }
 
-func (r *mutationResolver) EditReview(ctx context.Context, input sqlc.EditReviewParams) (*sqlc.Review, error) {
-	return r.Database.EditReview(ctx, &input)
+func (r *mutationResolver) DeleteReview(ctx context.Context, id uuid.UUID) (*sqlc.Review, error) {
+	return r.Database.DeleteReview(ctx, id)
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.
