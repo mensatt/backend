@@ -43,6 +43,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Dish() DishResolver
+	DishAlias() DishAliasResolver
 	Image() ImageResolver
 	Mutation() MutationResolver
 	Occurrence() OccurrenceResolver
@@ -64,8 +65,9 @@ type ComplexityRoot struct {
 	}
 
 	DishAlias struct {
-		AliasName func(childComplexity int) int
-		Dish      func(childComplexity int) int
+		AliasName           func(childComplexity int) int
+		Dish                func(childComplexity int) int
+		NormalizedAliasName func(childComplexity int) int
 	}
 
 	Image struct {
@@ -181,6 +183,9 @@ type ComplexityRoot struct {
 type DishResolver interface {
 	Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error)
 }
+type DishAliasResolver interface {
+	NormalizedAliasName(ctx context.Context, obj *sqlc.DishAlias) (string, error)
+}
 type ImageResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error)
 }
@@ -282,6 +287,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.DishAlias.Dish(childComplexity), true
+
+	case "DishAlias.normalizedAliasName":
+		if e.complexity.DishAlias.NormalizedAliasName == nil {
+			break
+		}
+
+		return e.complexity.DishAlias.NormalizedAliasName(childComplexity), true
 
 	case "Image.acceptedAt":
 		if e.complexity.Image.AcceptedAt == nil {
@@ -1158,6 +1170,7 @@ type Dish {
 type DishAlias {
     dish: UUID!
     aliasName: String!
+    normalizedAliasName: String!
 }
 
 type Occurrence {
@@ -1879,6 +1892,50 @@ func (ec *executionContext) fieldContext_DishAlias_aliasName(ctx context.Context
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _DishAlias_normalizedAliasName(ctx context.Context, field graphql.CollectedField, obj *sqlc.DishAlias) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_DishAlias_normalizedAliasName(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.DishAlias().NormalizedAliasName(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_DishAlias_normalizedAliasName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "DishAlias",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -2636,6 +2693,8 @@ func (ec *executionContext) fieldContext_Mutation_createAlias(ctx context.Contex
 				return ec.fieldContext_DishAlias_dish(ctx, field)
 			case "aliasName":
 				return ec.fieldContext_DishAlias_aliasName(ctx, field)
+			case "normalizedAliasName":
+				return ec.fieldContext_DishAlias_normalizedAliasName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DishAlias", field.Name)
 		},
@@ -2717,6 +2776,8 @@ func (ec *executionContext) fieldContext_Mutation_updateAlias(ctx context.Contex
 				return ec.fieldContext_DishAlias_dish(ctx, field)
 			case "aliasName":
 				return ec.fieldContext_DishAlias_aliasName(ctx, field)
+			case "normalizedAliasName":
+				return ec.fieldContext_DishAlias_normalizedAliasName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DishAlias", field.Name)
 		},
@@ -2798,6 +2859,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteAlias(ctx context.Contex
 				return ec.fieldContext_DishAlias_dish(ctx, field)
 			case "aliasName":
 				return ec.fieldContext_DishAlias_aliasName(ctx, field)
+			case "normalizedAliasName":
+				return ec.fieldContext_DishAlias_normalizedAliasName(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type DishAlias", field.Name)
 		},
@@ -8919,15 +8982,35 @@ func (ec *executionContext) _DishAlias(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._DishAlias_dish(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "aliasName":
 
 			out.Values[i] = ec._DishAlias_aliasName(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
+		case "normalizedAliasName":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DishAlias_normalizedAliasName(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
