@@ -14,7 +14,7 @@ type Mutation {
     # Occurrence
     createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(id: UUID!): Occurrence! @authenticated
-    editOccurrence(id: UUID!, input: EditOccurrenceInput!): Occurrence! @authenticated
+    editOccurrence(input: EditOccurrenceInput!): Occurrence! @authenticated
     addTagToOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
     addSideDishToOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
     removeTagFromOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated

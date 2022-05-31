@@ -57,8 +57,7 @@ func (r *mutationResolver) DeleteOccurrence(ctx context.Context, id uuid.UUID) (
 	return r.Database.DeleteOccurrence(ctx, id)
 }
 
-func (r *mutationResolver) EditOccurrence(ctx context.Context, id uuid.UUID, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
-	input.ID = id
+func (r *mutationResolver) EditOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
 	return r.Database.EditOccurrence(ctx, &input)
 }
 

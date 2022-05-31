@@ -93,7 +93,7 @@ type ComplexityRoot struct {
 		DeleteAlias                  func(childComplexity int, alias string, dish uuid.UUID) int
 		DeleteOccurrence             func(childComplexity int, id uuid.UUID) int
 		DeleteReview                 func(childComplexity int, id uuid.UUID) int
-		EditOccurrence               func(childComplexity int, id uuid.UUID, input sqlc.EditOccurrenceParams) int
+		EditOccurrence               func(childComplexity int, input sqlc.EditOccurrenceParams) int
 		EditReview                   func(childComplexity int, input sqlc.EditReviewParams) int
 		RemoveSideDishFromOccurrence func(childComplexity int, occurrenceID uuid.UUID, sideDish uuid.UUID) int
 		RemoveTagFromOccurrence      func(childComplexity int, occurrenceID uuid.UUID, tag string) int
@@ -198,7 +198,7 @@ type MutationResolver interface {
 	DeleteAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
 	CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error)
-	EditOccurrence(ctx context.Context, id uuid.UUID, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error)
+	EditOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error)
 	AddTagToOccurrence(ctx context.Context, occurrenceID uuid.UUID, tag string) (*sqlc.OccurrenceTag, error)
 	AddSideDishToOccurrence(ctx context.Context, occurrenceID uuid.UUID, sideDish uuid.UUID) (*sqlc.OccurrenceSideDish, error)
 	RemoveTagFromOccurrence(ctx context.Context, occurrenceID uuid.UUID, tag string) (*sqlc.OccurrenceTag, error)
@@ -488,7 +488,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.EditOccurrence(childComplexity, args["id"].(uuid.UUID), args["input"].(sqlc.EditOccurrenceParams)), true
+		return e.complexity.Mutation.EditOccurrence(childComplexity, args["input"].(sqlc.EditOccurrenceParams)), true
 
 	case "Mutation.editReview":
 		if e.complexity.Mutation.EditReview == nil {
@@ -1057,6 +1057,7 @@ input CreateOccurrenceInput {
 }
 
 input EditOccurrenceInput {
+    id: UUID!
     dish: UUID!
     date: Time!
     reviewStatus: ReviewStatus!
@@ -1111,7 +1112,7 @@ input EditReviewInput {
     # Occurrence
     createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(id: UUID!): Occurrence! @authenticated
-    editOccurrence(id: UUID!, input: EditOccurrenceInput!): Occurrence! @authenticated
+    editOccurrence(input: EditOccurrenceInput!): Occurrence! @authenticated
     addTagToOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
     addSideDishToOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
     removeTagFromOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
@@ -1438,24 +1439,15 @@ func (ec *executionContext) field_Mutation_deleteReview_args(ctx context.Context
 func (ec *executionContext) field_Mutation_editOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 uuid.UUID
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["id"] = arg0
-	var arg1 sqlc.EditOccurrenceParams
+	var arg0 sqlc.EditOccurrenceParams
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg1, err = ec.unmarshalNEditOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx, tmp)
+		arg0, err = ec.unmarshalNEditOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["input"] = arg1
+	args["input"] = arg0
 	return args, nil
 }
 
@@ -3120,7 +3112,7 @@ func (ec *executionContext) _Mutation_editOccurrence(ctx context.Context, field 
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().EditOccurrence(rctx, fc.Args["id"].(uuid.UUID), fc.Args["input"].(sqlc.EditOccurrenceParams))
+			return ec.resolvers.Mutation().EditOccurrence(rctx, fc.Args["input"].(sqlc.EditOccurrenceParams))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -8652,6 +8644,14 @@ func (ec *executionContext) unmarshalInputEditOccurrenceInput(ctx context.Contex
 
 	for k, v := range asMap {
 		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "dish":
 			var err error
 
