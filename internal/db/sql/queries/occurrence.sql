@@ -47,4 +47,3 @@ RETURNING *;
 DELETE FROM occurrence
 WHERE id = $1
 RETURNING *;
-

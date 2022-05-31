@@ -8,8 +8,8 @@ FROM dish_alias
 WHERE dish = $1;
 
 -- name: CreateDishAlias :one
-INSERT INTO dish_alias (alias_name, dish)
-VALUES ($1, $2)
+INSERT INTO dish_alias (alias_name, normalized_alias_name, dish)
+VALUES ($1, $2, $3)
 RETURNING *;
 
 -- name: UpdateDishAlias :one
@@ -22,4 +22,3 @@ RETURNING *;
 DELETE FROM dish_alias
 WHERE alias_name = $1 AND dish = $2
 RETURNING *;
-
