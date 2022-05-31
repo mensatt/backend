@@ -7,7 +7,6 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -19,9 +18,9 @@ RETURNING alias_name, normalized_alias_name, dish
 `
 
 type CreateDishAliasParams struct {
-	AliasName           string         `json:"alias_name"`
-	NormalizedAliasName sql.NullString `json:"normalized_alias_name"`
-	Dish                uuid.UUID      `json:"dish"`
+	AliasName           string    `json:"alias_name"`
+	NormalizedAliasName string    `json:"normalized_alias_name"`
+	Dish                uuid.UUID `json:"dish"`
 }
 
 func (q *Queries) CreateDishAlias(ctx context.Context, arg *CreateDishAliasParams) (*DishAlias, error) {
@@ -33,17 +32,12 @@ func (q *Queries) CreateDishAlias(ctx context.Context, arg *CreateDishAliasParam
 
 const deleteDishAlias = `-- name: DeleteDishAlias :one
 DELETE FROM dish_alias
-WHERE alias_name = $1 AND dish = $2
+WHERE alias_name = $1
 RETURNING alias_name, normalized_alias_name, dish
 `
 
-type DeleteDishAliasParams struct {
-	AliasName string    `json:"alias_name"`
-	Dish      uuid.UUID `json:"dish"`
-}
-
-func (q *Queries) DeleteDishAlias(ctx context.Context, arg *DeleteDishAliasParams) (*DishAlias, error) {
-	row := q.db.QueryRow(ctx, deleteDishAlias, arg.AliasName, arg.Dish)
+func (q *Queries) DeleteDishAlias(ctx context.Context, aliasName string) (*DishAlias, error) {
+	row := q.db.QueryRow(ctx, deleteDishAlias, aliasName)
 	var i DishAlias
 	err := row.Scan(&i.AliasName, &i.NormalizedAliasName, &i.Dish)
 	return &i, err
@@ -102,19 +96,19 @@ func (q *Queries) GetAllAliases(ctx context.Context) ([]*DishAlias, error) {
 
 const updateDishAlias = `-- name: UpdateDishAlias :one
 UPDATE dish_alias
-SET alias_name = $3
-WHERE alias_name = $1 AND dish = $2
+SET alias_name = $2, normalized_alias_name = $3
+WHERE alias_name = $1
 RETURNING alias_name, normalized_alias_name, dish
 `
 
 type UpdateDishAliasParams struct {
-	AliasName    string    `json:"alias_name"`
-	Dish         uuid.UUID `json:"dish"`
-	OldAliasName string    `json:"old_alias_name"`
+	AliasName              string `json:"alias_name"`
+	NewAliasName           string `json:"new_alias_name"`
+	NewNormalizedAliasName string `json:"new_normalized_alias_name"`
 }
 
 func (q *Queries) UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error) {
-	row := q.db.QueryRow(ctx, updateDishAlias, arg.AliasName, arg.Dish, arg.OldAliasName)
+	row := q.db.QueryRow(ctx, updateDishAlias, arg.AliasName, arg.NewAliasName, arg.NewNormalizedAliasName)
 	var i DishAlias
 	err := row.Scan(&i.AliasName, &i.NormalizedAliasName, &i.Dish)
 	return &i, err

@@ -1,4 +1,4 @@
-.PHONY: gen generate tidy log logs up down start stop sqlc gqlgen dbmate-new dbmate-migrate dbmate-up dbmate-down dbmate-drop dbmate-status seed jwt jwt-keys
+.PHONY: gen generate tidy log logs up down start stop sqlc gqlgen jwt jwt-keys
 
 DC = docker compose -f docker-compose.yml
 EXEC_MENSATT = $(DC) exec mensatt
@@ -29,9 +29,6 @@ gqlgen:
 # go
 tidy:
 	go mod tidy
-
-seed:
-	go run ./internal/db/seeder/main.go
 
 jwt: jwt-keys
 jwt-keys:

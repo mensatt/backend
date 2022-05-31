@@ -8,7 +8,7 @@ CREATE TABLE dish (
 
 CREATE TABLE dish_alias (
     alias_name varchar,
-    normalized_alias_name varchar,
+    normalized_alias_name varchar NOT NULL,
     dish uuid NOT NULL,
     PRIMARY KEY (alias_name),
     FOREIGN KEY (dish) REFERENCES dish(id)

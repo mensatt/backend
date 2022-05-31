@@ -84,12 +84,12 @@ type ComplexityRoot struct {
 	Mutation struct {
 		AddSideDishToOccurrence      func(childComplexity int, occurrenceID uuid.UUID, sideDish uuid.UUID) int
 		AddTagToOccurrence           func(childComplexity int, occurrenceID uuid.UUID, tag string) int
-		CreateAlias                  func(childComplexity int, alias string, dish uuid.UUID) int
+		CreateAlias                  func(childComplexity int, alias string, normalizedAlias string, dish uuid.UUID) int
 		CreateDish                   func(childComplexity int, name string) int
 		CreateOccurrence             func(childComplexity int, input models.OccurrenceInputHelper) int
 		CreateReview                 func(childComplexity int, review sqlc.CreateReviewParams) int
 		CreateTag                    func(childComplexity int, tag sqlc.CreateTagParams) int
-		DeleteAlias                  func(childComplexity int, alias string, dish uuid.UUID) int
+		DeleteAlias                  func(childComplexity int, alias string) int
 		DeleteOccurrence             func(childComplexity int, id uuid.UUID) int
 		DeleteReview                 func(childComplexity int, id uuid.UUID) int
 		EditOccurrence               func(childComplexity int, input sqlc.EditOccurrenceParams) int
@@ -97,7 +97,7 @@ type ComplexityRoot struct {
 		RemoveSideDishFromOccurrence func(childComplexity int, occurrenceID uuid.UUID, sideDish uuid.UUID) int
 		RemoveTagFromOccurrence      func(childComplexity int, occurrenceID uuid.UUID, tag string) int
 		RenameDish                   func(childComplexity int, id uuid.UUID, name string) int
-		UpdateAlias                  func(childComplexity int, oldAlias string, alias string, dish uuid.UUID) int
+		UpdateAlias                  func(childComplexity int, alias string, newAlias string, newNormalizedAlias string, dish uuid.UUID) int
 	}
 
 	Occurrence struct {
@@ -189,9 +189,9 @@ type MutationResolver interface {
 	CreateTag(ctx context.Context, tag sqlc.CreateTagParams) (*sqlc.Tag, error)
 	CreateDish(ctx context.Context, name string) (*sqlc.Dish, error)
 	RenameDish(ctx context.Context, id uuid.UUID, name string) (*sqlc.Dish, error)
-	CreateAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
-	UpdateAlias(ctx context.Context, oldAlias string, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
-	DeleteAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error)
+	CreateAlias(ctx context.Context, alias string, normalizedAlias string, dish uuid.UUID) (*sqlc.DishAlias, error)
+	UpdateAlias(ctx context.Context, alias string, newAlias string, newNormalizedAlias string, dish uuid.UUID) (*sqlc.DishAlias, error)
+	DeleteAlias(ctx context.Context, alias string) (*sqlc.DishAlias, error)
 	CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*sqlc.Occurrence, error)
 	EditOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error)
@@ -388,7 +388,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateAlias(childComplexity, args["alias"].(string), args["dish"].(uuid.UUID)), true
+		return e.complexity.Mutation.CreateAlias(childComplexity, args["alias"].(string), args["normalizedAlias"].(string), args["dish"].(uuid.UUID)), true
 
 	case "Mutation.createDish":
 		if e.complexity.Mutation.CreateDish == nil {
@@ -448,7 +448,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.DeleteAlias(childComplexity, args["alias"].(string), args["dish"].(uuid.UUID)), true
+		return e.complexity.Mutation.DeleteAlias(childComplexity, args["alias"].(string)), true
 
 	case "Mutation.deleteOccurrence":
 		if e.complexity.Mutation.DeleteOccurrence == nil {
@@ -544,7 +544,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateAlias(childComplexity, args["oldAlias"].(string), args["alias"].(string), args["dish"].(uuid.UUID)), true
+		return e.complexity.Mutation.UpdateAlias(childComplexity, args["alias"].(string), args["newAlias"].(string), args["newNormalizedAlias"].(string), args["dish"].(uuid.UUID)), true
 
 	case "Occurrence.carbohydrates":
 		if e.complexity.Occurrence.Carbohydrates == nil {
@@ -1101,9 +1101,9 @@ input EditReviewInput {
     renameDish(id: UUID!, name: String!): Dish! @authenticated
 
     # DishAlias
-    createAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
-    updateAlias(oldAlias: String!, alias: String! dish: UUID!): DishAlias! @authenticated 
-    deleteAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
+    createAlias(alias: String! normalizedAlias: String!, dish: UUID!): DishAlias! @authenticated
+    updateAlias(alias: String!, newAlias: String!, newNormalizedAlias: String!, dish: UUID!): DishAlias! @authenticated
+    deleteAlias(alias: String!): DishAlias! @authenticated
 
     # Occurrence
     createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
@@ -1306,15 +1306,24 @@ func (ec *executionContext) field_Mutation_createAlias_args(ctx context.Context,
 		}
 	}
 	args["alias"] = arg0
-	var arg1 uuid.UUID
-	if tmp, ok := rawArgs["dish"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
-		arg1, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	var arg1 string
+	if tmp, ok := rawArgs["normalizedAlias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("normalizedAlias"))
+		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["dish"] = arg1
+	args["normalizedAlias"] = arg1
+	var arg2 uuid.UUID
+	if tmp, ok := rawArgs["dish"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
+		arg2, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["dish"] = arg2
 	return args, nil
 }
 
@@ -1390,15 +1399,6 @@ func (ec *executionContext) field_Mutation_deleteAlias_args(ctx context.Context,
 		}
 	}
 	args["alias"] = arg0
-	var arg1 uuid.UUID
-	if tmp, ok := rawArgs["dish"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
-		arg1, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["dish"] = arg1
 	return args, nil
 }
 
@@ -1538,32 +1538,41 @@ func (ec *executionContext) field_Mutation_updateAlias_args(ctx context.Context,
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
-	if tmp, ok := rawArgs["oldAlias"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("oldAlias"))
+	if tmp, ok := rawArgs["alias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
 		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["oldAlias"] = arg0
+	args["alias"] = arg0
 	var arg1 string
-	if tmp, ok := rawArgs["alias"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("alias"))
+	if tmp, ok := rawArgs["newAlias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newAlias"))
 		arg1, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["alias"] = arg1
-	var arg2 uuid.UUID
-	if tmp, ok := rawArgs["dish"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
-		arg2, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	args["newAlias"] = arg1
+	var arg2 string
+	if tmp, ok := rawArgs["newNormalizedAlias"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("newNormalizedAlias"))
+		arg2, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["dish"] = arg2
+	args["newNormalizedAlias"] = arg2
+	var arg3 uuid.UUID
+	if tmp, ok := rawArgs["dish"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
+		arg3, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["dish"] = arg3
 	return args, nil
 }
 
@@ -1905,9 +1914,9 @@ func (ec *executionContext) _DishAlias_normalizedAliasName(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(sql.NullString)
+	res := resTmp.(string)
 	fc.Result = res
-	return ec.marshalNString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
+	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DishAlias_normalizedAliasName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2625,7 +2634,7 @@ func (ec *executionContext) _Mutation_createAlias(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateAlias(rctx, fc.Args["alias"].(string), fc.Args["dish"].(uuid.UUID))
+			return ec.resolvers.Mutation().CreateAlias(rctx, fc.Args["alias"].(string), fc.Args["normalizedAlias"].(string), fc.Args["dish"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -2708,7 +2717,7 @@ func (ec *executionContext) _Mutation_updateAlias(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateAlias(rctx, fc.Args["oldAlias"].(string), fc.Args["alias"].(string), fc.Args["dish"].(uuid.UUID))
+			return ec.resolvers.Mutation().UpdateAlias(rctx, fc.Args["alias"].(string), fc.Args["newAlias"].(string), fc.Args["newNormalizedAlias"].(string), fc.Args["dish"].(uuid.UUID))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -2791,7 +2800,7 @@ func (ec *executionContext) _Mutation_deleteAlias(ctx context.Context, field gra
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().DeleteAlias(rctx, fc.Args["alias"].(string), fc.Args["dish"].(uuid.UUID))
+			return ec.resolvers.Mutation().DeleteAlias(rctx, fc.Args["alias"].(string))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
