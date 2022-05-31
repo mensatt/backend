@@ -51,7 +51,6 @@ type ResolverRoot interface {
 	OccurrenceTag() OccurrenceTagResolver
 	Query() QueryResolver
 	Review() ReviewResolver
-	EditReviewInput() EditReviewInputResolver
 }
 
 type DirectiveRoot struct {
@@ -237,10 +236,6 @@ type QueryResolver interface {
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error)
-}
-
-type EditReviewInputResolver interface {
-	Dish(ctx context.Context, obj *sqlc.EditReviewParams, data uuid.UUID) error
 }
 
 type executableSchema struct {
@@ -1087,7 +1082,7 @@ input CreateReviewInput {
 }
 
 input EditReviewInput {
-    dish: UUID!
+    id: UUID!
     occurrence: UUID
     displayName: String!
     stars: Int!
@@ -8792,15 +8787,12 @@ func (ec *executionContext) unmarshalInputEditReviewInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "dish":
+		case "id":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.EditReviewInput().Dish(ctx, &it, data); err != nil {
 				return it, err
 			}
 		case "occurrence":
