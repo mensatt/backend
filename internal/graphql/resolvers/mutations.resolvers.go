@@ -57,8 +57,7 @@ func (r *mutationResolver) DeleteOccurrence(ctx context.Context, id uuid.UUID) (
 	return r.Database.DeleteOccurrence(ctx, id)
 }
 
-func (r *mutationResolver) EditOccurrence(ctx context.Context, id uuid.UUID, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
-	input.ID = id
+func (r *mutationResolver) EditOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
 	return r.Database.EditOccurrence(ctx, &input)
 }
 
@@ -92,6 +91,14 @@ func (r *mutationResolver) RemoveSideDishFromOccurrence(ctx context.Context, occ
 
 func (r *mutationResolver) CreateReview(ctx context.Context, review sqlc.CreateReviewParams) (*sqlc.Review, error) {
 	return r.Database.CreateReview(ctx, &review)
+}
+
+func (r *mutationResolver) DeleteReview(ctx context.Context, id uuid.UUID) (*sqlc.Review, error) {
+	return r.Database.DeleteReview(ctx, id)
+}
+
+func (r *mutationResolver) EditReview(ctx context.Context, input sqlc.EditReviewParams) (*sqlc.Review, error) {
+	return r.Database.EditReview(ctx, &input)
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.
