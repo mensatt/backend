@@ -43,7 +43,6 @@ type Config struct {
 
 type ResolverRoot interface {
 	Dish() DishResolver
-	DishAlias() DishAliasResolver
 	Image() ImageResolver
 	Mutation() MutationResolver
 	Occurrence() OccurrenceResolver
@@ -182,9 +181,6 @@ type ComplexityRoot struct {
 
 type DishResolver interface {
 	Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error)
-}
-type DishAliasResolver interface {
-	NormalizedAliasName(ctx context.Context, obj *sqlc.DishAlias) (string, error)
 }
 type ImageResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error)
@@ -1897,7 +1893,7 @@ func (ec *executionContext) _DishAlias_normalizedAliasName(ctx context.Context, 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.DishAlias().NormalizedAliasName(rctx, obj)
+		return obj.NormalizedAliasName, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1909,17 +1905,17 @@ func (ec *executionContext) _DishAlias_normalizedAliasName(ctx context.Context, 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(sql.NullString)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_DishAlias_normalizedAliasName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "DishAlias",
 		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
+		IsMethod:   false,
+		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -8982,35 +8978,22 @@ func (ec *executionContext) _DishAlias(ctx context.Context, sel ast.SelectionSet
 			out.Values[i] = ec._DishAlias_dish(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "aliasName":
 
 			out.Values[i] = ec._DishAlias_aliasName(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+				invalids++
 			}
 		case "normalizedAliasName":
-			field := field
 
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._DishAlias_normalizedAliasName(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
+			out.Values[i] = ec._DishAlias_normalizedAliasName(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
 			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return innerFunc(ctx)
-
-			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
