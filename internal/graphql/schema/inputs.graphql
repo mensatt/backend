@@ -7,7 +7,7 @@ input TagInput {
     isAllergy: Boolean
 }
 
-input OccurrenceInput {
+input CreateOccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Time!
@@ -45,7 +45,7 @@ input EditOccurrenceInput {
     priceGuest: Int
 }
 
-input ReviewInput {
+input CreateReviewInput {
     occurrence: UUID!
     displayName: String!
     stars: Int!
@@ -53,9 +53,10 @@ input ReviewInput {
 }
 
 input EditReviewInput {
+    dish: UUID!
     occurrence: UUID
-    displayName: String
-    stars: Int
+    displayName: String!
+    stars: Int!
     text: String
     acceptedAt: Time
 }

@@ -93,13 +93,13 @@ models:
   OccurrenceSideDish:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.OccurrenceSideDish
-  OccurrenceInput:
+  CreateOccurrenceInput:
     model:
       - github.com/mensatt/backend/internal/graphql/models.OccurrenceInputHelper
   EditOccurrenceInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.EditOccurrenceParams
-  ReviewInput:
+  CreateReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.CreateReviewParams
   EditReviewInput:
