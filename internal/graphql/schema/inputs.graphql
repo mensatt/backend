@@ -53,7 +53,7 @@ input CreateReviewInput {
 }
 
 input EditReviewInput {
-    dish: UUID!
+    id: UUID!
     occurrence: UUID
     displayName: String!
     stars: Int!
