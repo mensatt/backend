@@ -59,8 +59,9 @@ type Dish struct {
 }
 
 type DishAlias struct {
-	AliasName string    `json:"alias_name"`
-	Dish      uuid.UUID `json:"dish"`
+	AliasName      string         `json:"alias_name"`
+	NormalizedName sql.NullString `json:"normalized_name"`
+	Dish           uuid.UUID      `json:"dish"`
 }
 
 type Image struct {

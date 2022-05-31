@@ -28,6 +28,7 @@ type Dish {
 type DishAlias {
     dish: UUID!
     aliasName: String!
+    normalizedAliasName: String!
 }
 
 type Occurrence {

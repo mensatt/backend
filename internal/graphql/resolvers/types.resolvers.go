@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
@@ -12,6 +13,10 @@ import (
 
 func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error) {
 	return r.Database.GetAliasesForDish(ctx, obj.ID)
+}
+
+func (r *dishAliasResolver) NormalizedAliasName(ctx context.Context, obj *sqlc.DishAlias) (string, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
@@ -61,6 +66,9 @@ func (r *reviewResolver) Occurrence(ctx context.Context, obj *sqlc.Review) (*sql
 // Dish returns gqlserver.DishResolver implementation.
 func (r *Resolver) Dish() gqlserver.DishResolver { return &dishResolver{r} }
 
+// DishAlias returns gqlserver.DishAliasResolver implementation.
+func (r *Resolver) DishAlias() gqlserver.DishAliasResolver { return &dishAliasResolver{r} }
+
 // Image returns gqlserver.ImageResolver implementation.
 func (r *Resolver) Image() gqlserver.ImageResolver { return &imageResolver{r} }
 
@@ -79,6 +87,7 @@ func (r *Resolver) OccurrenceTag() gqlserver.OccurrenceTagResolver { return &occ
 func (r *Resolver) Review() gqlserver.ReviewResolver { return &reviewResolver{r} }
 
 type dishResolver struct{ *Resolver }
+type dishAliasResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type occurrenceResolver struct{ *Resolver }
 type occurrenceSideDishResolver struct{ *Resolver }
