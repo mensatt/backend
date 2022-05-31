@@ -12,7 +12,7 @@ type Mutation {
     deleteAlias(alias: String! dish: UUID!): DishAlias! @authenticated 
 
     # Occurrence
-    createOccurrence(input: OccurrenceInput!): Occurrence! @authenticated
+    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(id: UUID!): Occurrence! @authenticated
     editOccurrence(id: UUID!, input: EditOccurrenceInput!): Occurrence! @authenticated
     addTagToOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
@@ -21,9 +21,9 @@ type Mutation {
     removeSideDishFromOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
 
     # Review
-    createReview(review: ReviewInput!): Review!
+    createReview(review: CreateReviewInput!): Review!
     deleteReview(id: UUID!): Review! @authenticated
-    editReview(id: UUID!, review: EditReviewInput!): Review! @authenticated
+    editReview(input: EditReviewInput!): Review! @authenticated
 
     # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/
