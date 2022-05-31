@@ -96,13 +96,13 @@ models:
   CreateOccurrenceInput:
     model:
       - github.com/mensatt/backend/internal/graphql/models.OccurrenceInputHelper
-  EditOccurrenceInput:
+  UpdateOccurrenceInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.EditOccurrenceParams
   CreateReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.CreateReviewParams
-  EditReviewInput:
+  UpdateReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.EditReviewParams
   Review:
