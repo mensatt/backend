@@ -27,26 +27,24 @@ func (r *mutationResolver) RenameDish(ctx context.Context, id uuid.UUID, name st
 	})
 }
 
-func (r *mutationResolver) CreateAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
+func (r *mutationResolver) CreateAlias(ctx context.Context, alias string, normalizedAlias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
 	return r.Database.CreateDishAlias(ctx, &sqlc.CreateDishAliasParams{
-		AliasName: alias,
-		Dish:      dish,
+		AliasName:           alias,
+		NormalizedAliasName: normalizedAlias,
+		Dish:                dish,
 	})
 }
 
-func (r *mutationResolver) UpdateAlias(ctx context.Context, oldAlias string, alias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
+func (r *mutationResolver) UpdateAlias(ctx context.Context, alias string, newAlias string, newNormalizedAlias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
 	return r.Database.UpdateDishAlias(ctx, &sqlc.UpdateDishAliasParams{
-		OldAliasName: oldAlias,
-		AliasName:    alias,
-		Dish:         dish,
+		AliasName:              alias,
+		NewAliasName:           newAlias,
+		NewNormalizedAliasName: newNormalizedAlias,
 	})
 }
 
-func (r *mutationResolver) DeleteAlias(ctx context.Context, alias string, dish uuid.UUID) (*sqlc.DishAlias, error) {
-	return r.Database.DeleteDishAlias(ctx, &sqlc.DeleteDishAliasParams{
-		AliasName: alias,
-		Dish:      dish,
-	})
+func (r *mutationResolver) DeleteAlias(ctx context.Context, alias string) (*sqlc.DishAlias, error) {
+	return r.Database.DeleteDishAlias(ctx, alias)
 }
 
 func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {

@@ -14,11 +14,11 @@ RETURNING *;
 
 -- name: UpdateDishAlias :one
 UPDATE dish_alias
-SET alias_name = sqlc.arg(old_alias_name)
-WHERE alias_name = $1 AND dish = $2
+SET alias_name = sqlc.arg(new_alias_name), normalized_alias_name = sqlc.arg(new_normalized_alias_name)
+WHERE alias_name = $1
 RETURNING *;
 
 -- name: DeleteDishAlias :one
 DELETE FROM dish_alias
-WHERE alias_name = $1 AND dish = $2
+WHERE alias_name = $1
 RETURNING *;

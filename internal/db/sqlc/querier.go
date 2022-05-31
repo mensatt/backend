@@ -21,7 +21,7 @@ type Querier interface {
 	CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error)
 	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
-	DeleteDishAlias(ctx context.Context, arg *DeleteDishAliasParams) (*DishAlias, error)
+	DeleteDishAlias(ctx context.Context, aliasName string) (*DishAlias, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	DeleteReview(ctx context.Context, id uuid.UUID) (*Review, error)
 	EditOccurrence(ctx context.Context, arg *EditOccurrenceParams) (*Occurrence, error)
