@@ -1149,6 +1149,7 @@ enum ReviewStatus {
     APPROVED
     AWAITING_APPROVAL
     UPDATED
+    PENDING_DELETION
 }
 
 type Tag {

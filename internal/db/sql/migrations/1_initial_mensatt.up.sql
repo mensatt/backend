@@ -27,7 +27,7 @@ CREATE TABLE tag (
     PRIMARY KEY (key)
 );
 
-CREATE TYPE review_status AS ENUM('APPROVED', 'AWAITING_APPROVAL', 'UPDATED');
+CREATE TYPE review_status AS ENUM('APPROVED', 'AWAITING_APPROVAL', 'UPDATED', 'PENDING_DELETION');
 
 CREATE TABLE occurrence (
     id uuid DEFAULT uuid_generate_v4(),
