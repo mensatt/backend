@@ -39,6 +39,7 @@ const (
 	ReviewStatusAPPROVED         ReviewStatus = "APPROVED"
 	ReviewStatusAWAITINGAPPROVAL ReviewStatus = "AWAITING_APPROVAL"
 	ReviewStatusUPDATED          ReviewStatus = "UPDATED"
+	ReviewStatusPENDINGDELETION  ReviewStatus = "PENDING_DELETION"
 )
 
 func (e *ReviewStatus) Scan(src interface{}) error {
