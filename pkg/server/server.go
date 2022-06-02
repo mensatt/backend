@@ -27,7 +27,7 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 
 	corsConfig := cors.DefaultConfig()
 	corsConfig.AllowAllOrigins = true
-	corsConfig.AllowCredentials = true
+	corsConfig.AddAllowHeaders("Authorization")
 	app.Use(cors.New(corsConfig))
 
 	app.Use(sentrygin.New(sentrygin.Options{}))
