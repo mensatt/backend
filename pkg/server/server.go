@@ -24,7 +24,12 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 	database := db.NewExtended(pool)
 
 	app := gin.Default()
-	app.Use(cors.Default())
+
+	corsConfig := cors.DefaultConfig()
+	corsConfig.AllowAllOrigins = true
+	corsConfig.AllowCredentials = true
+	app.Use(cors.New(corsConfig))
+
 	app.Use(sentrygin.New(sentrygin.Options{}))
 	app.Use(middleware.Auth(middleware.AuthParams{
 		JWTKeyStore: jwtKeyStore,
