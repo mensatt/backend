@@ -1146,6 +1146,7 @@ scalar UUID`, BuiltIn: false},
 }
 
 enum ReviewStatus {
+    CONFIRMED
     APPROVED
     AWAITING_APPROVAL
     UPDATED
