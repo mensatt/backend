@@ -5,6 +5,7 @@ enum Priority {
 }
 
 enum ReviewStatus {
+    CONFIRMED
     APPROVED
     AWAITING_APPROVAL
     UPDATED
