@@ -34,7 +34,7 @@ INSERT INTO tag (key, name, description, short_name, priority) VALUES ('MV', 'Me
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Wz', 'Weizen', 'Weizen (Gluten)', '🌾', 'MEDIUM', TRUE);
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Ro', 'Roggen', 'Roggen (Gluten)', '', 'MEDIUM', TRUE);
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Ge', 'Gerste', 'Gerste (Gluten)', '', 'MEDIUM', TRUE);
-INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Hafer', 'Hafer', 'Hafer (Gluten)', '', 'MEDIUM', TRUE);
+INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Hf', 'Hafer', 'Hafer (Gluten)', '', 'MEDIUM', TRUE);
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Kr', 'Krebstiere', 'Krebstiere', '', 'LOW', TRUE);
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Ei', 'Eier', 'Eier', '🥚', 'LOW', TRUE);
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy) VALUES ('Fi', 'Fisch', 'Fisch', '🐟', 'LOW', TRUE);

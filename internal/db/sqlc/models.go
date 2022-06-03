@@ -36,9 +36,11 @@ func (e *Priority) Scan(src interface{}) error {
 type ReviewStatus string
 
 const (
+	ReviewStatusCONFIRMED        ReviewStatus = "CONFIRMED"
 	ReviewStatusAPPROVED         ReviewStatus = "APPROVED"
 	ReviewStatusAWAITINGAPPROVAL ReviewStatus = "AWAITING_APPROVAL"
 	ReviewStatusUPDATED          ReviewStatus = "UPDATED"
+	ReviewStatusPENDINGDELETION  ReviewStatus = "PENDING_DELETION"
 )
 
 func (e *ReviewStatus) Scan(src interface{}) error {
