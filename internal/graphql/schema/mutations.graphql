@@ -1,30 +1,30 @@
 type Mutation {
     # Tag
-    createTag(tag: TagInput!): Tag! @authenticated
+    createTag(input: TagCreateInput!): Tag! @authenticated
 
     # Dish
-    createDish(name: String!): Dish! @authenticated
-    renameDish(id: UUID!, name: String!): Dish! @authenticated
+    createDish(input: DishCreateInput!): Dish! @authenticated
+    updateDish(input: DishUpdateInput!): Dish! @authenticated
 
     # DishAlias
-    createAlias(alias: String! normalizedAlias: String!, dish: UUID!): DishAlias! @authenticated
-    updateAlias(alias: String!, newAlias: String!, newNormalizedAlias: String!, dish: UUID!): DishAlias! @authenticated
-    deleteAlias(alias: String!): DishAlias! @authenticated
+    createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated
+    updateDishAlias(input: UpdateDishAliasInput!): DishAlias! @authenticated
+    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @authenticated
 
     # Occurrence
     createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
     updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @authenticated
-    deleteOccurrence(id: UUID!): Occurrence! @authenticated
+    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @authenticated
     
-    addTagToOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
-    removeTagFromOccurrence(occurrenceId: UUID!, tag: String!): OccurrenceTag! @authenticated
-    addSideDishToOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
-    removeSideDishFromOccurrence(occurrenceId: UUID!, sideDish: UUID!): OccurrenceSideDish! @authenticated
+    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @authenticated
+    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @authenticated
+    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @authenticated
+    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @authenticated
 
     # Review
-    createReview(review: CreateReviewInput!): Review!
+    createReview(input: CreateReviewInput!): Review!
     updateReview(input: UpdateReviewInput!): Review! @authenticated
-    deleteReview(id: UUID!): Review! @authenticated
+    deleteReview(input: DeleteReviewInput!): Review! @authenticated
 
     # Image
     #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/

@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -62,20 +63,21 @@ func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) 
 	return &i, err
 }
 
-const renameDish = `-- name: RenameDish :one
+const updateDish = `-- name: UpdateDish :one
 UPDATE dish
-SET name = $1
-WHERE id = $2
+SET
+    name = COALESCE($2, name)
+WHERE id = $1
 RETURNING id, name
 `
 
-type RenameDishParams struct {
-	Name string    `json:"name"`
-	ID   uuid.UUID `json:"id"`
+type UpdateDishParams struct {
+	ID   uuid.UUID      `json:"id"`
+	Name sql.NullString `json:"name"`
 }
 
-func (q *Queries) RenameDish(ctx context.Context, arg *RenameDishParams) (*Dish, error) {
-	row := q.db.QueryRow(ctx, renameDish, arg.Name, arg.ID)
+func (q *Queries) UpdateDish(ctx context.Context, arg *UpdateDishParams) (*Dish, error) {
+	row := q.db.QueryRow(ctx, updateDish, arg.ID, arg.Name)
 	var i Dish
 	err := row.Scan(&i.ID, &i.Name)
 	return &i, err

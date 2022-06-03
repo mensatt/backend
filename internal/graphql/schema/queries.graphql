@@ -1,13 +1,26 @@
 type Query {
+    # User
     login(email: String!, password: String!): String!
     getCurrentUser: User
 
+    # Tag
     getAllTags: [Tag!]!
+
+    #Dish
     getAllDishes: [Dish!]!
+
+    # Occurrence
     getAllOccurrences: [Occurrence!]!
-    getAllReviews: [Review!]!
-    getAllImages: [Image!]!
     getOccurrencesByDate(date: Time!): [Occurrence!]!
+    getOccurrencesAfterInclusiveDate(start: Time!): [Occurrence!]!
+
+    # Review
+    getAllReviews: [Review!]!
+
+    # Image
+    getAllImages: [Image!]!
+
+    # Misc
 
     # only enabled in debug mode
     getVcsBuildInfo: VcsBuildInfo

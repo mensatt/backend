@@ -46,6 +46,7 @@ resolver:
 # modelgen, the others will be allowed when binding to fields. Configure them to
 # your liking
 models:
+  # Scalars
   String:
     model:
       - github.com/99designs/gqlgen/graphql.String
@@ -63,27 +64,26 @@ models:
   UUID:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.UUID
+      - github.com/mensatt/backend/internal/graphql/scalars.NullUUID
+
+  # Enums
   Priority:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.Priority
   ReviewStatus:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.ReviewStatus
+  
+  # SQLC models
+  Tag:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.Tag
   Dish:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.Dish
   DishAlias:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.DishAlias
-  TagInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.CreateTagParams
-  Tag:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Tag
-  Image:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Image
   Occurrence:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.Occurrence
@@ -93,24 +93,62 @@ models:
   OccurrenceSideDish:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.OccurrenceSideDish
-  CreateOccurrenceInput:
+  Review:
     model:
-      - github.com/mensatt/backend/internal/graphql/models.OccurrenceInputHelper
+      - github.com/mensatt/backend/internal/db/sqlc.Review
+  Image:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.Image
+  User:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.User
+  
+  # SQLC Params
+  # Tag
+  TagCreateInput:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.CreateTagParams
+  # Dish
+  DishUpdateInput:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.UpdateDishParams
+  # DishAlias
+  CreateDishAliasInput:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.CreateDishAliasParams
+  UpdateDishAliasInput:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.UpdateDishAliasParams
+  # Occurrence
   UpdateOccurrenceInput:
     model:
-      - github.com/mensatt/backend/internal/db/sqlc.EditOccurrenceParams
+      - github.com/mensatt/backend/internal/db/sqlc.UpdateOccurrenceParams
+  AddTagToOccurrenceInput:
+      model:
+      - github.com/mensatt/backend/internal/db/sqlc.AddOccurrenceTagParams
+  RemoveTagFromOccurrenceInput:
+      model:
+      - github.com/mensatt/backend/internal/db/sqlc.RemoveOccurrenceTagParams
+  AddSideDishToOccurrenceInput:
+      model:
+      - github.com/mensatt/backend/internal/db/sqlc.AddOccurrenceSideDishParams
+  RemoveSideDishFromOccurrenceInput:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.RemoveOccurrenceSideDishParams
+  # Review
   CreateReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.CreateReviewParams
   UpdateReviewInput:
     model:
-      - github.com/mensatt/backend/internal/db/sqlc.EditReviewParams
-  Review:
+      - github.com/mensatt/backend/internal/db/sqlc.UpdateReviewParams
+
+  # Input helper types      
+  CreateOccurrenceInput:
     model:
-      - github.com/mensatt/backend/internal/db/sqlc.Review
-  User:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.User
+      - github.com/mensatt/backend/internal/graphql/models.OccurrenceInputHelper
+  
+  # Other
   VcsBuildInfo:
     model:
       - github.com/mensatt/backend/pkg/utils.VCSBuildInfo

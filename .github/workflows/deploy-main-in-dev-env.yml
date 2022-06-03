@@ -3,10 +3,6 @@ name: Docker Build & Deploy
 on:
   push:
     branches: [main]
-  pull_request_target:
-    types: [closed]
-    branches: [main]
-
 jobs:
   build:
     if: github.event.pull_request.merged == true
