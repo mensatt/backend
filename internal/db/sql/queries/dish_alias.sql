@@ -14,7 +14,10 @@ RETURNING *;
 
 -- name: UpdateDishAlias :one
 UPDATE dish_alias
-SET alias_name = sqlc.arg(new_alias_name), normalized_alias_name = sqlc.arg(new_normalized_alias_name)
+SET 
+    alias_name = COALESCE(sqlc.narg('new_alias_name'), alias_name),
+    normalized_alias_name = COALESCE(sqlc.narg('normalized_alias_name'), normalized_alias_name),
+    dish = COALESCE(sqlc.narg('dish'), dish)
 WHERE alias_name = $1
 RETURNING *;
 
