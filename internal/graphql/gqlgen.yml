@@ -122,7 +122,7 @@ models:
   # Occurrence
   UpdateOccurrenceInput:
     model:
-      - github.com/mensatt/backend/internal/db/sqlc.EditOccurrenceParams
+      - github.com/mensatt/backend/internal/db/sqlc.UpdateOccurrenceParams
   AddTagToOccurrenceInput:
       model:
       - github.com/mensatt/backend/internal/db/sqlc.AddOccurrenceTagParams

@@ -24,7 +24,6 @@ type Querier interface {
 	DeleteDishAlias(ctx context.Context, aliasName string) (*DishAlias, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	DeleteReview(ctx context.Context, id uuid.UUID) (*Review, error)
-	EditOccurrence(ctx context.Context, arg *EditOccurrenceParams) (*Occurrence, error)
 	GetAliasesForDish(ctx context.Context, dish uuid.UUID) ([]string, error)
 	GetAllAliases(ctx context.Context) ([]*DishAlias, error)
 	GetAllDishes(ctx context.Context) ([]*Dish, error)
@@ -49,6 +48,7 @@ type Querier interface {
 	RemoveOccurrenceTag(ctx context.Context, arg *RemoveOccurrenceTagParams) (*OccurrenceTag, error)
 	UpdateDish(ctx context.Context, arg *UpdateDishParams) (*Dish, error)
 	UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error)
+	UpdateOccurrence(ctx context.Context, arg *UpdateOccurrenceParams) (*Occurrence, error)
 	UpdateReview(ctx context.Context, arg *UpdateReviewParams) (*Review, error)
 }
 

@@ -107,73 +107,6 @@ func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurren
 	return &i, err
 }
 
-const editOccurrence = `-- name: EditOccurrence :one
-UPDATE occurrence
-SET dish = $1, date = $2, review_status = $3, kj = $4, kcal = $5, fat = $6, saturated_fat = $7, carbohydrates = $8, sugar = $9, fiber = $10, protein = $11, salt = $12, price_student = $13, price_staff = $14, price_guest = $15
-WHERE id = $16
-RETURNING id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
-`
-
-type EditOccurrenceParams struct {
-	Dish          uuid.UUID     `json:"dish"`
-	Date          time.Time     `json:"date"`
-	ReviewStatus  ReviewStatus  `json:"review_status"`
-	Kj            sql.NullInt32 `json:"kj"`
-	Kcal          sql.NullInt32 `json:"kcal"`
-	Fat           sql.NullInt32 `json:"fat"`
-	SaturatedFat  sql.NullInt32 `json:"saturated_fat"`
-	Carbohydrates sql.NullInt32 `json:"carbohydrates"`
-	Sugar         sql.NullInt32 `json:"sugar"`
-	Fiber         sql.NullInt32 `json:"fiber"`
-	Protein       sql.NullInt32 `json:"protein"`
-	Salt          sql.NullInt32 `json:"salt"`
-	PriceStudent  sql.NullInt32 `json:"price_student"`
-	PriceStaff    sql.NullInt32 `json:"price_staff"`
-	PriceGuest    sql.NullInt32 `json:"price_guest"`
-	ID            uuid.UUID     `json:"id"`
-}
-
-func (q *Queries) EditOccurrence(ctx context.Context, arg *EditOccurrenceParams) (*Occurrence, error) {
-	row := q.db.QueryRow(ctx, editOccurrence,
-		arg.Dish,
-		arg.Date,
-		arg.ReviewStatus,
-		arg.Kj,
-		arg.Kcal,
-		arg.Fat,
-		arg.SaturatedFat,
-		arg.Carbohydrates,
-		arg.Sugar,
-		arg.Fiber,
-		arg.Protein,
-		arg.Salt,
-		arg.PriceStudent,
-		arg.PriceStaff,
-		arg.PriceGuest,
-		arg.ID,
-	)
-	var i Occurrence
-	err := row.Scan(
-		&i.ID,
-		&i.Dish,
-		&i.Date,
-		&i.ReviewStatus,
-		&i.Kj,
-		&i.Kcal,
-		&i.Fat,
-		&i.SaturatedFat,
-		&i.Carbohydrates,
-		&i.Sugar,
-		&i.Fiber,
-		&i.Protein,
-		&i.Salt,
-		&i.PriceStudent,
-		&i.PriceStaff,
-		&i.PriceGuest,
-	)
-	return &i, err
-}
-
 const getAllOccurrences = `-- name: GetAllOccurrences :many
 SELECT id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
@@ -462,4 +395,86 @@ func (q *Queries) GetTagsForOccurrence(ctx context.Context, occurrence uuid.UUID
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateOccurrence = `-- name: UpdateOccurrence :one
+UPDATE occurrence
+SET 
+    dish = COALESCE($2, dish),
+    date = COALESCE($3, date),
+    review_status = COALESCE($4, review_status),
+    kj = COALESCE($5, kj),
+    kcal = COALESCE($6, kcal),
+    fat = COALESCE($7, fat),
+    saturated_fat = COALESCE($8, saturated_fat),
+    carbohydrates = COALESCE($9, carbohydrates),
+    sugar = COALESCE($10, sugar),
+    fiber = COALESCE($11, fiber),
+    protein = COALESCE($12, protein),
+    salt = COALESCE($13, salt),
+    price_student = COALESCE($14, price_student),
+    price_staff = COALESCE($15, price_staff),
+    price_guest = COALESCE($16, price_guest)
+WHERE id = $1
+RETURNING id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+`
+
+type UpdateOccurrenceParams struct {
+	ID            uuid.UUID     `json:"id"`
+	Dish          uuid.NullUUID `json:"dish"`
+	Date          sql.NullTime  `json:"date"`
+	ReviewStatus  ReviewStatus  `json:"review_status"`
+	Kj            sql.NullInt32 `json:"kj"`
+	Kcal          sql.NullInt32 `json:"kcal"`
+	Fat           sql.NullInt32 `json:"fat"`
+	SaturatedFat  sql.NullInt32 `json:"saturated_fat"`
+	Carbohydrates sql.NullInt32 `json:"carbohydrates"`
+	Sugar         sql.NullInt32 `json:"sugar"`
+	Fiber         sql.NullInt32 `json:"fiber"`
+	Protein       sql.NullInt32 `json:"protein"`
+	Salt          sql.NullInt32 `json:"salt"`
+	PriceStudent  sql.NullInt32 `json:"price_student"`
+	PriceStaff    sql.NullInt32 `json:"price_staff"`
+	PriceGuest    sql.NullInt32 `json:"price_guest"`
+}
+
+func (q *Queries) UpdateOccurrence(ctx context.Context, arg *UpdateOccurrenceParams) (*Occurrence, error) {
+	row := q.db.QueryRow(ctx, updateOccurrence,
+		arg.ID,
+		arg.Dish,
+		arg.Date,
+		arg.ReviewStatus,
+		arg.Kj,
+		arg.Kcal,
+		arg.Fat,
+		arg.SaturatedFat,
+		arg.Carbohydrates,
+		arg.Sugar,
+		arg.Fiber,
+		arg.Protein,
+		arg.Salt,
+		arg.PriceStudent,
+		arg.PriceStaff,
+		arg.PriceGuest,
+	)
+	var i Occurrence
+	err := row.Scan(
+		&i.ID,
+		&i.Dish,
+		&i.Date,
+		&i.ReviewStatus,
+		&i.Kj,
+		&i.Kcal,
+		&i.Fat,
+		&i.SaturatedFat,
+		&i.Carbohydrates,
+		&i.Sugar,
+		&i.Fiber,
+		&i.Protein,
+		&i.Salt,
+		&i.PriceStudent,
+		&i.PriceStaff,
+		&i.PriceGuest,
+	)
+	return &i, err
 }

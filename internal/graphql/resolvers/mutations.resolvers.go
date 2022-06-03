@@ -39,8 +39,8 @@ func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.Oc
 	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &input.CreateOccurrenceParams, input.SideDishes, input.Tags)
 }
 
-func (r *mutationResolver) UpdateOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error) {
-	return r.Database.EditOccurrence(ctx, &input)
+func (r *mutationResolver) UpdateOccurrence(ctx context.Context, input sqlc.UpdateOccurrenceParams) (*sqlc.Occurrence, error) {
+	return r.Database.UpdateOccurrence(ctx, &input)
 }
 
 func (r *mutationResolver) DeleteOccurrence(ctx context.Context, input models.DeleteOccurrenceInput) (*sqlc.Occurrence, error) {

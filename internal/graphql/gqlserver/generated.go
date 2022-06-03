@@ -96,7 +96,7 @@ type ComplexityRoot struct {
 		RemoveTagFromOccurrence      func(childComplexity int, input sqlc.RemoveOccurrenceTagParams) int
 		UpdateDish                   func(childComplexity int, input sqlc.UpdateDishParams) int
 		UpdateDishAlias              func(childComplexity int, input sqlc.UpdateDishAliasParams) int
-		UpdateOccurrence             func(childComplexity int, input sqlc.EditOccurrenceParams) int
+		UpdateOccurrence             func(childComplexity int, input sqlc.UpdateOccurrenceParams) int
 		UpdateReview                 func(childComplexity int, input sqlc.UpdateReviewParams) int
 	}
 
@@ -194,7 +194,7 @@ type MutationResolver interface {
 	UpdateDishAlias(ctx context.Context, input sqlc.UpdateDishAliasParams) (*sqlc.DishAlias, error)
 	DeleteDishAlias(ctx context.Context, input models.DeleteDishAliasInput) (*sqlc.DishAlias, error)
 	CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error)
-	UpdateOccurrence(ctx context.Context, input sqlc.EditOccurrenceParams) (*sqlc.Occurrence, error)
+	UpdateOccurrence(ctx context.Context, input sqlc.UpdateOccurrenceParams) (*sqlc.Occurrence, error)
 	DeleteOccurrence(ctx context.Context, input models.DeleteOccurrenceInput) (*sqlc.Occurrence, error)
 	AddTagToOccurrence(ctx context.Context, input sqlc.AddOccurrenceTagParams) (*sqlc.OccurrenceTag, error)
 	RemoveTagFromOccurrence(ctx context.Context, input sqlc.RemoveOccurrenceTagParams) (*sqlc.OccurrenceTag, error)
@@ -534,7 +534,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.UpdateOccurrence(childComplexity, args["input"].(sqlc.EditOccurrenceParams)), true
+		return e.complexity.Mutation.UpdateOccurrence(childComplexity, args["input"].(sqlc.UpdateOccurrenceParams)), true
 
 	case "Mutation.updateReview":
 		if e.complexity.Mutation.UpdateReview == nil {
@@ -1571,10 +1571,10 @@ func (ec *executionContext) field_Mutation_updateDish_args(ctx context.Context, 
 func (ec *executionContext) field_Mutation_updateOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 sqlc.EditOccurrenceParams
+	var arg0 sqlc.UpdateOccurrenceParams
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx, tmp)
+		arg0, err = ec.unmarshalNUpdateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateOccurrenceParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3037,7 +3037,7 @@ func (ec *executionContext) _Mutation_updateOccurrence(ctx context.Context, fiel
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().UpdateOccurrence(rctx, fc.Args["input"].(sqlc.EditOccurrenceParams))
+			return ec.resolvers.Mutation().UpdateOccurrence(rctx, fc.Args["input"].(sqlc.UpdateOccurrenceParams))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -9170,8 +9170,8 @@ func (ec *executionContext) unmarshalInputUpdateDishAliasInput(ctx context.Conte
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Context, obj interface{}) (sqlc.EditOccurrenceParams, error) {
-	var it sqlc.EditOccurrenceParams
+func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Context, obj interface{}) (sqlc.UpdateOccurrenceParams, error) {
+	var it sqlc.UpdateOccurrenceParams
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -9191,7 +9191,7 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
-			it.Dish, err = ec.unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			it.Dish, err = ec.unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐNullUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9199,7 +9199,7 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalOTime2timeᚐTime(ctx, v)
+			it.Date, err = ec.unmarshalOTime2databaseᚋsqlᚐNullTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -11409,7 +11409,7 @@ func (ec *executionContext) unmarshalNUpdateDishAliasInput2githubᚗcomᚋmensat
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpdateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐEditOccurrenceParams(ctx context.Context, v interface{}) (sqlc.EditOccurrenceParams, error) {
+func (ec *executionContext) unmarshalNUpdateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateOccurrenceParams(ctx context.Context, v interface{}) (sqlc.UpdateOccurrenceParams, error) {
 	res, err := ec.unmarshalInputUpdateOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -11802,16 +11802,6 @@ func (ec *executionContext) marshalOTime2databaseᚋsqlᚐNullTime(ctx context.C
 	return res
 }
 
-func (ec *executionContext) unmarshalOTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
-	res, err := graphql.UnmarshalTime(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
-	res := graphql.MarshalTime(v)
-	return res
-}
-
 func (ec *executionContext) unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐNullUUID(ctx context.Context, v interface{}) (uuid.NullUUID, error) {
 	res, err := scalars.UnmarshalNullUUID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -11819,16 +11809,6 @@ func (ec *executionContext) unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐNullUU
 
 func (ec *executionContext) marshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐNullUUID(ctx context.Context, sel ast.SelectionSet, v uuid.NullUUID) graphql.Marshaler {
 	res := scalars.MarshalNullUUID(v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, v interface{}) (uuid.UUID, error) {
-	res, err := scalars.UnmarshalUUID(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx context.Context, sel ast.SelectionSet, v uuid.UUID) graphql.Marshaler {
-	res := scalars.MarshalUUID(v)
 	return res
 }
 
