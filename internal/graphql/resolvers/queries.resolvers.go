@@ -43,16 +43,20 @@ func (r *queryResolver) GetAllOccurrences(ctx context.Context) ([]*sqlc.Occurren
 	return r.Database.GetAllOccurrences(ctx)
 }
 
+func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error) {
+	return r.Database.GetOccurrencesByDate(ctx, date)
+}
+
+func (r *queryResolver) GetOccurrencesAfterInclusiveDate(ctx context.Context, start time.Time) ([]*sqlc.Occurrence, error) {
+	return r.Database.GetOccurrencesAfterInclusiveDate(ctx, start)
+}
+
 func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*sqlc.Review, error) {
 	return r.Database.GetAllReviews(ctx)
 }
 
 func (r *queryResolver) GetAllImages(ctx context.Context) ([]*sqlc.Image, error) {
 	return r.Database.GetAllImages(ctx)
-}
-
-func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error) {
-	return r.Database.GetOccurrencesByDate(ctx, date)
 }
 
 func (r *queryResolver) GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error) {

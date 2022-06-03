@@ -37,6 +37,7 @@ type Querier interface {
 	GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error)
 	GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*Image, error)
 	GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error)
+	GetOccurrencesAfterInclusiveDate(ctx context.Context, date time.Time) ([]*Occurrence, error)
 	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*Occurrence, error)
 	GetReviewByID(ctx context.Context, id uuid.UUID) (*Review, error)
 	GetReviewsForOccurrence(ctx context.Context, id uuid.UUID) ([]*Review, error)

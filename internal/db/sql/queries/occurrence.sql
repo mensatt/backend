@@ -12,6 +12,11 @@ SELECT *
 FROM occurrence
 WHERE date = $1;
 
+-- name: GetOccurrencesAfterInclusiveDate :many
+SELECT *
+FROM occurrence
+WHERE date >= $1;
+
 -- name: GetSideDishesForOccurrence :many
 SELECT dish.*
 FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish = dish.id

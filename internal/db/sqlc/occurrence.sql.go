@@ -282,6 +282,49 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 	return &i, err
 }
 
+const getOccurrencesAfterInclusiveDate = `-- name: GetOccurrencesAfterInclusiveDate :many
+SELECT id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+FROM occurrence
+WHERE date >= $1
+`
+
+func (q *Queries) GetOccurrencesAfterInclusiveDate(ctx context.Context, date time.Time) ([]*Occurrence, error) {
+	rows, err := q.db.Query(ctx, getOccurrencesAfterInclusiveDate, date)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Occurrence
+	for rows.Next() {
+		var i Occurrence
+		if err := rows.Scan(
+			&i.ID,
+			&i.Dish,
+			&i.Date,
+			&i.ReviewStatus,
+			&i.Kj,
+			&i.Kcal,
+			&i.Fat,
+			&i.SaturatedFat,
+			&i.Carbohydrates,
+			&i.Sugar,
+			&i.Fiber,
+			&i.Protein,
+			&i.Salt,
+			&i.PriceStudent,
+			&i.PriceStaff,
+			&i.PriceGuest,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getOccurrencesByDate = `-- name: GetOccurrencesByDate :many
 SELECT id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
