@@ -133,8 +133,21 @@ input DeleteReviewInput {
 
 # Image
 
-#input ImageInput {
-#    occurrence: UUID!
-#    displayName: String!
-#    description: String
-#}
+input CreateImageInput {
+   occurrence: UUID!
+   displayName: String!
+   description: String
+   image: Upload!
+}
+
+input UpdateImageInput {
+    id: UUID!
+    occurrence: UUID
+    displayName: String
+    description: String
+    acceptedAt: Time
+}
+
+input DeleteImageInput {
+    id: UUID!
+}

@@ -26,6 +26,7 @@ func main() {
 			Algorithm:      utils.MustGet("JWT_ALGORITHM"),
 			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
 		},
+		AssetsDir: utils.MustGet("ASSETS_DIR"),
 	}
 
 	sentryDSN, err := utils.GetOrFile("SENTRY_DSN")
