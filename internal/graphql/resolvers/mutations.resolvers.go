@@ -50,7 +50,7 @@ func (r *mutationResolver) DeleteDishAlias(ctx context.Context, input models.Del
 	return r.Database.DeleteDishAlias(ctx, input.Alias)
 }
 
-func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error) {
+func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.CreateOccurrenceInputHelper) (*sqlc.Occurrence, error) {
 	return r.Database.CreateOccurrenceWithSideDishesAndTags(ctx, &input.CreateOccurrenceParams, input.SideDishes, input.Tags)
 }
 
@@ -88,6 +88,26 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input sqlc.UpdateRe
 
 func (r *mutationResolver) DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*sqlc.Review, error) {
 	return r.Database.DeleteReview(ctx, input.ID)
+}
+
+func (r *mutationResolver) CreateImage(ctx context.Context, input models.CreateImageInputHelper) (*sqlc.Image, error) {
+	err := r.ImageProcessor.StoreImage(input.Image)
+	if err != nil {
+		return nil, err
+	}
+	return r.Database.CreateImage(ctx, &input.CreateImageParams)
+}
+
+func (r *mutationResolver) UpdateImage(ctx context.Context, input sqlc.UpdateImageParams) (*sqlc.Image, error) {
+	return r.Database.UpdateImage(ctx, &input)
+}
+
+func (r *mutationResolver) DeleteImage(ctx context.Context, input models.DeleteImageInput) (*sqlc.Image, error) {
+	err := r.ImageProcessor.RemoveImage(input.ID)
+	if err != nil {
+		return nil, err
+	}
+	return r.Database.DeleteImage(ctx, input.ID)
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.
