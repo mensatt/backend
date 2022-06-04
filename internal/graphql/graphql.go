@@ -21,11 +21,12 @@ type GraphQLParams struct {
 	JWTKeyStore  *utils.JWTKeyStore
 }
 
-func Run(g *gin.RouterGroup, params *GraphQLParams) {
+func Run(g *gin.RouterGroup, params *GraphQLParams) error {
 	g.POST("", graphqlHandler(params))
 	if params.DebugEnabled {
 		g.GET("/playground", playgroundHandler(g.BasePath()))
 	}
+	return nil
 }
 
 // graphqlHandler defines the GQLGen GraphQL server handler
@@ -48,6 +49,7 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 					Database:     params.Database,
 					JWTKeyStore:  params.JWTKeyStore,
 					VCSBuildInfo: vscBuildInfo,
+					// TODO add image processor
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,

@@ -13,6 +13,7 @@ type ServerConfig struct {
 	ServiceVersion string
 	DebugEnabled   bool
 	JWT            utils.JWTKeyStoreConfig
+	AssetsDir      string
 }
 
 // ListenEndpoint builds the endpoint string (host + port)

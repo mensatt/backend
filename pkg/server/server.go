@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/mensatt/backend/internal/assets"
 	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/graphql"
 	"github.com/mensatt/backend/internal/middleware"
@@ -41,8 +42,20 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 		Database:    database,
 	}))
 
+	assetsRouterGroup := app.Group(config.VersionedPath("/assets"))
+	assetsParams := assets.AssetParams{
+		AssetDirectory: config.AssetsDir,
+	}
+	err = assets.Run(assetsRouterGroup, &assetsParams)
+	if err != nil {
+		return err
+	}
+
 	miscRouterGroup := app.Group(config.VersionedPath("/misc"))
-	misc.Run(miscRouterGroup)
+	err = misc.Run(miscRouterGroup)
+	if err != nil {
+		return err
+	}
 
 	gqlRouterGroup := app.Group(config.VersionedPath("/graphql"))
 	gqlServerParams := graphql.GraphQLParams{
@@ -50,7 +63,10 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 		Database:     database,
 		JWTKeyStore:  jwtKeyStore,
 	}
-	graphql.Run(gqlRouterGroup, &gqlServerParams)
+	err = graphql.Run(gqlRouterGroup, &gqlServerParams)
+	if err != nil {
+		return err
+	}
 
 	log.Println("Running @ " + config.SchemaVersionedEndpoint(""))
 

@@ -10,6 +10,10 @@ type DeleteDishAliasInput struct {
 	Alias string `json:"alias"`
 }
 
+type DeleteImageInput struct {
+	ID uuid.UUID `json:"id"`
+}
+
 type DeleteOccurrenceInput struct {
 	ID uuid.UUID `json:"id"`
 }

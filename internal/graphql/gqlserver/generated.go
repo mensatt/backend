@@ -95,10 +95,12 @@ type ComplexityRoot struct {
 		AddTagToOccurrence           func(childComplexity int, input sqlc.AddOccurrenceTagParams) int
 		CreateDish                   func(childComplexity int, input sqlc.CreateDishParams) int
 		CreateDishAlias              func(childComplexity int, input sqlc.CreateDishAliasParams) int
-		CreateOccurrence             func(childComplexity int, input models.OccurrenceInputHelper) int
+		CreateImage                  func(childComplexity int, input models.CreateImageInputHelper) int
+		CreateOccurrence             func(childComplexity int, input models.CreateOccurrenceInputHelper) int
 		CreateReview                 func(childComplexity int, input sqlc.CreateReviewParams) int
 		CreateTag                    func(childComplexity int, input sqlc.CreateTagParams) int
 		DeleteDishAlias              func(childComplexity int, input models.DeleteDishAliasInput) int
+		DeleteImage                  func(childComplexity int, input models.DeleteImageInput) int
 		DeleteOccurrence             func(childComplexity int, input models.DeleteOccurrenceInput) int
 		DeleteReview                 func(childComplexity int, input models.DeleteReviewInput) int
 		LoginUser                    func(childComplexity int, input models.LoginUserInput) int
@@ -106,6 +108,7 @@ type ComplexityRoot struct {
 		RemoveTagFromOccurrence      func(childComplexity int, input sqlc.RemoveOccurrenceTagParams) int
 		UpdateDish                   func(childComplexity int, input sqlc.UpdateDishParams) int
 		UpdateDishAlias              func(childComplexity int, input sqlc.UpdateDishAliasParams) int
+		UpdateImage                  func(childComplexity int, input sqlc.UpdateImageParams) int
 		UpdateOccurrence             func(childComplexity int, input sqlc.UpdateOccurrenceParams) int
 		UpdateReview                 func(childComplexity int, input sqlc.UpdateReviewParams) int
 	}
@@ -208,7 +211,7 @@ type MutationResolver interface {
 	CreateDishAlias(ctx context.Context, input sqlc.CreateDishAliasParams) (*sqlc.DishAlias, error)
 	UpdateDishAlias(ctx context.Context, input sqlc.UpdateDishAliasParams) (*sqlc.DishAlias, error)
 	DeleteDishAlias(ctx context.Context, input models.DeleteDishAliasInput) (*sqlc.DishAlias, error)
-	CreateOccurrence(ctx context.Context, input models.OccurrenceInputHelper) (*sqlc.Occurrence, error)
+	CreateOccurrence(ctx context.Context, input models.CreateOccurrenceInputHelper) (*sqlc.Occurrence, error)
 	UpdateOccurrence(ctx context.Context, input sqlc.UpdateOccurrenceParams) (*sqlc.Occurrence, error)
 	DeleteOccurrence(ctx context.Context, input models.DeleteOccurrenceInput) (*sqlc.Occurrence, error)
 	AddTagToOccurrence(ctx context.Context, input sqlc.AddOccurrenceTagParams) (*sqlc.OccurrenceTag, error)
@@ -218,6 +221,9 @@ type MutationResolver interface {
 	CreateReview(ctx context.Context, input sqlc.CreateReviewParams) (*sqlc.Review, error)
 	UpdateReview(ctx context.Context, input sqlc.UpdateReviewParams) (*sqlc.Review, error)
 	DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*sqlc.Review, error)
+	CreateImage(ctx context.Context, input models.CreateImageInputHelper) (*sqlc.Image, error)
+	UpdateImage(ctx context.Context, input sqlc.UpdateImageParams) (*sqlc.Image, error)
+	DeleteImage(ctx context.Context, input models.DeleteImageInput) (*sqlc.Image, error)
 }
 type OccurrenceResolver interface {
 	Location(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Location, error)
@@ -463,6 +469,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Mutation.CreateDishAlias(childComplexity, args["input"].(sqlc.CreateDishAliasParams)), true
 
+	case "Mutation.createImage":
+		if e.complexity.Mutation.CreateImage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createImage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateImage(childComplexity, args["input"].(models.CreateImageInputHelper)), true
+
 	case "Mutation.createOccurrence":
 		if e.complexity.Mutation.CreateOccurrence == nil {
 			break
@@ -473,7 +491,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateOccurrence(childComplexity, args["input"].(models.OccurrenceInputHelper)), true
+		return e.complexity.Mutation.CreateOccurrence(childComplexity, args["input"].(models.CreateOccurrenceInputHelper)), true
 
 	case "Mutation.createReview":
 		if e.complexity.Mutation.CreateReview == nil {
@@ -510,6 +528,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteDishAlias(childComplexity, args["input"].(models.DeleteDishAliasInput)), true
+
+	case "Mutation.deleteImage":
+		if e.complexity.Mutation.DeleteImage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_deleteImage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.DeleteImage(childComplexity, args["input"].(models.DeleteImageInput)), true
 
 	case "Mutation.deleteOccurrence":
 		if e.complexity.Mutation.DeleteOccurrence == nil {
@@ -594,6 +624,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateDishAlias(childComplexity, args["input"].(sqlc.UpdateDishAliasParams)), true
+
+	case "Mutation.updateImage":
+		if e.complexity.Mutation.UpdateImage == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateImage_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateImage(childComplexity, args["input"].(sqlc.UpdateImageParams)), true
 
 	case "Mutation.updateOccurrence":
 		if e.complexity.Mutation.UpdateOccurrence == nil {
@@ -1045,10 +1087,12 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputAddTagToOccurrenceInput,
 		ec.unmarshalInputCreateDishAliasInput,
 		ec.unmarshalInputCreateDishInput,
+		ec.unmarshalInputCreateImageInput,
 		ec.unmarshalInputCreateOccurrenceInput,
 		ec.unmarshalInputCreateReviewInput,
 		ec.unmarshalInputCreateTagInput,
 		ec.unmarshalInputDeleteDishAliasInput,
+		ec.unmarshalInputDeleteImageInput,
 		ec.unmarshalInputDeleteOccurrenceInput,
 		ec.unmarshalInputDeleteReviewInput,
 		ec.unmarshalInputLoginUserInput,
@@ -1056,6 +1100,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputRemoveTagFromOccurrenceInput,
 		ec.unmarshalInputUpdateDishAliasInput,
 		ec.unmarshalInputUpdateDishInput,
+		ec.unmarshalInputUpdateImageInput,
 		ec.unmarshalInputUpdateOccurrenceInput,
 		ec.unmarshalInputUpdateReviewInput,
 	)
@@ -1280,11 +1325,25 @@ input DeleteReviewInput {
 
 # Image
 
-#input CreateImageInput {
-#    occurrence: UUID!
-#    displayName: String!
-#    description: String
-#}`, BuiltIn: false},
+input CreateImageInput {
+   occurrence: UUID!
+   displayName: String!
+   description: String
+   image: Upload!
+}
+
+input UpdateImageInput {
+    id: UUID!
+    occurrence: UUID
+    displayName: String
+    description: String
+    acceptedAt: Timestamp
+}
+
+input DeleteImageInput {
+    id: UUID!
+}
+`, BuiltIn: false},
 	{Name: "../schema/mutations.graphql", Input: `type Mutation {
     # User
     loginUser(input: LoginUserInput!): String!
@@ -1317,8 +1376,11 @@ input DeleteReviewInput {
     deleteReview(input: DeleteReviewInput!): Review! @authenticated
 
     # Image
-    #createImage(image: ImageInput!): Image! https://gqlgen.com/reference/file-upload/
-}`, BuiltIn: false},
+    createImage(input: CreateImageInput!): Image! 
+    updateImage(input: UpdateImageInput!): Image! 
+    deleteImage(input: DeleteImageInput!): Image! 
+}
+`, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
     # User
     currentUser: User
@@ -1356,7 +1418,11 @@ scalar Date
 
 # A UUID is a 128 bit (16 byte) Universal Unique IDentifier as defined in RFC 4122.
 # Format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-scalar UUID`, BuiltIn: false},
+scalar UUID
+
+# File Upload
+scalar Upload 
+`, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `enum Priority {
     LOW
     MEDIUM
@@ -1537,13 +1603,28 @@ func (ec *executionContext) field_Mutation_createDish_args(ctx context.Context, 
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.CreateImageInputHelper
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNCreateImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐCreateImageInputHelper(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_createOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 models.OccurrenceInputHelper
+	var arg0 models.CreateOccurrenceInputHelper
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNCreateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx, tmp)
+		arg0, err = ec.unmarshalNCreateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐCreateOccurrenceInputHelper(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1589,6 +1670,21 @@ func (ec *executionContext) field_Mutation_deleteDishAlias_args(ctx context.Cont
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNDeleteDishAliasInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteDishAliasInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_deleteImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.DeleteImageInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNDeleteImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteImageInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1694,6 +1790,21 @@ func (ec *executionContext) field_Mutation_updateDish_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUpdateDishInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateDishParams(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 sqlc.UpdateImageParams
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateImageParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -3417,7 +3528,7 @@ func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, fiel
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		directive0 := func(rctx context.Context) (interface{}, error) {
 			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().CreateOccurrence(rctx, fc.Args["input"].(models.OccurrenceInputHelper))
+			return ec.resolvers.Mutation().CreateOccurrence(rctx, fc.Args["input"].(models.CreateOccurrenceInputHelper))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
 			if ec.directives.Authenticated == nil {
@@ -4348,6 +4459,231 @@ func (ec *executionContext) fieldContext_Mutation_deleteReview(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteReview_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createImage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateImage(rctx, fc.Args["input"].(models.CreateImageInputHelper))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createImage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Image_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Image_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Image_displayName(ctx, field)
+			case "description":
+				return ec.fieldContext_Image_description(ctx, field)
+			case "upVotes":
+				return ec.fieldContext_Image_upVotes(ctx, field)
+			case "downVotes":
+				return ec.fieldContext_Image_downVotes(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Image_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Image_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createImage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateImage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateImage(rctx, fc.Args["input"].(sqlc.UpdateImageParams))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateImage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Image_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Image_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Image_displayName(ctx, field)
+			case "description":
+				return ec.fieldContext_Image_description(ctx, field)
+			case "upVotes":
+				return ec.fieldContext_Image_upVotes(ctx, field)
+			case "downVotes":
+				return ec.fieldContext_Image_downVotes(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Image_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Image_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateImage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_deleteImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_deleteImage(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().DeleteImage(rctx, fc.Args["input"].(models.DeleteImageInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_deleteImage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Image_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Image_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Image_displayName(ctx, field)
+			case "description":
+				return ec.fieldContext_Image_description(ctx, field)
+			case "upVotes":
+				return ec.fieldContext_Image_upVotes(ctx, field)
+			case "downVotes":
+				return ec.fieldContext_Image_downVotes(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Image_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Image_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_deleteImage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -9359,8 +9695,55 @@ func (ec *executionContext) unmarshalInputCreateDishInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Context, obj interface{}) (models.OccurrenceInputHelper, error) {
-	var it models.OccurrenceInputHelper
+func (ec *executionContext) unmarshalInputCreateImageInput(ctx context.Context, obj interface{}) (models.CreateImageInputHelper, error) {
+	var it models.CreateImageInputHelper
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "occurrence":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
+			it.Occurrence, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "displayName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
+			it.DisplayName, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "image":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
+			it.Image, err = ec.unmarshalNUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Context, obj interface{}) (models.CreateOccurrenceInputHelper, error) {
+	var it models.CreateOccurrenceInputHelper
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
@@ -9651,6 +10034,29 @@ func (ec *executionContext) unmarshalInputDeleteDishAliasInput(ctx context.Conte
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDeleteImageInput(ctx context.Context, obj interface{}) (models.DeleteImageInput, error) {
+	var it models.DeleteImageInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputDeleteOccurrenceInput(ctx context.Context, obj interface{}) (models.DeleteOccurrenceInput, error) {
 	var it models.DeleteOccurrenceInput
 	asMap := map[string]interface{}{}
@@ -9867,6 +10273,61 @@ func (ec *executionContext) unmarshalInputUpdateDishInput(ctx context.Context, o
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
 			it.NameEn, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputUpdateImageInput(ctx context.Context, obj interface{}) (sqlc.UpdateImageParams, error) {
+	var it sqlc.UpdateImageParams
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			it.ID, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "occurrence":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
+			it.Occurrence, err = ec.unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐNullUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "displayName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
+			it.DisplayName, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "description":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
+			it.Description, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "acceptedAt":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("acceptedAt"))
+			it.AcceptedAt, err = ec.unmarshalOTimestamp2databaseᚋsqlᚐNullTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10531,6 +10992,33 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteReview(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "createImage":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createImage(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "updateImage":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateImage(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "deleteImage":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_deleteImage(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -11753,7 +12241,12 @@ func (ec *executionContext) unmarshalNCreateDishInput2githubᚗcomᚋmensattᚋb
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNCreateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceInputHelper(ctx context.Context, v interface{}) (models.OccurrenceInputHelper, error) {
+func (ec *executionContext) unmarshalNCreateImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐCreateImageInputHelper(ctx context.Context, v interface{}) (models.CreateImageInputHelper, error) {
+	res, err := ec.unmarshalInputCreateImageInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNCreateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐCreateOccurrenceInputHelper(ctx context.Context, v interface{}) (models.CreateOccurrenceInputHelper, error) {
 	res, err := ec.unmarshalInputCreateOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -11785,6 +12278,11 @@ func (ec *executionContext) marshalNDate2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) unmarshalNDeleteDishAliasInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteDishAliasInput(ctx context.Context, v interface{}) (models.DeleteDishAliasInput, error) {
 	res, err := ec.unmarshalInputDeleteDishAliasInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNDeleteImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteImageInput(ctx context.Context, v interface{}) (models.DeleteImageInput, error) {
+	res, err := ec.unmarshalInputDeleteImageInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -11868,6 +12366,10 @@ func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbacken
 		return graphql.Null
 	}
 	return ec._DishAlias(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNImage2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx context.Context, sel ast.SelectionSet, v sqlc.Image) graphql.Marshaler {
+	return ec._Image(ctx, sel, &v)
 }
 
 func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []*sqlc.Image) graphql.Marshaler {
@@ -12331,6 +12833,11 @@ func (ec *executionContext) unmarshalNUpdateDishInput2githubᚗcomᚋmensattᚋb
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNUpdateImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateImageParams(ctx context.Context, v interface{}) (sqlc.UpdateImageParams, error) {
+	res, err := ec.unmarshalInputUpdateImageInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNUpdateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateOccurrenceParams(ctx context.Context, v interface{}) (sqlc.UpdateOccurrenceParams, error) {
 	res, err := ec.unmarshalInputUpdateOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -12339,6 +12846,27 @@ func (ec *executionContext) unmarshalNUpdateOccurrenceInput2githubᚗcomᚋmensa
 func (ec *executionContext) unmarshalNUpdateReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateReviewParams(ctx context.Context, v interface{}) (sqlc.UpdateReviewParams, error) {
 	res, err := ec.unmarshalInputUpdateReviewInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (*graphql.Upload, error) {
+	res, err := graphql.UnmarshalUpload(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNUpload2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v *graphql.Upload) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	res := graphql.MarshalUpload(*v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {

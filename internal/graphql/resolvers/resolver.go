@@ -13,4 +13,5 @@ type Resolver struct {
 	Database     db.ExtendedQuerier
 	JWTKeyStore  *utils.JWTKeyStore
 	VCSBuildInfo *utils.VCSBuildInfo
+	ImageProcessor *utils.ImageProcessor
 }
