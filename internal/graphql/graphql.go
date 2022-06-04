@@ -9,6 +9,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
 	"github.com/mensatt/backend/internal/db"
+	"github.com/mensatt/backend/internal/graphql/dataloader"
 	"github.com/mensatt/backend/internal/graphql/directives"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/resolvers"
@@ -22,7 +23,7 @@ type GraphQLParams struct {
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) {
-	g.POST("", graphqlHandler(params))
+	g.POST("", dataloader.Middleware(params.Database), graphqlHandler(params))
 	if params.DebugEnabled {
 		g.GET("/playground", playgroundHandler(g.BasePath()))
 	}

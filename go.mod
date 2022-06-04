@@ -10,6 +10,7 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
+	github.com/graph-gophers/dataloader/v7 v7.0.1-0.20220422194102-4611304016ff
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/kyleconroy/sqlc v1.13.1-0.20220603050148-2d18667685a6

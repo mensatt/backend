@@ -7,6 +7,10 @@ SELECT *
 FROM review
 WHERE id = $1;
 
+-- name: GetBulkReviewsByID :many
+SELECT * FROM review
+WHERE id = ANY(sqlc.arg('ids')::uuid[]);
+
 -- name: CreateReview :one
 INSERT INTO review (occurrence, display_name, stars, text)
 VALUES ($1, $2, $3, $4)

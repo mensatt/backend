@@ -31,6 +31,7 @@ type Querier interface {
 	GetAllOccurrences(ctx context.Context) ([]*Occurrence, error)
 	GetAllReviews(ctx context.Context) ([]*Review, error)
 	GetAllTags(ctx context.Context) ([]*Tag, error)
+	GetBulkReviewsByID(ctx context.Context, ids []uuid.UUID) ([]*Review, error)
 	GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error)
 	GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error)
 	GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*Image, error)

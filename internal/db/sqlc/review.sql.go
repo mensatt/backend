@@ -108,6 +108,42 @@ func (q *Queries) GetAllReviews(ctx context.Context) ([]*Review, error) {
 	return items, nil
 }
 
+const getBulkReviewsByID = `-- name: GetBulkReviewsByID :many
+SELECT id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at FROM review
+WHERE id = ANY($1::uuid[])
+`
+
+func (q *Queries) GetBulkReviewsByID(ctx context.Context, ids []uuid.UUID) ([]*Review, error) {
+	rows, err := q.db.Query(ctx, getBulkReviewsByID, ids)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Review
+	for rows.Next() {
+		var i Review
+		if err := rows.Scan(
+			&i.ID,
+			&i.Occurrence,
+			&i.DisplayName,
+			&i.Stars,
+			&i.Text,
+			&i.UpVotes,
+			&i.DownVotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AcceptedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getReviewByID = `-- name: GetReviewByID :one
 SELECT id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
 FROM review
