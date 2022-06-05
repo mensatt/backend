@@ -72,47 +72,6 @@ func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) (*Review, erro
 	return &i, err
 }
 
-const editReview = `-- name: EditReview :one
-UPDATE review
-SET occurrence = $1, display_name = $2, stars = $3, text = $4, updated_at = NOW(), accepted_at = $5
-WHERE id = $6
-RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
-`
-
-type EditReviewParams struct {
-	Occurrence  uuid.UUID      `json:"occurrence"`
-	DisplayName sql.NullString `json:"display_name"`
-	Stars       int32          `json:"stars"`
-	Text        sql.NullString `json:"text"`
-	AcceptedAt  sql.NullTime   `json:"accepted_at"`
-	ID          uuid.UUID      `json:"id"`
-}
-
-func (q *Queries) EditReview(ctx context.Context, arg *EditReviewParams) (*Review, error) {
-	row := q.db.QueryRow(ctx, editReview,
-		arg.Occurrence,
-		arg.DisplayName,
-		arg.Stars,
-		arg.Text,
-		arg.AcceptedAt,
-		arg.ID,
-	)
-	var i Review
-	err := row.Scan(
-		&i.ID,
-		&i.Occurrence,
-		&i.DisplayName,
-		&i.Stars,
-		&i.Text,
-		&i.UpVotes,
-		&i.DownVotes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.AcceptedAt,
-	)
-	return &i, err
-}
-
 const getAllReviews = `-- name: GetAllReviews :many
 SELECT id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
 FROM review
@@ -210,4 +169,51 @@ func (q *Queries) GetReviewsByDish(ctx context.Context, id uuid.UUID) ([]*Review
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateReview = `-- name: UpdateReview :one
+UPDATE review
+SET 
+    occurrence = COALESCE($2, occurrence),
+    display_name = COALESCE($3, display_name),
+    stars = COALESCE($4, stars),
+    text = COALESCE($5, text),
+    updated_at = NOW(),
+    accepted_at = COALESCE($6, accepted_at)
+WHERE id = $1
+RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+`
+
+type UpdateReviewParams struct {
+	ID          uuid.UUID      `json:"id"`
+	Occurrence  uuid.NullUUID  `json:"occurrence"`
+	DisplayName sql.NullString `json:"display_name"`
+	Stars       sql.NullInt32  `json:"stars"`
+	Text        sql.NullString `json:"text"`
+	AcceptedAt  sql.NullTime   `json:"accepted_at"`
+}
+
+func (q *Queries) UpdateReview(ctx context.Context, arg *UpdateReviewParams) (*Review, error) {
+	row := q.db.QueryRow(ctx, updateReview,
+		arg.ID,
+		arg.Occurrence,
+		arg.DisplayName,
+		arg.Stars,
+		arg.Text,
+		arg.AcceptedAt,
+	)
+	var i Review
+	err := row.Scan(
+		&i.ID,
+		&i.Occurrence,
+		&i.DisplayName,
+		&i.Stars,
+		&i.Text,
+		&i.UpVotes,
+		&i.DownVotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AcceptedAt,
+	)
+	return &i, err
 }

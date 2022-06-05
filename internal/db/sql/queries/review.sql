@@ -12,10 +12,16 @@ INSERT INTO review (occurrence, display_name, stars, text)
 VALUES ($1, $2, $3, $4)
 RETURNING *;
 
--- name: EditReview :one
+-- name: UpdateReview :one
 UPDATE review
-SET occurrence = $1, display_name = $2, stars = $3, text = $4, updated_at = NOW(), accepted_at = $5
-WHERE id = $6
+SET 
+    occurrence = COALESCE(sqlc.narg('occurrence'), occurrence),
+    display_name = COALESCE(sqlc.narg('display_name'), display_name),
+    stars = COALESCE(sqlc.narg('stars'), stars),
+    text = COALESCE(sqlc.narg('text'), text),
+    updated_at = NOW(),
+    accepted_at = COALESCE(sqlc.narg('accepted_at'), accepted_at)
+WHERE id = $1
 RETURNING *;
 
 -- name: DeleteReview :one

@@ -12,8 +12,9 @@ INSERT INTO dish (name)
 VALUES ($1)
 RETURNING *;
 
--- name: RenameDish :one
+-- name: UpdateDish :one
 UPDATE dish
-SET name = $1
-WHERE id = $2
+SET
+    name = COALESCE(sqlc.narg('name'), name)
+WHERE id = $1
 RETURNING *;

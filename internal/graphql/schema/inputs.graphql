@@ -1,4 +1,6 @@
-input TagInput {
+#Tag
+
+input TagCreateInput {
     key: String!
     name: String!
     description: String!
@@ -6,6 +8,41 @@ input TagInput {
     priority: Priority
     isAllergy: Boolean
 }
+
+
+# Dish
+
+input DishCreateInput {
+    name: String!
+}
+
+input DishUpdateInput {
+    id: UUID!
+    name: String
+}
+
+
+# DishAlias
+
+input CreateDishAliasInput {
+    aliasName: String!
+    normalizedAliasName: String!
+    dish: UUID!
+}
+
+input UpdateDishAliasInput {
+    aliasName: String!
+    newAliasName: String
+    normalizedAliasName: String
+    dish: UUID
+}
+
+input DeleteDishAliasInput {
+    alias: String!
+}
+
+
+# Occurrence
 
 input CreateOccurrenceInput {
     dish: UUID!
@@ -29,9 +66,9 @@ input CreateOccurrenceInput {
 
 input UpdateOccurrenceInput {
     id: UUID!
-    dish: UUID!
-    date: Time!
-    reviewStatus: ReviewStatus!
+    dish: UUID
+    date: Time
+    reviewStatus: ReviewStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -46,6 +83,33 @@ input UpdateOccurrenceInput {
     priceGuest: Int
 }
 
+input DeleteOccurrenceInput {
+    id: UUID!
+}
+
+input AddTagToOccurrenceInput {
+    occurrence: UUID!
+    tag: String!
+}
+
+input RemoveTagFromOccurrenceInput {
+    occurrence: UUID!
+    tag: String!
+}
+
+input AddSideDishToOccurrenceInput {
+    occurrence: UUID!
+    dish: UUID!
+}
+
+input RemoveSideDishFromOccurrenceInput {
+    occurrence: UUID!
+    dish: UUID!
+}
+
+
+# Review
+
 input CreateReviewInput {
     occurrence: UUID!
     displayName: String!
@@ -56,11 +120,18 @@ input CreateReviewInput {
 input UpdateReviewInput {
     id: UUID!
     occurrence: UUID
-    displayName: String!
-    stars: Int!
+    displayName: String
+    stars: Int
     text: String
     acceptedAt: Time
 }
+
+input DeleteReviewInput {
+    id: UUID!
+}
+
+
+# Image
 
 #input ImageInput {
 #    occurrence: UUID!

@@ -7,6 +7,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -96,19 +97,28 @@ func (q *Queries) GetAllAliases(ctx context.Context) ([]*DishAlias, error) {
 
 const updateDishAlias = `-- name: UpdateDishAlias :one
 UPDATE dish_alias
-SET alias_name = $2, normalized_alias_name = $3
+SET 
+    alias_name = COALESCE($2, alias_name),
+    normalized_alias_name = COALESCE($3, normalized_alias_name),
+    dish = COALESCE($4, dish)
 WHERE alias_name = $1
 RETURNING alias_name, normalized_alias_name, dish
 `
 
 type UpdateDishAliasParams struct {
-	AliasName              string `json:"alias_name"`
-	NewAliasName           string `json:"new_alias_name"`
-	NewNormalizedAliasName string `json:"new_normalized_alias_name"`
+	AliasName           string         `json:"alias_name"`
+	NewAliasName        sql.NullString `json:"new_alias_name"`
+	NormalizedAliasName sql.NullString `json:"normalized_alias_name"`
+	Dish                uuid.NullUUID  `json:"dish"`
 }
 
 func (q *Queries) UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error) {
-	row := q.db.QueryRow(ctx, updateDishAlias, arg.AliasName, arg.NewAliasName, arg.NewNormalizedAliasName)
+	row := q.db.QueryRow(ctx, updateDishAlias,
+		arg.AliasName,
+		arg.NewAliasName,
+		arg.NormalizedAliasName,
+		arg.Dish,
+	)
 	var i DishAlias
 	err := row.Scan(&i.AliasName, &i.NormalizedAliasName, &i.Dish)
 	return &i, err
