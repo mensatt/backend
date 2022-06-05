@@ -22,3 +22,10 @@ RETURNING *;
 DELETE FROM review
 WHERE id = $1
 RETURNING *;
+
+-- name: GetReviewsByDish :many
+SELECT review.*
+FROM review
+JOIN occurrence ON (review.occurrence = occurrence.id)
+JOIN dish ON (occurrence.dish = dish.id)
+WHERE dish.id = $1;

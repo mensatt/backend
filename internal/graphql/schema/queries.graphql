@@ -7,7 +7,10 @@ type Query {
     getAllOccurrences: [Occurrence!]!
     getAllReviews: [Review!]!
     getAllImages: [Image!]!
+
     getOccurrencesByDate(date: Time!): [Occurrence!]!
+    getReviewsByDish(dish: UUID!): [Review!]!
+    getImagesByDish(dish: UUID!): [Image!]!
 
     # only enabled in debug mode
     getVcsBuildInfo: VcsBuildInfo

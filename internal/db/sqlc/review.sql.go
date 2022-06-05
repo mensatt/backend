@@ -172,3 +172,42 @@ func (q *Queries) GetReviewByID(ctx context.Context, id uuid.UUID) (*Review, err
 	)
 	return &i, err
 }
+
+const getReviewsByDish = `-- name: GetReviewsByDish :many
+SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.up_votes, review.down_votes, review.created_at, review.updated_at, review.accepted_at
+FROM review
+JOIN occurrence ON (review.occurrence = occurrence.id)
+JOIN dish ON (occurrence.dish = dish.id)
+WHERE dish.id = $1
+`
+
+func (q *Queries) GetReviewsByDish(ctx context.Context, id uuid.UUID) ([]*Review, error) {
+	rows, err := q.db.Query(ctx, getReviewsByDish, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Review
+	for rows.Next() {
+		var i Review
+		if err := rows.Scan(
+			&i.ID,
+			&i.Occurrence,
+			&i.DisplayName,
+			&i.Stars,
+			&i.Text,
+			&i.UpVotes,
+			&i.DownVotes,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.AcceptedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
