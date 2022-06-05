@@ -1230,7 +1230,7 @@ input DeleteReviewInput {
 
 input CreateImageInput {
    occurrence: UUID!
-   displayName: String!
+   displayName: String
    description: String
    image: Upload!
 }
@@ -9032,7 +9032,7 @@ func (ec *executionContext) unmarshalInputCreateImageInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
-			it.DisplayName, err = ec.unmarshalNString2string(ctx, v)
+			it.DisplayName, err = ec.unmarshalOString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12261,6 +12261,16 @@ func (ec *executionContext) unmarshalOString2databaseᚋsqlᚐNullString(ctx con
 
 func (ec *executionContext) marshalOString2databaseᚋsqlᚐNullString(ctx context.Context, sel ast.SelectionSet, v sql.NullString) graphql.Marshaler {
 	res := scalars.MarshalNullString(v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
 	return res
 }
 
