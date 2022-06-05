@@ -23,6 +23,11 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 
 	database := db.NewExtended(pool)
 
+	
+	if !config.DebugEnabled {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	app := gin.Default()
 
 	corsConfig := cors.DefaultConfig()
