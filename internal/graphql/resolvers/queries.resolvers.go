@@ -8,7 +8,6 @@ import (
 	"errors"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/middleware"
@@ -56,16 +55,8 @@ func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*sqlc.Review, erro
 	return r.Database.GetAllReviews(ctx)
 }
 
-func (r *queryResolver) GetReviewsByDish(ctx context.Context, dish uuid.UUID) ([]*sqlc.Review, error) {
-	return r.Database.GetReviewsByDish(ctx, dish)
-}
-
 func (r *queryResolver) GetAllImages(ctx context.Context) ([]*sqlc.Image, error) {
 	return r.Database.GetAllImages(ctx)
-}
-
-func (r *queryResolver) GetImagesByDish(ctx context.Context, dish uuid.UUID) ([]*sqlc.Image, error) {
-	return r.Database.GetImagesByDish(ctx, dish)
 }
 
 func (r *queryResolver) GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error) {

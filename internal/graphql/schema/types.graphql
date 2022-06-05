@@ -25,6 +25,8 @@ type Dish {
     id: UUID!
     name: String!
     aliases: [String!]!
+    images: [Image!]!
+    reviews: [Review!]!
 }
 
 type DishAlias {

@@ -16,11 +16,9 @@ type Query {
 
     # Review
     getAllReviews: [Review!]!
-    getReviewsByDish(dish: UUID!): [Review!]!
 
     # Image
     getAllImages: [Image!]!
-    getImagesByDish(dish: UUID!): [Image!]!
 
     # Misc
     # only enabled in debug mode

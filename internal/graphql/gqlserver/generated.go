@@ -60,7 +60,9 @@ type ComplexityRoot struct {
 	Dish struct {
 		Aliases func(childComplexity int) int
 		ID      func(childComplexity int) int
+		Images  func(childComplexity int) int
 		Name    func(childComplexity int) int
+		Reviews func(childComplexity int) int
 	}
 
 	DishAlias struct {
@@ -140,10 +142,8 @@ type ComplexityRoot struct {
 		GetAllReviews                    func(childComplexity int) int
 		GetAllTags                       func(childComplexity int) int
 		GetCurrentUser                   func(childComplexity int) int
-		GetImagesByDish                  func(childComplexity int, dish uuid.UUID) int
 		GetOccurrencesAfterInclusiveDate func(childComplexity int, start time.Time) int
 		GetOccurrencesByDate             func(childComplexity int, date time.Time) int
-		GetReviewsByDish                 func(childComplexity int, dish uuid.UUID) int
 		GetVcsBuildInfo                  func(childComplexity int) int
 		Login                            func(childComplexity int, email string, password string) int
 	}
@@ -184,6 +184,8 @@ type ComplexityRoot struct {
 
 type DishResolver interface {
 	Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error)
+	Images(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Image, error)
+	Reviews(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Review, error)
 }
 type ImageResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error)
@@ -231,9 +233,7 @@ type QueryResolver interface {
 	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error)
 	GetOccurrencesAfterInclusiveDate(ctx context.Context, start time.Time) ([]*sqlc.Occurrence, error)
 	GetAllReviews(ctx context.Context) ([]*sqlc.Review, error)
-	GetReviewsByDish(ctx context.Context, dish uuid.UUID) ([]*sqlc.Review, error)
 	GetAllImages(ctx context.Context) ([]*sqlc.Image, error)
-	GetImagesByDish(ctx context.Context, dish uuid.UUID) ([]*sqlc.Image, error)
 	GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error)
 }
 type ReviewResolver interface {
@@ -269,12 +269,26 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Dish.ID(childComplexity), true
 
+	case "Dish.images":
+		if e.complexity.Dish.Images == nil {
+			break
+		}
+
+		return e.complexity.Dish.Images(childComplexity), true
+
 	case "Dish.name":
 		if e.complexity.Dish.Name == nil {
 			break
 		}
 
 		return e.complexity.Dish.Name(childComplexity), true
+
+	case "Dish.reviews":
+		if e.complexity.Dish.Reviews == nil {
+			break
+		}
+
+		return e.complexity.Dish.Reviews(childComplexity), true
 
 	case "DishAlias.aliasName":
 		if e.complexity.DishAlias.AliasName == nil {
@@ -762,18 +776,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetCurrentUser(childComplexity), true
 
-	case "Query.getImagesByDish":
-		if e.complexity.Query.GetImagesByDish == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getImagesByDish_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetImagesByDish(childComplexity, args["dish"].(uuid.UUID)), true
-
 	case "Query.getOccurrencesAfterInclusiveDate":
 		if e.complexity.Query.GetOccurrencesAfterInclusiveDate == nil {
 			break
@@ -797,18 +799,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Query.GetOccurrencesByDate(childComplexity, args["date"].(time.Time)), true
-
-	case "Query.getReviewsByDish":
-		if e.complexity.Query.GetReviewsByDish == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getReviewsByDish_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.GetReviewsByDish(childComplexity, args["dish"].(uuid.UUID)), true
 
 	case "Query.getVcsBuildInfo":
 		if e.complexity.Query.GetVcsBuildInfo == nil {
@@ -1265,11 +1255,9 @@ input DeleteReviewInput {
 
     # Review
     getAllReviews: [Review!]!
-    getReviewsByDish(dish: UUID!): [Review!]!
 
     # Image
     getAllImages: [Image!]!
-    getImagesByDish(dish: UUID!): [Image!]!
 
     # Misc
     # only enabled in debug mode
@@ -1304,6 +1292,8 @@ type Dish {
     id: UUID!
     name: String!
     aliases: [String!]!
+    images: [Image!]!
+    reviews: [Review!]!
 }
 
 type DishAlias {
@@ -1642,21 +1632,6 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getImagesByDish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 uuid.UUID
-	if tmp, ok := rawArgs["dish"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
-		arg0, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["dish"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Query_getOccurrencesAfterInclusiveDate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1684,21 +1659,6 @@ func (ec *executionContext) field_Query_getOccurrencesByDate_args(ctx context.Co
 		}
 	}
 	args["date"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_getReviewsByDish_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 uuid.UUID
-	if tmp, ok := rawArgs["dish"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
-		arg0, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["dish"] = arg0
 	return args, nil
 }
 
@@ -1891,6 +1851,136 @@ func (ec *executionContext) fieldContext_Dish_aliases(ctx context.Context, field
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Dish_images(ctx context.Context, field graphql.CollectedField, obj *sqlc.Dish) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dish_images(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dish().Images(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*sqlc.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dish_images(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dish",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Image_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Image_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Image_displayName(ctx, field)
+			case "description":
+				return ec.fieldContext_Image_description(ctx, field)
+			case "upVotes":
+				return ec.fieldContext_Image_upVotes(ctx, field)
+			case "downVotes":
+				return ec.fieldContext_Image_downVotes(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Image_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Image_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Dish_reviews(ctx context.Context, field graphql.CollectedField, obj *sqlc.Dish) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dish_reviews(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dish().Reviews(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*sqlc.Review)
+	fc.Result = res
+	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dish_reviews(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dish",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Review_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Review_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Review_displayName(ctx, field)
+			case "stars":
+				return ec.fieldContext_Review_stars(ctx, field)
+			case "text":
+				return ec.fieldContext_Review_text(ctx, field)
+			case "upVotes":
+				return ec.fieldContext_Review_upVotes(ctx, field)
+			case "downVotes":
+				return ec.fieldContext_Review_downVotes(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Review_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Review_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Review_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
 		},
 	}
 	return fc, nil
@@ -2614,6 +2704,10 @@ func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context
 				return ec.fieldContext_Dish_name(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "images":
+				return ec.fieldContext_Dish_images(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Dish_reviews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -2697,6 +2791,10 @@ func (ec *executionContext) fieldContext_Mutation_updateDish(ctx context.Context
 				return ec.fieldContext_Dish_name(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "images":
+				return ec.fieldContext_Dish_images(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Dish_reviews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -3999,6 +4097,10 @@ func (ec *executionContext) fieldContext_Occurrence_dish(ctx context.Context, fi
 				return ec.fieldContext_Dish_name(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "images":
+				return ec.fieldContext_Dish_images(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Dish_reviews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -4051,6 +4153,10 @@ func (ec *executionContext) fieldContext_Occurrence_sideDishes(ctx context.Conte
 				return ec.fieldContext_Dish_name(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "images":
+				return ec.fieldContext_Dish_images(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Dish_reviews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -4957,6 +5063,10 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_dish(ctx context.Con
 				return ec.fieldContext_Dish_name(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "images":
+				return ec.fieldContext_Dish_images(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Dish_reviews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -5313,6 +5423,10 @@ func (ec *executionContext) fieldContext_Query_getAllDishes(ctx context.Context,
 				return ec.fieldContext_Dish_name(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "images":
+				return ec.fieldContext_Dish_images(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Dish_reviews(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -5666,83 +5780,6 @@ func (ec *executionContext) fieldContext_Query_getAllReviews(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getReviewsByDish(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getReviewsByDish(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetReviewsByDish(rctx, fc.Args["dish"].(uuid.UUID))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*sqlc.Review)
-	fc.Result = res
-	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getReviewsByDish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Review_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Review_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Review_displayName(ctx, field)
-			case "stars":
-				return ec.fieldContext_Review_stars(ctx, field)
-			case "text":
-				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Review_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Review_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Review_acceptedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getReviewsByDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Query_getAllImages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Query_getAllImages(ctx, field)
 	if err != nil {
@@ -5803,81 +5840,6 @@ func (ec *executionContext) fieldContext_Query_getAllImages(ctx context.Context,
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getImagesByDish(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getImagesByDish(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetImagesByDish(rctx, fc.Args["dish"].(uuid.UUID))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*sqlc.Image)
-	fc.Result = res
-	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getImagesByDish(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Image_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Image_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Image_displayName(ctx, field)
-			case "description":
-				return ec.fieldContext_Image_description(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Image_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Image_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Image_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Image_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Image_acceptedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getImagesByDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -9639,6 +9601,46 @@ func (ec *executionContext) _Dish(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
+		case "images":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dish_images(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "reviews":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dish_reviews(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10469,29 +10471,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getReviewsByDish":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getReviewsByDish(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "getAllImages":
 			field := field
 
@@ -10502,29 +10481,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_getAllImages(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
-		case "getImagesByDish":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_getImagesByDish(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}

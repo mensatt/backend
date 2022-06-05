@@ -5,13 +5,20 @@ package resolvers
 
 import (
 	"context"
-
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 )
 
 func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error) {
 	return r.Database.GetAliasesForDish(ctx, obj.ID)
+}
+
+func (r *dishResolver) Images(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Image, error) {
+	return r.Database.GetImagesByDish(ctx, obj.ID)
+}
+
+func (r *dishResolver) Reviews(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Review, error) {
+	return r.Database.GetReviewsByDish(ctx, obj.ID)
 }
 
 func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
