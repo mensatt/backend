@@ -1,10 +1,10 @@
 type Mutation {
     # Tag
-    createTag(input: TagCreateInput!): Tag! @authenticated
+    createTag(input: CreateTagInput!): Tag! @authenticated
 
     # Dish
-    createDish(input: DishCreateInput!): Dish! @authenticated
-    updateDish(input: DishUpdateInput!): Dish! @authenticated
+    createDish(input: CreateDishInput!): Dish! @authenticated
+    updateDish(input: UpdateDishInput!): Dish! @authenticated
 
     # DishAlias
     createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated

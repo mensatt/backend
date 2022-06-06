@@ -102,14 +102,20 @@ models:
   User:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.User
+  Location:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.Location
   
   # SQLC Params
   # Tag
-  TagCreateInput:
+  CreateTagInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.CreateTagParams
   # Dish
-  DishUpdateInput:
+  CreateDishInput:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.CreateDishParams
+  UpdateDishInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.UpdateDishParams
   # DishAlias
