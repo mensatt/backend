@@ -23,7 +23,8 @@ type Tag {
 
 type Dish {
     id: UUID!
-    name: String!
+    name_de: String!
+    name_en: String!
     aliases: [String!]!
     images: [Image!]!
     reviews: [Review!]!
@@ -35,8 +36,14 @@ type DishAlias {
     normalizedAliasName: String!
 }
 
+type Mensa {
+    id: Int!,
+    name: String!
+}
+
 type Occurrence {
     id: UUID!
+    mensa: Int!
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
