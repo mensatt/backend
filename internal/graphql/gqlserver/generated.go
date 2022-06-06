@@ -1148,14 +1148,14 @@ input CreateTagInput {
 # Dish
 
 input CreateDishInput {
-    name_de: String!
-    name_en: String!
+    nameDe: String!
+    nameEn: String!
 }
 
 input UpdateDishInput {
     id: UUID!
-    name_de: String
-    name_en: String
+    nameDe: String
+    nameEn: String
 }
 
 
@@ -9331,18 +9331,18 @@ func (ec *executionContext) unmarshalInputCreateDishInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "name_de":
+		case "nameDe":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_de"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameDe"))
 			it.NameDe, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "name_en":
+		case "nameEn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_en"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
 			it.NameEn, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
@@ -9817,18 +9817,18 @@ func (ec *executionContext) unmarshalInputUpdateDishInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "name_de":
+		case "nameDe":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_de"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameDe"))
 			it.NameDe, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
 			if err != nil {
 				return it, err
 			}
-		case "name_en":
+		case "nameEn":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_en"))
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
 			it.NameEn, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
 			if err != nil {
 				return it, err
