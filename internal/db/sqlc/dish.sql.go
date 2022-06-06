@@ -15,18 +15,18 @@ import (
 const createDish = `-- name: CreateDish :one
 INSERT INTO dish (name)
 VALUES ($1)
-RETURNING id, name
+RETURNING id, name, english_name
 `
 
 func (q *Queries) CreateDish(ctx context.Context, name string) (*Dish, error) {
 	row := q.db.QueryRow(ctx, createDish, name)
 	var i Dish
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.EnglishName)
 	return &i, err
 }
 
 const getAllDishes = `-- name: GetAllDishes :many
-SELECT id, name
+SELECT id, name, english_name
 FROM dish
 `
 
@@ -39,7 +39,7 @@ func (q *Queries) GetAllDishes(ctx context.Context) ([]*Dish, error) {
 	var items []*Dish
 	for rows.Next() {
 		var i Dish
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.Name, &i.EnglishName); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -51,7 +51,7 @@ func (q *Queries) GetAllDishes(ctx context.Context) ([]*Dish, error) {
 }
 
 const getDishByID = `-- name: GetDishByID :one
-SELECT id, name
+SELECT id, name, english_name
 FROM dish
 WHERE id = $1
 `
@@ -59,7 +59,7 @@ WHERE id = $1
 func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) {
 	row := q.db.QueryRow(ctx, getDishByID, id)
 	var i Dish
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.EnglishName)
 	return &i, err
 }
 
@@ -68,7 +68,7 @@ UPDATE dish
 SET
     name = COALESCE($2, name)
 WHERE id = $1
-RETURNING id, name
+RETURNING id, name, english_name
 `
 
 type UpdateDishParams struct {
@@ -79,6 +79,6 @@ type UpdateDishParams struct {
 func (q *Queries) UpdateDish(ctx context.Context, arg *UpdateDishParams) (*Dish, error) {
 	row := q.db.QueryRow(ctx, updateDish, arg.ID, arg.Name)
 	var i Dish
-	err := row.Scan(&i.ID, &i.Name)
+	err := row.Scan(&i.ID, &i.Name, &i.EnglishName)
 	return &i, err
 }
