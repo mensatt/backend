@@ -32,7 +32,7 @@ CREATE TYPE review_status AS ENUM('CONFIRMED', 'APPROVED', 'AWAITING_APPROVAL', 
 
 CREATE TABLE location (
     id uuid DEFAULT uuid_generate_v4(),
-    locationId integer NOT NULL UNIQUE,
+    location_id integer NOT NULL UNIQUE,
     name varchar NOT NULL UNIQUE,
     PRIMARY KEY (id)
 );

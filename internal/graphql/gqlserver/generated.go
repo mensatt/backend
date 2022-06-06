@@ -86,7 +86,7 @@ type ComplexityRoot struct {
 
 	Location struct {
 		ID         func(childComplexity int) int
-		Locationid func(childComplexity int) int
+		LocationID func(childComplexity int) int
 		Name       func(childComplexity int) int
 	}
 
@@ -402,11 +402,11 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		return e.complexity.Location.ID(childComplexity), true
 
 	case "Location.locationId":
-		if e.complexity.Location.Locationid == nil {
+		if e.complexity.Location.LocationID == nil {
 			break
 		}
 
-		return e.complexity.Location.Locationid(childComplexity), true
+		return e.complexity.Location.LocationID(childComplexity), true
 
 	case "Location.name":
 		if e.complexity.Location.Name == nil {
@@ -2751,7 +2751,7 @@ func (ec *executionContext) _Location_locationId(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Locationid, nil
+		return obj.LocationID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
