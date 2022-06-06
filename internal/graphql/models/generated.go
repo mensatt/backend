@@ -17,13 +17,3 @@ type DeleteOccurrenceInput struct {
 type DeleteReviewInput struct {
 	ID uuid.UUID `json:"id"`
 }
-
-type DishCreateInput struct {
-	NameDe string `json:"name_de"`
-	NameEn string `json:"name_en"`
-}
-
-type Mensa struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}

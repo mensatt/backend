@@ -15,8 +15,8 @@ func (r *mutationResolver) CreateTag(ctx context.Context, input sqlc.CreateTagPa
 	return r.Database.CreateTag(ctx, &input)
 }
 
-func (r *mutationResolver) CreateDish(ctx context.Context, input models.DishCreateInput) (*sqlc.Dish, error) {
-	return r.Database.CreateDish(ctx, input.Name)
+func (r *mutationResolver) CreateDish(ctx context.Context, input sqlc.CreateDishParams) (*sqlc.Dish, error) {
+	return r.Database.CreateDish(ctx, &input)
 }
 
 func (r *mutationResolver) UpdateDish(ctx context.Context, input sqlc.UpdateDishParams) (*sqlc.Dish, error) {
