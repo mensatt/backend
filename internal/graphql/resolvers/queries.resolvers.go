@@ -8,6 +8,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/middleware"
@@ -57,6 +58,14 @@ func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*sqlc.Review, erro
 
 func (r *queryResolver) GetAllImages(ctx context.Context) ([]*sqlc.Image, error) {
 	return r.Database.GetAllImages(ctx)
+}
+
+func (r *queryResolver) GetAllLocations(ctx context.Context) ([]*sqlc.Location, error) {
+	return r.Database.GetAllLocations(ctx)
+}
+
+func (r *queryResolver) GetLocationByID(ctx context.Context, id uuid.UUID) (*sqlc.Location, error) {
+	return r.Database.GetLocationByID(ctx, id)
 }
 
 func (r *queryResolver) GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error) {

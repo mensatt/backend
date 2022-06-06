@@ -3,7 +3,8 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE dish (
     id uuid DEFAULT uuid_generate_v4(),
-    name varchar UNIQUE NOT NULL,
+    name_de varchar UNIQUE NOT NULL,
+    name_en varchar UNIQUE NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -29,8 +30,16 @@ CREATE TABLE tag (
 
 CREATE TYPE review_status AS ENUM('CONFIRMED', 'APPROVED', 'AWAITING_APPROVAL', 'UPDATED', 'PENDING_DELETION');
 
+CREATE TABLE location (
+    id uuid DEFAULT uuid_generate_v4(),
+    location_id integer NOT NULL UNIQUE,
+    name varchar NOT NULL UNIQUE,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE occurrence (
     id uuid DEFAULT uuid_generate_v4(),
+    location uuid NOT NULL,
     dish uuid NOT NULL,
     date date NOT NULL,
     review_status review_status DEFAULT 'AWAITING_APPROVAL' NOT NULL,
@@ -47,7 +56,8 @@ CREATE TABLE occurrence (
     price_staff integer,
     price_guest integer,
     PRIMARY KEY (id),
-    FOREIGN KEY(dish) REFERENCES dish(id)
+    FOREIGN KEY(dish) REFERENCES dish(id),
+    FOREIGN KEY(location) REFERENCES location(id)
 );
 
 CREATE TABLE occurrence_side_dishes (

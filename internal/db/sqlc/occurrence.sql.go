@@ -14,12 +14,13 @@ import (
 )
 
 const createOccurrence = `-- name: CreateOccurrence :one
-INSERT INTO occurrence (dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
-RETURNING id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+INSERT INTO occurrence (location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+RETURNING id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 type CreateOccurrenceParams struct {
+	Location      uuid.UUID     `json:"location"`
 	Dish          uuid.UUID     `json:"dish"`
 	Date          time.Time     `json:"date"`
 	ReviewStatus  ReviewStatus  `json:"review_status"`
@@ -39,6 +40,7 @@ type CreateOccurrenceParams struct {
 
 func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error) {
 	row := q.db.QueryRow(ctx, createOccurrence,
+		arg.Location,
 		arg.Dish,
 		arg.Date,
 		arg.ReviewStatus,
@@ -58,6 +60,7 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrencePar
 	var i Occurrence
 	err := row.Scan(
 		&i.ID,
+		&i.Location,
 		&i.Dish,
 		&i.Date,
 		&i.ReviewStatus,
@@ -80,7 +83,7 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrencePar
 const deleteOccurrence = `-- name: DeleteOccurrence :one
 DELETE FROM occurrence
 WHERE id = $1
-RETURNING id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+RETURNING id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error) {
@@ -88,6 +91,7 @@ func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurren
 	var i Occurrence
 	err := row.Scan(
 		&i.ID,
+		&i.Location,
 		&i.Dish,
 		&i.Date,
 		&i.ReviewStatus,
@@ -108,7 +112,7 @@ func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurren
 }
 
 const getAllOccurrences = `-- name: GetAllOccurrences :many
-SELECT id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 `
 
@@ -123,6 +127,7 @@ func (q *Queries) GetAllOccurrences(ctx context.Context) ([]*Occurrence, error) 
 		var i Occurrence
 		if err := rows.Scan(
 			&i.ID,
+			&i.Location,
 			&i.Dish,
 			&i.Date,
 			&i.ReviewStatus,
@@ -186,7 +191,7 @@ func (q *Queries) GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*
 }
 
 const getOccurrenceByID = `-- name: GetOccurrenceByID :one
-SELECT id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest 
+SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest 
 FROM occurrence
 WHERE id = $1
 `
@@ -196,6 +201,7 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 	var i Occurrence
 	err := row.Scan(
 		&i.ID,
+		&i.Location,
 		&i.Dish,
 		&i.Date,
 		&i.ReviewStatus,
@@ -216,7 +222,7 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 }
 
 const getOccurrencesAfterInclusiveDate = `-- name: GetOccurrencesAfterInclusiveDate :many
-SELECT id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 WHERE date >= $1
 `
@@ -232,6 +238,7 @@ func (q *Queries) GetOccurrencesAfterInclusiveDate(ctx context.Context, date tim
 		var i Occurrence
 		if err := rows.Scan(
 			&i.ID,
+			&i.Location,
 			&i.Dish,
 			&i.Date,
 			&i.ReviewStatus,
@@ -259,7 +266,7 @@ func (q *Queries) GetOccurrencesAfterInclusiveDate(ctx context.Context, date tim
 }
 
 const getOccurrencesByDate = `-- name: GetOccurrencesByDate :many
-SELECT id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 WHERE date = $1
 `
@@ -275,6 +282,7 @@ func (q *Queries) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*
 		var i Occurrence
 		if err := rows.Scan(
 			&i.ID,
+			&i.Location,
 			&i.Dish,
 			&i.Date,
 			&i.ReviewStatus,
@@ -339,7 +347,7 @@ func (q *Queries) GetReviewsForOccurrence(ctx context.Context, id uuid.UUID) ([]
 }
 
 const getSideDishesForOccurrence = `-- name: GetSideDishesForOccurrence :many
-SELECT dish.id, dish.name
+SELECT dish.id, dish.name_de, dish.name_en
 FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish = dish.id
 WHERE occurrence_side_dishes.occurrence = $1
 `
@@ -353,7 +361,7 @@ func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrence uui
 	var items []*Dish
 	for rows.Next() {
 		var i Dish
-		if err := rows.Scan(&i.ID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.NameDe, &i.NameEn); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -416,7 +424,7 @@ SET
     price_staff = COALESCE($15, price_staff),
     price_guest = COALESCE($16, price_guest)
 WHERE id = $1
-RETURNING id, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+RETURNING id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 type UpdateOccurrenceParams struct {
@@ -460,6 +468,7 @@ func (q *Queries) UpdateOccurrence(ctx context.Context, arg *UpdateOccurrencePar
 	var i Occurrence
 	err := row.Scan(
 		&i.ID,
+		&i.Location,
 		&i.Dish,
 		&i.Date,
 		&i.ReviewStatus,

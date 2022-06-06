@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 )
@@ -23,6 +24,10 @@ func (r *dishResolver) Reviews(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Rev
 
 func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
+}
+
+func (r *occurrenceResolver) Location(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Location, error) {
+	return r.Database.GetLocationByID(ctx, obj.Location)
 }
 
 func (r *occurrenceResolver) Dish(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Dish, error) {

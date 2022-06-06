@@ -8,13 +8,14 @@ FROM dish
 WHERE id = $1;
 
 -- name: CreateDish :one
-INSERT INTO dish (name)
-VALUES ($1)
+INSERT INTO dish (name_de, name_en)
+VALUES ($1, $2)
 RETURNING *;
 
 -- name: UpdateDish :one
 UPDATE dish
 SET
-    name = COALESCE(sqlc.narg('name'), name)
+    name_de = COALESCE(sqlc.narg('name_de'), name_de),
+    name_en = COALESCE(sqlc.narg('name_en'), name_en)
 WHERE id = $1
 RETURNING *;

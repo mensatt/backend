@@ -1,6 +1,6 @@
 #Tag
 
-input TagCreateInput {
+input CreateTagInput {
     key: String!
     name: String!
     description: String!
@@ -12,13 +12,15 @@ input TagCreateInput {
 
 # Dish
 
-input DishCreateInput {
-    name: String!
+input CreateDishInput {
+    nameDe: String!
+    nameEn: String!
 }
 
-input DishUpdateInput {
+input UpdateDishInput {
     id: UUID!
-    name: String
+    nameDe: String
+    nameEn: String
 }
 
 
@@ -45,6 +47,7 @@ input DeleteDishAliasInput {
 # Occurrence
 
 input CreateOccurrenceInput {
+    location: UUID!
     dish: UUID!
     sideDishes: [UUID!]
     date: Time!
@@ -133,7 +136,7 @@ input DeleteReviewInput {
 
 # Image
 
-#input ImageInput {
+#input CreateImageInput {
 #    occurrence: UUID!
 #    displayName: String!
 #    description: String

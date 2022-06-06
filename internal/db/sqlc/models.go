@@ -56,8 +56,9 @@ func (e *ReviewStatus) Scan(src interface{}) error {
 }
 
 type Dish struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	ID     uuid.UUID `json:"id"`
+	NameDe string    `json:"name_de"`
+	NameEn string    `json:"name_en"`
 }
 
 type DishAlias struct {
@@ -78,8 +79,15 @@ type Image struct {
 	AcceptedAt  sql.NullTime   `json:"accepted_at"`
 }
 
+type Location struct {
+	ID         uuid.UUID `json:"id"`
+	LocationID int32     `json:"location_id"`
+	Name       string    `json:"name"`
+}
+
 type Occurrence struct {
 	ID            uuid.UUID     `json:"id"`
+	Location      uuid.UUID     `json:"location"`
 	Dish          uuid.UUID     `json:"dish"`
 	Date          time.Time     `json:"date"`
 	ReviewStatus  ReviewStatus  `json:"review_status"`
