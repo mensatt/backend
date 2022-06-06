@@ -13,20 +13,25 @@ import (
 )
 
 const createDish = `-- name: CreateDish :one
-INSERT INTO dish (name)
-VALUES ($1)
-RETURNING id, name, english_name
+INSERT INTO dish (name_de, name_en)
+VALUES ($1, $2)
+RETURNING id, name_de, name_en
 `
 
-func (q *Queries) CreateDish(ctx context.Context, name string) (*Dish, error) {
-	row := q.db.QueryRow(ctx, createDish, name)
+type CreateDishParams struct {
+	NameDe string `json:"name_de"`
+	NameEn string `json:"name_en"`
+}
+
+func (q *Queries) CreateDish(ctx context.Context, arg *CreateDishParams) (*Dish, error) {
+	row := q.db.QueryRow(ctx, createDish, arg.NameDe, arg.NameEn)
 	var i Dish
-	err := row.Scan(&i.ID, &i.Name, &i.EnglishName)
+	err := row.Scan(&i.ID, &i.NameDe, &i.NameEn)
 	return &i, err
 }
 
 const getAllDishes = `-- name: GetAllDishes :many
-SELECT id, name, english_name
+SELECT id, name_de, name_en
 FROM dish
 `
 
@@ -39,7 +44,7 @@ func (q *Queries) GetAllDishes(ctx context.Context) ([]*Dish, error) {
 	var items []*Dish
 	for rows.Next() {
 		var i Dish
-		if err := rows.Scan(&i.ID, &i.Name, &i.EnglishName); err != nil {
+		if err := rows.Scan(&i.ID, &i.NameDe, &i.NameEn); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -51,7 +56,7 @@ func (q *Queries) GetAllDishes(ctx context.Context) ([]*Dish, error) {
 }
 
 const getDishByID = `-- name: GetDishByID :one
-SELECT id, name, english_name
+SELECT id, name_de, name_en
 FROM dish
 WHERE id = $1
 `
@@ -59,26 +64,28 @@ WHERE id = $1
 func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) {
 	row := q.db.QueryRow(ctx, getDishByID, id)
 	var i Dish
-	err := row.Scan(&i.ID, &i.Name, &i.EnglishName)
+	err := row.Scan(&i.ID, &i.NameDe, &i.NameEn)
 	return &i, err
 }
 
 const updateDish = `-- name: UpdateDish :one
 UPDATE dish
 SET
-    name = COALESCE($2, name)
+    name_de = COALESCE($2, name_de),
+    name_en = COALESCE($3, name_en)
 WHERE id = $1
-RETURNING id, name, english_name
+RETURNING id, name_de, name_en
 `
 
 type UpdateDishParams struct {
-	ID   uuid.UUID      `json:"id"`
-	Name sql.NullString `json:"name"`
+	ID     uuid.UUID      `json:"id"`
+	NameDe sql.NullString `json:"name_de"`
+	NameEn sql.NullString `json:"name_en"`
 }
 
 func (q *Queries) UpdateDish(ctx context.Context, arg *UpdateDishParams) (*Dish, error) {
-	row := q.db.QueryRow(ctx, updateDish, arg.ID, arg.Name)
+	row := q.db.QueryRow(ctx, updateDish, arg.ID, arg.NameDe, arg.NameEn)
 	var i Dish
-	err := row.Scan(&i.ID, &i.Name, &i.EnglishName)
+	err := row.Scan(&i.ID, &i.NameDe, &i.NameEn)
 	return &i, err
 }

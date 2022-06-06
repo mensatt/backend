@@ -61,7 +61,8 @@ type ComplexityRoot struct {
 		Aliases func(childComplexity int) int
 		ID      func(childComplexity int) int
 		Images  func(childComplexity int) int
-		Name    func(childComplexity int) int
+		NameDe  func(childComplexity int) int
+		NameEn  func(childComplexity int) int
 		Reviews func(childComplexity int) int
 	}
 
@@ -81,6 +82,11 @@ type ComplexityRoot struct {
 		Occurrence  func(childComplexity int) int
 		UpVotes     func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
+	}
+
+	Mensa struct {
+		ID   func(childComplexity int) int
+		Name func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -112,6 +118,7 @@ type ComplexityRoot struct {
 		Images        func(childComplexity int) int
 		Kcal          func(childComplexity int) int
 		Kj            func(childComplexity int) int
+		Mensa         func(childComplexity int) int
 		PriceGuest    func(childComplexity int) int
 		PriceStaff    func(childComplexity int) int
 		PriceStudent  func(childComplexity int) int
@@ -209,6 +216,7 @@ type MutationResolver interface {
 	DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*sqlc.Review, error)
 }
 type OccurrenceResolver interface {
+	Mensa(ctx context.Context, obj *sqlc.Occurrence) (int, error)
 	Dish(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Dish, error)
 	SideDishes(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Dish, error)
 
@@ -276,12 +284,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Dish.Images(childComplexity), true
 
-	case "Dish.name":
-		if e.complexity.Dish.Name == nil {
+	case "Dish.name_de":
+		if e.complexity.Dish.NameDe == nil {
 			break
 		}
 
-		return e.complexity.Dish.Name(childComplexity), true
+		return e.complexity.Dish.NameDe(childComplexity), true
+
+	case "Dish.name_en":
+		if e.complexity.Dish.NameEn == nil {
+			break
+		}
+
+		return e.complexity.Dish.NameEn(childComplexity), true
 
 	case "Dish.reviews":
 		if e.complexity.Dish.Reviews == nil {
@@ -373,6 +388,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Image.UpdatedAt(childComplexity), true
+
+	case "Mensa.id":
+		if e.complexity.Mensa.ID == nil {
+			break
+		}
+
+		return e.complexity.Mensa.ID(childComplexity), true
+
+	case "Mensa.name":
+		if e.complexity.Mensa.Name == nil {
+			break
+		}
+
+		return e.complexity.Mensa.Name(childComplexity), true
 
 	case "Mutation.addSideDishToOccurrence":
 		if e.complexity.Mutation.AddSideDishToOccurrence == nil {
@@ -628,6 +657,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Occurrence.Kj(childComplexity), true
+
+	case "Occurrence.mensa":
+		if e.complexity.Occurrence.Mensa == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.Mensa(childComplexity), true
 
 	case "Occurrence.priceGuest":
 		if e.complexity.Occurrence.PriceGuest == nil {
@@ -1081,12 +1117,14 @@ input TagCreateInput {
 # Dish
 
 input DishCreateInput {
-    name: String!
+    name_de: String!
+    name_en: String!
 }
 
 input DishUpdateInput {
     id: UUID!
-    name: String
+    name_de: String
+    name_en: String
 }
 
 
@@ -1290,7 +1328,8 @@ type Tag {
 
 type Dish {
     id: UUID!
-    name: String!
+    name_de: String!
+    name_en: String!
     aliases: [String!]!
     images: [Image!]!
     reviews: [Review!]!
@@ -1302,8 +1341,14 @@ type DishAlias {
     normalizedAliasName: String!
 }
 
+type Mensa {
+    id: Int!,
+    name: String!
+}
+
 type Occurrence {
     id: UUID!
+    mensa: Int!
     dish: Dish!
     sideDishes: [Dish!]!
     date: Time!
@@ -1768,8 +1813,8 @@ func (ec *executionContext) fieldContext_Dish_id(ctx context.Context, field grap
 	return fc, nil
 }
 
-func (ec *executionContext) _Dish_name(ctx context.Context, field graphql.CollectedField, obj *sqlc.Dish) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Dish_name(ctx, field)
+func (ec *executionContext) _Dish_name_de(ctx context.Context, field graphql.CollectedField, obj *sqlc.Dish) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dish_name_de(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1782,7 +1827,7 @@ func (ec *executionContext) _Dish_name(ctx context.Context, field graphql.Collec
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Name, nil
+		return obj.NameDe, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1799,7 +1844,51 @@ func (ec *executionContext) _Dish_name(ctx context.Context, field graphql.Collec
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Dish_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Dish_name_de(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dish",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Dish_name_en(ctx context.Context, field graphql.CollectedField, obj *sqlc.Dish) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dish_name_en(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NameEn, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dish_name_en(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Dish",
 		Field:      field,
@@ -2203,6 +2292,8 @@ func (ec *executionContext) fieldContext_Image_occurrence(ctx context.Context, f
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -2550,6 +2641,94 @@ func (ec *executionContext) fieldContext_Image_acceptedAt(ctx context.Context, f
 	return fc, nil
 }
 
+func (ec *executionContext) _Mensa_id(ctx context.Context, field graphql.CollectedField, obj *models.Mensa) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mensa_id(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mensa_id(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mensa",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mensa_name(ctx context.Context, field graphql.CollectedField, obj *models.Mensa) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mensa_name(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Name, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mensa_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mensa",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createTag(ctx, field)
 	if err != nil {
@@ -2700,8 +2879,10 @@ func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Dish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Dish_name(ctx, field)
+			case "name_de":
+				return ec.fieldContext_Dish_name_de(ctx, field)
+			case "name_en":
+				return ec.fieldContext_Dish_name_en(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
 			case "images":
@@ -2787,8 +2968,10 @@ func (ec *executionContext) fieldContext_Mutation_updateDish(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Dish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Dish_name(ctx, field)
+			case "name_de":
+				return ec.fieldContext_Dish_name_de(ctx, field)
+			case "name_en":
+				return ec.fieldContext_Dish_name_en(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
 			case "images":
@@ -3123,6 +3306,8 @@ func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -3240,6 +3425,8 @@ func (ec *executionContext) fieldContext_Mutation_updateOccurrence(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -3357,6 +3544,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.C
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -4052,6 +4241,50 @@ func (ec *executionContext) fieldContext_Occurrence_id(ctx context.Context, fiel
 	return fc, nil
 }
 
+func (ec *executionContext) _Occurrence_mensa(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Occurrence_mensa(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Occurrence().Mensa(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Occurrence_mensa(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Occurrence_dish(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Occurrence_dish(ctx, field)
 	if err != nil {
@@ -4093,8 +4326,10 @@ func (ec *executionContext) fieldContext_Occurrence_dish(ctx context.Context, fi
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Dish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Dish_name(ctx, field)
+			case "name_de":
+				return ec.fieldContext_Dish_name_de(ctx, field)
+			case "name_en":
+				return ec.fieldContext_Dish_name_en(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
 			case "images":
@@ -4149,8 +4384,10 @@ func (ec *executionContext) fieldContext_Occurrence_sideDishes(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Dish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Dish_name(ctx, field)
+			case "name_de":
+				return ec.fieldContext_Dish_name_de(ctx, field)
+			case "name_en":
+				return ec.fieldContext_Dish_name_en(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
 			case "images":
@@ -4973,6 +5210,8 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_occurrence(ctx conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -5059,8 +5298,10 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_dish(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Dish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Dish_name(ctx, field)
+			case "name_de":
+				return ec.fieldContext_Dish_name_de(ctx, field)
+			case "name_en":
+				return ec.fieldContext_Dish_name_en(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
 			case "images":
@@ -5115,6 +5356,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_occurrence(ctx context.Co
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -5419,8 +5662,10 @@ func (ec *executionContext) fieldContext_Query_getAllDishes(ctx context.Context,
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Dish_id(ctx, field)
-			case "name":
-				return ec.fieldContext_Dish_name(ctx, field)
+			case "name_de":
+				return ec.fieldContext_Dish_name_de(ctx, field)
+			case "name_en":
+				return ec.fieldContext_Dish_name_en(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
 			case "images":
@@ -5475,6 +5720,8 @@ func (ec *executionContext) fieldContext_Query_getAllOccurrences(ctx context.Con
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -5561,6 +5808,8 @@ func (ec *executionContext) fieldContext_Query_getOccurrencesByDate(ctx context.
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -5658,6 +5907,8 @@ func (ec *executionContext) fieldContext_Query_getOccurrencesAfterInclusiveDate(
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -6107,6 +6358,8 @@ func (ec *executionContext) fieldContext_Review_occurrence(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "mensa":
+				return ec.fieldContext_Occurrence_mensa(ctx, field)
 			case "dish":
 				return ec.fieldContext_Occurrence_dish(ctx, field)
 			case "sideDishes":
@@ -9126,11 +9379,19 @@ func (ec *executionContext) unmarshalInputDishCreateInput(ctx context.Context, o
 
 	for k, v := range asMap {
 		switch k {
-		case "name":
+		case "name_de":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			it.Name, err = ec.unmarshalNString2string(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_de"))
+			it.NameDe, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name_en":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_en"))
+			it.NameEn, err = ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9157,11 +9418,19 @@ func (ec *executionContext) unmarshalInputDishUpdateInput(ctx context.Context, o
 			if err != nil {
 				return it, err
 			}
-		case "name":
+		case "name_de":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-			it.Name, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_de"))
+			it.NameDe, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "name_en":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name_en"))
+			it.NameEn, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9574,9 +9843,16 @@ func (ec *executionContext) _Dish(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "name":
+		case "name_de":
 
-			out.Values[i] = ec._Dish_name(ctx, field, obj)
+			out.Values[i] = ec._Dish_name_de(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
+		case "name_en":
+
+			out.Values[i] = ec._Dish_name_en(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -9785,6 +10061,41 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 	return out
 }
 
+var mensaImplementors = []string{"Mensa"}
+
+func (ec *executionContext) _Mensa(ctx context.Context, sel ast.SelectionSet, obj *models.Mensa) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, mensaImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("Mensa")
+		case "id":
+
+			out.Values[i] = ec._Mensa_id(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "name":
+
+			out.Values[i] = ec._Mensa_name(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var mutationImplementors = []string{"Mutation"}
 
 func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet) graphql.Marshaler {
@@ -9976,6 +10287,26 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "mensa":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Occurrence_mensa(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "dish":
 			field := field
 
@@ -11276,6 +11607,21 @@ func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋ
 		return graphql.Null
 	}
 	return ec._Image(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
+	res, err := graphql.UnmarshalInt(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
+	res := graphql.MarshalInt(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNInt2int32(ctx context.Context, v interface{}) (int32, error) {
