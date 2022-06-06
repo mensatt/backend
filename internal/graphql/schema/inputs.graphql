@@ -13,14 +13,14 @@ input CreateTagInput {
 # Dish
 
 input CreateDishInput {
-    name_de: String!
-    name_en: String!
+    nameDe: String!
+    nameEn: String!
 }
 
 input UpdateDishInput {
     id: UUID!
-    name_de: String
-    name_en: String
+    nameDe: String
+    nameEn: String
 }
 
 
