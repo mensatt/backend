@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 )
