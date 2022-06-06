@@ -81,7 +81,7 @@ type Image struct {
 
 type Location struct {
 	ID         uuid.UUID `json:"id"`
-	Locationid int32     `json:"locationid"`
+	LocationID int32     `json:"location_id"`
 	Name       string    `json:"name"`
 }
 
