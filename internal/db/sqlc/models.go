@@ -56,9 +56,9 @@ func (e *ReviewStatus) Scan(src interface{}) error {
 }
 
 type Dish struct {
-	ID     uuid.UUID `json:"id"`
-	NameDe string    `json:"name_de"`
-	NameEn string    `json:"name_en"`
+	ID     uuid.UUID      `json:"id"`
+	NameDe string         `json:"name_de"`
+	NameEn sql.NullString `json:"name_en"`
 }
 
 type DishAlias struct {

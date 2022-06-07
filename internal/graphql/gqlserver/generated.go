@@ -1935,9 +1935,9 @@ func (ec *executionContext) _Dish_nameEn(ctx context.Context, field graphql.Coll
 		}
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(sql.NullString)
 	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
+	return ec.marshalNString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Dish_nameEn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9343,7 +9343,7 @@ func (ec *executionContext) unmarshalInputCreateDishInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
-			it.NameEn, err = ec.unmarshalNString2string(ctx, v)
+			it.NameEn, err = ec.unmarshalNString2databaseᚋsqlᚐNullString(ctx, v)
 			if err != nil {
 				return it, err
 			}
