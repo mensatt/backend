@@ -24,7 +24,7 @@ type Tag {
 type Dish {
     id: UUID!
     nameDe: String!
-    nameEn: String!
+    nameEn: String
     aliases: [String!]!
     images: [Image!]!
     reviews: [Review!]!

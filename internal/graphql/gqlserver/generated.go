@@ -1149,7 +1149,7 @@ input CreateTagInput {
 
 input CreateDishInput {
     nameDe: String!
-    nameEn: String!
+    nameEn: String
 }
 
 input UpdateDishInput {
@@ -1365,7 +1365,7 @@ type Tag {
 type Dish {
     id: UUID!
     nameDe: String!
-    nameEn: String!
+    nameEn: String
     aliases: [String!]!
     images: [Image!]!
     reviews: [Review!]!
@@ -1930,14 +1930,11 @@ func (ec *executionContext) _Dish_nameEn(ctx context.Context, field graphql.Coll
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(sql.NullString)
 	fc.Result = res
-	return ec.marshalNString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
+	return ec.marshalOString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Dish_nameEn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -9343,7 +9340,7 @@ func (ec *executionContext) unmarshalInputCreateDishInput(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
-			it.NameEn, err = ec.unmarshalNString2databaseᚋsqlᚐNullString(ctx, v)
+			it.NameEn, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10081,9 +10078,6 @@ func (ec *executionContext) _Dish(ctx context.Context, sel ast.SelectionSet, obj
 
 			out.Values[i] = ec._Dish_nameEn(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "aliases":
 			field := field
 
