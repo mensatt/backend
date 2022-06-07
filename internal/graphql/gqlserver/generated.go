@@ -145,17 +145,17 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetAllDishes                     func(childComplexity int) int
-		GetAllImages                     func(childComplexity int) int
-		GetAllLocations                  func(childComplexity int) int
-		GetAllOccurrences                func(childComplexity int) int
-		GetAllReviews                    func(childComplexity int) int
-		GetAllTags                       func(childComplexity int) int
-		GetCurrentUser                   func(childComplexity int) int
-		GetLocationByID                  func(childComplexity int, id uuid.UUID) int
-		GetOccurrencesAfterInclusiveDate func(childComplexity int, start time.Time) int
-		GetOccurrencesByDate             func(childComplexity int, date time.Time) int
-		GetVcsBuildInfo                  func(childComplexity int) int
+		CurrentUser                   func(childComplexity int) int
+		Dishes                        func(childComplexity int) int
+		Images                        func(childComplexity int) int
+		LocationByID                  func(childComplexity int, id uuid.UUID) int
+		Locations                     func(childComplexity int) int
+		Occurrences                   func(childComplexity int) int
+		OccurrencesAfterInclusiveDate func(childComplexity int, start time.Time) int
+		OccurrencesByDate             func(childComplexity int, date time.Time) int
+		Reviews                       func(childComplexity int) int
+		Tags                          func(childComplexity int) int
+		VcsBuildInfo                  func(childComplexity int) int
 	}
 
 	Review struct {
@@ -237,17 +237,17 @@ type OccurrenceTagResolver interface {
 	Tag(ctx context.Context, obj *sqlc.OccurrenceTag) (*sqlc.Tag, error)
 }
 type QueryResolver interface {
-	GetCurrentUser(ctx context.Context) (*sqlc.User, error)
-	GetAllTags(ctx context.Context) ([]*sqlc.Tag, error)
-	GetAllDishes(ctx context.Context) ([]*sqlc.Dish, error)
-	GetAllOccurrences(ctx context.Context) ([]*sqlc.Occurrence, error)
-	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error)
-	GetOccurrencesAfterInclusiveDate(ctx context.Context, start time.Time) ([]*sqlc.Occurrence, error)
-	GetAllReviews(ctx context.Context) ([]*sqlc.Review, error)
-	GetAllImages(ctx context.Context) ([]*sqlc.Image, error)
-	GetAllLocations(ctx context.Context) ([]*sqlc.Location, error)
-	GetLocationByID(ctx context.Context, id uuid.UUID) (*sqlc.Location, error)
-	GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error)
+	CurrentUser(ctx context.Context) (*sqlc.User, error)
+	Tags(ctx context.Context) ([]*sqlc.Tag, error)
+	Dishes(ctx context.Context) ([]*sqlc.Dish, error)
+	Occurrences(ctx context.Context) ([]*sqlc.Occurrence, error)
+	OccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error)
+	OccurrencesAfterInclusiveDate(ctx context.Context, start time.Time) ([]*sqlc.Occurrence, error)
+	Reviews(ctx context.Context) ([]*sqlc.Review, error)
+	Images(ctx context.Context) ([]*sqlc.Image, error)
+	Locations(ctx context.Context) ([]*sqlc.Location, error)
+	LocationByID(ctx context.Context, id uuid.UUID) (*sqlc.Location, error)
+	VcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error)
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error)
@@ -794,97 +794,97 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.OccurrenceTag.Tag(childComplexity), true
 
-	case "Query.getAllDishes":
-		if e.complexity.Query.GetAllDishes == nil {
+	case "Query.currentUser":
+		if e.complexity.Query.CurrentUser == nil {
 			break
 		}
 
-		return e.complexity.Query.GetAllDishes(childComplexity), true
+		return e.complexity.Query.CurrentUser(childComplexity), true
 
-	case "Query.getAllImages":
-		if e.complexity.Query.GetAllImages == nil {
+	case "Query.dishes":
+		if e.complexity.Query.Dishes == nil {
 			break
 		}
 
-		return e.complexity.Query.GetAllImages(childComplexity), true
+		return e.complexity.Query.Dishes(childComplexity), true
 
-	case "Query.getAllLocations":
-		if e.complexity.Query.GetAllLocations == nil {
+	case "Query.images":
+		if e.complexity.Query.Images == nil {
 			break
 		}
 
-		return e.complexity.Query.GetAllLocations(childComplexity), true
+		return e.complexity.Query.Images(childComplexity), true
 
-	case "Query.getAllOccurrences":
-		if e.complexity.Query.GetAllOccurrences == nil {
+	case "Query.locationById":
+		if e.complexity.Query.LocationByID == nil {
 			break
 		}
 
-		return e.complexity.Query.GetAllOccurrences(childComplexity), true
-
-	case "Query.getAllReviews":
-		if e.complexity.Query.GetAllReviews == nil {
-			break
-		}
-
-		return e.complexity.Query.GetAllReviews(childComplexity), true
-
-	case "Query.getAllTags":
-		if e.complexity.Query.GetAllTags == nil {
-			break
-		}
-
-		return e.complexity.Query.GetAllTags(childComplexity), true
-
-	case "Query.getCurrentUser":
-		if e.complexity.Query.GetCurrentUser == nil {
-			break
-		}
-
-		return e.complexity.Query.GetCurrentUser(childComplexity), true
-
-	case "Query.getLocationById":
-		if e.complexity.Query.GetLocationByID == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getLocationById_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_locationById_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetLocationByID(childComplexity, args["id"].(uuid.UUID)), true
+		return e.complexity.Query.LocationByID(childComplexity, args["id"].(uuid.UUID)), true
 
-	case "Query.getOccurrencesAfterInclusiveDate":
-		if e.complexity.Query.GetOccurrencesAfterInclusiveDate == nil {
+	case "Query.locations":
+		if e.complexity.Query.Locations == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getOccurrencesAfterInclusiveDate_args(context.TODO(), rawArgs)
+		return e.complexity.Query.Locations(childComplexity), true
+
+	case "Query.occurrences":
+		if e.complexity.Query.Occurrences == nil {
+			break
+		}
+
+		return e.complexity.Query.Occurrences(childComplexity), true
+
+	case "Query.occurrencesAfterInclusiveDate":
+		if e.complexity.Query.OccurrencesAfterInclusiveDate == nil {
+			break
+		}
+
+		args, err := ec.field_Query_occurrencesAfterInclusiveDate_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOccurrencesAfterInclusiveDate(childComplexity, args["start"].(time.Time)), true
+		return e.complexity.Query.OccurrencesAfterInclusiveDate(childComplexity, args["start"].(time.Time)), true
 
-	case "Query.getOccurrencesByDate":
-		if e.complexity.Query.GetOccurrencesByDate == nil {
+	case "Query.occurrencesByDate":
+		if e.complexity.Query.OccurrencesByDate == nil {
 			break
 		}
 
-		args, err := ec.field_Query_getOccurrencesByDate_args(context.TODO(), rawArgs)
+		args, err := ec.field_Query_occurrencesByDate_args(context.TODO(), rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.complexity.Query.GetOccurrencesByDate(childComplexity, args["date"].(time.Time)), true
+		return e.complexity.Query.OccurrencesByDate(childComplexity, args["date"].(time.Time)), true
 
-	case "Query.getVcsBuildInfo":
-		if e.complexity.Query.GetVcsBuildInfo == nil {
+	case "Query.reviews":
+		if e.complexity.Query.Reviews == nil {
 			break
 		}
 
-		return e.complexity.Query.GetVcsBuildInfo(childComplexity), true
+		return e.complexity.Query.Reviews(childComplexity), true
+
+	case "Query.tags":
+		if e.complexity.Query.Tags == nil {
+			break
+		}
+
+		return e.complexity.Query.Tags(childComplexity), true
+
+	case "Query.vcsBuildInfo":
+		if e.complexity.Query.VcsBuildInfo == nil {
+			break
+		}
+
+		return e.complexity.Query.VcsBuildInfo(childComplexity), true
 
 	case "Review.acceptedAt":
 		if e.complexity.Review.AcceptedAt == nil {
@@ -1194,7 +1194,7 @@ input CreateOccurrenceInput {
     location: UUID!
     dish: UUID!
     sideDishes: [UUID!]
-    date: Time!
+    date: Date!
     reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
@@ -1214,7 +1214,7 @@ input CreateOccurrenceInput {
 input UpdateOccurrenceInput {
     id: UUID!
     dish: UUID
-    date: Time
+    date: Date
     reviewStatus: ReviewStatus
     kj: Int,
     kcal: Int,
@@ -1270,7 +1270,7 @@ input UpdateReviewInput {
     displayName: String
     stars: Int
     text: String
-    acceptedAt: Time
+    acceptedAt: Timestamp
 }
 
 input DeleteReviewInput {
@@ -1321,34 +1321,41 @@ input DeleteReviewInput {
 }`, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
     # User
-    getCurrentUser: User
+    currentUser: User
 
     # Tag
-    getAllTags: [Tag!]!
+    tags: [Tag!]!
 
     #Dish
-    getAllDishes: [Dish!]!
+    dishes: [Dish!]!
 
     # Occurrence
-    getAllOccurrences: [Occurrence!]!
-    getOccurrencesByDate(date: Time!): [Occurrence!]!
-    getOccurrencesAfterInclusiveDate(start: Time!): [Occurrence!]!
+    occurrences: [Occurrence!]!
+    occurrencesByDate(date: Date!): [Occurrence!]!
+    occurrencesAfterInclusiveDate(start: Date!): [Occurrence!]!
 
     # Review
-    getAllReviews: [Review!]!
+    reviews: [Review!]!
 
     # Image
-    getAllImages: [Image!]!
+    images: [Image!]!
 
     # Location
-    getAllLocations: [Location!]!
-    getLocationById(id: UUID!): Location!
+    locations: [Location!]!
+    locationById(id: UUID!): Location!
 
     # Misc
     # only enabled in debug mode
-    getVcsBuildInfo: VcsBuildInfo
+    vcsBuildInfo: VcsBuildInfo
 }`, BuiltIn: false},
-	{Name: "../schema/scalars.graphql", Input: `scalar Time
+	{Name: "../schema/scalars.graphql", Input: `# Timestamp as defined in RFC3339Nano
+scalar Timestamp
+
+# Date with Format: YYYY-MM-DD
+scalar Date
+
+# A UUID is a 128 bit (16 byte) Universal Unique IDentifier as defined in RFC 4122.
+# Format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 scalar UUID`, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `enum Priority {
     LOW
@@ -1399,7 +1406,7 @@ type Occurrence {
     location: Location!
     dish: Dish!
     sideDishes: [Dish!]!
-    date: Time!
+    date: Date!
     reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
@@ -1436,9 +1443,9 @@ type Review {
     text: String
     upVotes: Int!
     downVotes: Int!
-    createdAt: Time!
-    updatedAt: Time!
-    acceptedAt: Time
+    createdAt: Timestamp!
+    updatedAt: Timestamp!
+    acceptedAt: Timestamp
 }
 
 type Image {
@@ -1448,9 +1455,9 @@ type Image {
     description: String
     upVotes: Int!
     downVotes: Int!
-    createdAt: Time!
-    updatedAt: Time!
-    acceptedAt: Time
+    createdAt: Timestamp!
+    updatedAt: Timestamp!
+    acceptedAt: Timestamp
 }
 
 type User {
@@ -1740,7 +1747,7 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getLocationById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_locationById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 uuid.UUID
@@ -1755,13 +1762,13 @@ func (ec *executionContext) field_Query_getLocationById_args(ctx context.Context
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getOccurrencesAfterInclusiveDate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_occurrencesAfterInclusiveDate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 time.Time
 	if tmp, ok := rawArgs["start"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("start"))
-		arg0, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+		arg0, err = ec.unmarshalNDate2timeᚐTime(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1770,13 +1777,13 @@ func (ec *executionContext) field_Query_getOccurrencesAfterInclusiveDate_args(ct
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getOccurrencesByDate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_occurrencesByDate_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 time.Time
 	if tmp, ok := rawArgs["date"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-		arg0, err = ec.unmarshalNTime2timeᚐTime(ctx, tmp)
+		arg0, err = ec.unmarshalNDate2timeᚐTime(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2591,7 +2598,7 @@ func (ec *executionContext) _Image_createdAt(ctx context.Context, field graphql.
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTimestamp2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Image_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2601,7 +2608,7 @@ func (ec *executionContext) fieldContext_Image_createdAt(ctx context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2635,7 +2642,7 @@ func (ec *executionContext) _Image_updatedAt(ctx context.Context, field graphql.
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTimestamp2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Image_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2645,7 +2652,7 @@ func (ec *executionContext) fieldContext_Image_updatedAt(ctx context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
@@ -2676,7 +2683,7 @@ func (ec *executionContext) _Image_acceptedAt(ctx context.Context, field graphql
 	}
 	res := resTmp.(sql.NullTime)
 	fc.Result = res
-	return ec.marshalOTime2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
+	return ec.marshalOTimestamp2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Image_acceptedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2686,7 +2693,7 @@ func (ec *executionContext) fieldContext_Image_acceptedAt(ctx context.Context, f
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4587,7 +4594,7 @@ func (ec *executionContext) _Occurrence_date(ctx context.Context, field graphql.
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNDate2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_date(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4597,7 +4604,7 @@ func (ec *executionContext) fieldContext_Occurrence_date(ctx context.Context, fi
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Date does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5619,8 +5626,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_tag(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getCurrentUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getCurrentUser(ctx, field)
+func (ec *executionContext) _Query_currentUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_currentUser(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5633,7 +5640,7 @@ func (ec *executionContext) _Query_getCurrentUser(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetCurrentUser(rctx)
+		return ec.resolvers.Query().CurrentUser(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5647,7 +5654,7 @@ func (ec *executionContext) _Query_getCurrentUser(ctx context.Context, field gra
 	return ec.marshalOUser2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUser(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getCurrentUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_currentUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5666,8 +5673,8 @@ func (ec *executionContext) fieldContext_Query_getCurrentUser(ctx context.Contex
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getAllTags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getAllTags(ctx, field)
+func (ec *executionContext) _Query_tags(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_tags(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5680,7 +5687,7 @@ func (ec *executionContext) _Query_getAllTags(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllTags(rctx)
+		return ec.resolvers.Query().Tags(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5697,7 +5704,7 @@ func (ec *executionContext) _Query_getAllTags(ctx context.Context, field graphql
 	return ec.marshalNTag2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐTagᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getAllTags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_tags(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5724,8 +5731,8 @@ func (ec *executionContext) fieldContext_Query_getAllTags(ctx context.Context, f
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getAllDishes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getAllDishes(ctx, field)
+func (ec *executionContext) _Query_dishes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_dishes(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5738,7 +5745,7 @@ func (ec *executionContext) _Query_getAllDishes(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllDishes(rctx)
+		return ec.resolvers.Query().Dishes(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5755,7 +5762,7 @@ func (ec *executionContext) _Query_getAllDishes(ctx context.Context, field graph
 	return ec.marshalNDish2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDishᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getAllDishes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_dishes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5782,8 +5789,8 @@ func (ec *executionContext) fieldContext_Query_getAllDishes(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getAllOccurrences(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getAllOccurrences(ctx, field)
+func (ec *executionContext) _Query_occurrences(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_occurrences(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5796,7 +5803,7 @@ func (ec *executionContext) _Query_getAllOccurrences(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllOccurrences(rctx)
+		return ec.resolvers.Query().Occurrences(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5813,7 +5820,7 @@ func (ec *executionContext) _Query_getAllOccurrences(ctx context.Context, field 
 	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getAllOccurrences(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_occurrences(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5870,8 +5877,8 @@ func (ec *executionContext) fieldContext_Query_getAllOccurrences(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getOccurrencesByDate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getOccurrencesByDate(ctx, field)
+func (ec *executionContext) _Query_occurrencesByDate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_occurrencesByDate(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5884,7 +5891,7 @@ func (ec *executionContext) _Query_getOccurrencesByDate(ctx context.Context, fie
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOccurrencesByDate(rctx, fc.Args["date"].(time.Time))
+		return ec.resolvers.Query().OccurrencesByDate(rctx, fc.Args["date"].(time.Time))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5901,106 +5908,7 @@ func (ec *executionContext) _Query_getOccurrencesByDate(ctx context.Context, fie
 	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getOccurrencesByDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Occurrence_id(ctx, field)
-			case "location":
-				return ec.fieldContext_Occurrence_location(ctx, field)
-			case "dish":
-				return ec.fieldContext_Occurrence_dish(ctx, field)
-			case "sideDishes":
-				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
-			case "date":
-				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
-			case "kj":
-				return ec.fieldContext_Occurrence_kj(ctx, field)
-			case "kcal":
-				return ec.fieldContext_Occurrence_kcal(ctx, field)
-			case "fat":
-				return ec.fieldContext_Occurrence_fat(ctx, field)
-			case "saturatedFat":
-				return ec.fieldContext_Occurrence_saturatedFat(ctx, field)
-			case "carbohydrates":
-				return ec.fieldContext_Occurrence_carbohydrates(ctx, field)
-			case "sugar":
-				return ec.fieldContext_Occurrence_sugar(ctx, field)
-			case "fiber":
-				return ec.fieldContext_Occurrence_fiber(ctx, field)
-			case "protein":
-				return ec.fieldContext_Occurrence_protein(ctx, field)
-			case "salt":
-				return ec.fieldContext_Occurrence_salt(ctx, field)
-			case "priceStudent":
-				return ec.fieldContext_Occurrence_priceStudent(ctx, field)
-			case "priceStaff":
-				return ec.fieldContext_Occurrence_priceStaff(ctx, field)
-			case "priceGuest":
-				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
-			case "tags":
-				return ec.fieldContext_Occurrence_tags(ctx, field)
-			case "reviews":
-				return ec.fieldContext_Occurrence_reviews(ctx, field)
-			case "images":
-				return ec.fieldContext_Occurrence_images(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getOccurrencesByDate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getOccurrencesAfterInclusiveDate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getOccurrencesAfterInclusiveDate(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetOccurrencesAfterInclusiveDate(rctx, fc.Args["start"].(time.Time))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.([]*sqlc.Occurrence)
-	fc.Result = res
-	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_getOccurrencesAfterInclusiveDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_occurrencesByDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6061,15 +5969,15 @@ func (ec *executionContext) fieldContext_Query_getOccurrencesAfterInclusiveDate(
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getOccurrencesAfterInclusiveDate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_occurrencesByDate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getAllReviews(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getAllReviews(ctx, field)
+func (ec *executionContext) _Query_occurrencesAfterInclusiveDate(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_occurrencesAfterInclusiveDate(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6082,7 +5990,106 @@ func (ec *executionContext) _Query_getAllReviews(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllReviews(rctx)
+		return ec.resolvers.Query().OccurrencesAfterInclusiveDate(rctx, fc.Args["start"].(time.Time))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*sqlc.Occurrence)
+	fc.Result = res
+	return ec.marshalNOccurrence2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Query_occurrencesAfterInclusiveDate(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Occurrence_id(ctx, field)
+			case "location":
+				return ec.fieldContext_Occurrence_location(ctx, field)
+			case "dish":
+				return ec.fieldContext_Occurrence_dish(ctx, field)
+			case "sideDishes":
+				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
+			case "date":
+				return ec.fieldContext_Occurrence_date(ctx, field)
+			case "reviewStatus":
+				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "kj":
+				return ec.fieldContext_Occurrence_kj(ctx, field)
+			case "kcal":
+				return ec.fieldContext_Occurrence_kcal(ctx, field)
+			case "fat":
+				return ec.fieldContext_Occurrence_fat(ctx, field)
+			case "saturatedFat":
+				return ec.fieldContext_Occurrence_saturatedFat(ctx, field)
+			case "carbohydrates":
+				return ec.fieldContext_Occurrence_carbohydrates(ctx, field)
+			case "sugar":
+				return ec.fieldContext_Occurrence_sugar(ctx, field)
+			case "fiber":
+				return ec.fieldContext_Occurrence_fiber(ctx, field)
+			case "protein":
+				return ec.fieldContext_Occurrence_protein(ctx, field)
+			case "salt":
+				return ec.fieldContext_Occurrence_salt(ctx, field)
+			case "priceStudent":
+				return ec.fieldContext_Occurrence_priceStudent(ctx, field)
+			case "priceStaff":
+				return ec.fieldContext_Occurrence_priceStaff(ctx, field)
+			case "priceGuest":
+				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
+			case "tags":
+				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviews":
+				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "images":
+				return ec.fieldContext_Occurrence_images(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_occurrencesAfterInclusiveDate_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_reviews(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_reviews(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Reviews(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6099,7 +6106,7 @@ func (ec *executionContext) _Query_getAllReviews(ctx context.Context, field grap
 	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getAllReviews(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_reviews(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6134,8 +6141,8 @@ func (ec *executionContext) fieldContext_Query_getAllReviews(ctx context.Context
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getAllImages(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getAllImages(ctx, field)
+func (ec *executionContext) _Query_images(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_images(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6148,7 +6155,7 @@ func (ec *executionContext) _Query_getAllImages(ctx context.Context, field graph
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllImages(rctx)
+		return ec.resolvers.Query().Images(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6165,7 +6172,7 @@ func (ec *executionContext) _Query_getAllImages(ctx context.Context, field graph
 	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getAllImages(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_images(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6198,8 +6205,8 @@ func (ec *executionContext) fieldContext_Query_getAllImages(ctx context.Context,
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getAllLocations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getAllLocations(ctx, field)
+func (ec *executionContext) _Query_locations(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_locations(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6212,7 +6219,7 @@ func (ec *executionContext) _Query_getAllLocations(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetAllLocations(rctx)
+		return ec.resolvers.Query().Locations(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6229,7 +6236,7 @@ func (ec *executionContext) _Query_getAllLocations(ctx context.Context, field gr
 	return ec.marshalNLocation2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐLocationᚄ(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getAllLocations(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_locations(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6250,8 +6257,8 @@ func (ec *executionContext) fieldContext_Query_getAllLocations(ctx context.Conte
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getLocationById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getLocationById(ctx, field)
+func (ec *executionContext) _Query_locationById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_locationById(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6264,7 +6271,7 @@ func (ec *executionContext) _Query_getLocationById(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetLocationByID(rctx, fc.Args["id"].(uuid.UUID))
+		return ec.resolvers.Query().LocationByID(rctx, fc.Args["id"].(uuid.UUID))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6281,7 +6288,7 @@ func (ec *executionContext) _Query_getLocationById(ctx context.Context, field gr
 	return ec.marshalNLocation2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐLocation(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getLocationById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_locationById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6306,15 +6313,15 @@ func (ec *executionContext) fieldContext_Query_getLocationById(ctx context.Conte
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getLocationById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_locationById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getVcsBuildInfo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_getVcsBuildInfo(ctx, field)
+func (ec *executionContext) _Query_vcsBuildInfo(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_vcsBuildInfo(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -6327,7 +6334,7 @@ func (ec *executionContext) _Query_getVcsBuildInfo(ctx context.Context, field gr
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().GetVcsBuildInfo(rctx)
+		return ec.resolvers.Query().VcsBuildInfo(rctx)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6341,7 +6348,7 @@ func (ec *executionContext) _Query_getVcsBuildInfo(ctx context.Context, field gr
 	return ec.marshalOVcsBuildInfo2ᚖgithubᚗcomᚋmensattᚋbackendᚋpkgᚋutilsᚐVCSBuildInfo(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_getVcsBuildInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_vcsBuildInfo(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -6868,7 +6875,7 @@ func (ec *executionContext) _Review_createdAt(ctx context.Context, field graphql
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTimestamp2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6878,7 +6885,7 @@ func (ec *executionContext) fieldContext_Review_createdAt(ctx context.Context, f
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6912,7 +6919,7 @@ func (ec *executionContext) _Review_updatedAt(ctx context.Context, field graphql
 	}
 	res := resTmp.(time.Time)
 	fc.Result = res
-	return ec.marshalNTime2timeᚐTime(ctx, field.Selections, res)
+	return ec.marshalNTimestamp2timeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6922,7 +6929,7 @@ func (ec *executionContext) fieldContext_Review_updatedAt(ctx context.Context, f
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6953,7 +6960,7 @@ func (ec *executionContext) _Review_acceptedAt(ctx context.Context, field graphq
 	}
 	res := resTmp.(sql.NullTime)
 	fc.Result = res
-	return ec.marshalOTime2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
+	return ec.marshalOTimestamp2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_acceptedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6963,7 +6970,7 @@ func (ec *executionContext) fieldContext_Review_acceptedAt(ctx context.Context, 
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Time does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
@@ -9389,7 +9396,7 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalNTime2timeᚐTime(ctx, v)
+			it.Date, err = ec.unmarshalNDate2timeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9898,7 +9905,7 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			it.Date, err = ec.unmarshalOTime2databaseᚋsqlᚐNullTime(ctx, v)
+			it.Date, err = ec.unmarshalODate2databaseᚋsqlᚐNullTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10065,7 +10072,7 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("acceptedAt"))
-			it.AcceptedAt, err = ec.unmarshalOTime2databaseᚋsqlᚐNullTime(ctx, v)
+			it.AcceptedAt, err = ec.unmarshalOTimestamp2databaseᚋsqlᚐNullTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10891,7 +10898,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getCurrentUser":
+		case "currentUser":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -10900,7 +10907,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getCurrentUser(ctx, field)
+				res = ec._Query_currentUser(ctx, field)
 				return res
 			}
 
@@ -10911,7 +10918,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getAllTags":
+		case "tags":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -10920,7 +10927,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAllTags(ctx, field)
+				res = ec._Query_tags(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -10934,7 +10941,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getAllDishes":
+		case "dishes":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -10943,7 +10950,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAllDishes(ctx, field)
+				res = ec._Query_dishes(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -10957,7 +10964,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getAllOccurrences":
+		case "occurrences":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -10966,7 +10973,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAllOccurrences(ctx, field)
+				res = ec._Query_occurrences(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -10980,7 +10987,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getOccurrencesByDate":
+		case "occurrencesByDate":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -10989,7 +10996,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getOccurrencesByDate(ctx, field)
+				res = ec._Query_occurrencesByDate(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11003,7 +11010,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getOccurrencesAfterInclusiveDate":
+		case "occurrencesAfterInclusiveDate":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11012,7 +11019,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getOccurrencesAfterInclusiveDate(ctx, field)
+				res = ec._Query_occurrencesAfterInclusiveDate(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11026,7 +11033,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getAllReviews":
+		case "reviews":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11035,7 +11042,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAllReviews(ctx, field)
+				res = ec._Query_reviews(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11049,7 +11056,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getAllImages":
+		case "images":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11058,7 +11065,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAllImages(ctx, field)
+				res = ec._Query_images(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11072,7 +11079,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getAllLocations":
+		case "locations":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11081,7 +11088,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getAllLocations(ctx, field)
+				res = ec._Query_locations(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11095,7 +11102,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getLocationById":
+		case "locationById":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11104,7 +11111,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getLocationById(ctx, field)
+				res = ec._Query_locationById(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11118,7 +11125,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			out.Concurrently(i, func() graphql.Marshaler {
 				return rrm(innerCtx)
 			})
-		case "getVcsBuildInfo":
+		case "vcsBuildInfo":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11127,7 +11134,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getVcsBuildInfo(ctx, field)
+				res = ec._Query_vcsBuildInfo(ctx, field)
 				return res
 			}
 
@@ -11761,6 +11768,21 @@ func (ec *executionContext) unmarshalNCreateTagInput2githubᚗcomᚋmensattᚋba
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNDate2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+	res, err := scalars.UnmarshalDate(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDate2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+	res := scalars.MarshalDate(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) unmarshalNDeleteDishAliasInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteDishAliasInput(ctx context.Context, v interface{}) (models.DeleteDishAliasInput, error) {
 	res, err := ec.unmarshalInputDeleteDishAliasInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -12269,12 +12291,12 @@ func (ec *executionContext) marshalNTag2ᚖgithubᚗcomᚋmensattᚋbackendᚋin
 	return ec._Tag(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNTime2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
+func (ec *executionContext) unmarshalNTimestamp2timeᚐTime(ctx context.Context, v interface{}) (time.Time, error) {
 	res, err := graphql.UnmarshalTime(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNTime2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
+func (ec *executionContext) marshalNTimestamp2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	res := graphql.MarshalTime(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -12598,6 +12620,16 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
+func (ec *executionContext) unmarshalODate2databaseᚋsqlᚐNullTime(ctx context.Context, v interface{}) (sql.NullTime, error) {
+	res, err := scalars.UnmarshalNullDate(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalODate2databaseᚋsqlᚐNullTime(ctx context.Context, sel ast.SelectionSet, v sql.NullTime) graphql.Marshaler {
+	res := scalars.MarshalNullDate(v)
+	return res
+}
+
 func (ec *executionContext) unmarshalOInt2databaseᚋsqlᚐNullInt32(ctx context.Context, v interface{}) (sql.NullInt32, error) {
 	res, err := scalars.UnmarshalNullInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -12692,12 +12724,12 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) unmarshalOTime2databaseᚋsqlᚐNullTime(ctx context.Context, v interface{}) (sql.NullTime, error) {
+func (ec *executionContext) unmarshalOTimestamp2databaseᚋsqlᚐNullTime(ctx context.Context, v interface{}) (sql.NullTime, error) {
 	res, err := scalars.UnmarshalNullTime(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOTime2databaseᚋsqlᚐNullTime(ctx context.Context, sel ast.SelectionSet, v sql.NullTime) graphql.Marshaler {
+func (ec *executionContext) marshalOTimestamp2databaseᚋsqlᚐNullTime(ctx context.Context, sel ast.SelectionSet, v sql.NullTime) graphql.Marshaler {
 	res := scalars.MarshalNullTime(v)
 	return res
 }

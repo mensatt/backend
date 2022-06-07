@@ -1,29 +1,29 @@
 type Query {
     # User
-    getCurrentUser: User
+    currentUser: User
 
     # Tag
-    getAllTags: [Tag!]!
+    tags: [Tag!]!
 
     #Dish
-    getAllDishes: [Dish!]!
+    dishes: [Dish!]!
 
     # Occurrence
-    getAllOccurrences: [Occurrence!]!
-    getOccurrencesByDate(date: Time!): [Occurrence!]!
-    getOccurrencesAfterInclusiveDate(start: Time!): [Occurrence!]!
+    occurrences: [Occurrence!]!
+    occurrencesByDate(date: Date!): [Occurrence!]!
+    occurrencesAfterInclusiveDate(start: Date!): [Occurrence!]!
 
     # Review
-    getAllReviews: [Review!]!
+    reviews: [Review!]!
 
     # Image
-    getAllImages: [Image!]!
+    images: [Image!]!
 
     # Location
-    getAllLocations: [Location!]!
-    getLocationById(id: UUID!): Location!
+    locations: [Location!]!
+    locationById(id: UUID!): Location!
 
     # Misc
     # only enabled in debug mode
-    getVcsBuildInfo: VcsBuildInfo
+    vcsBuildInfo: VcsBuildInfo
 }

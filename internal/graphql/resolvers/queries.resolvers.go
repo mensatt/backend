@@ -15,47 +15,47 @@ import (
 	"github.com/mensatt/backend/pkg/utils"
 )
 
-func (r *queryResolver) GetCurrentUser(ctx context.Context) (*sqlc.User, error) {
+func (r *queryResolver) CurrentUser(ctx context.Context) (*sqlc.User, error) {
 	return middleware.GetUserIDFromCtx(ctx), nil
 }
 
-func (r *queryResolver) GetAllTags(ctx context.Context) ([]*sqlc.Tag, error) {
+func (r *queryResolver) Tags(ctx context.Context) ([]*sqlc.Tag, error) {
 	return r.Database.GetAllTags(ctx)
 }
 
-func (r *queryResolver) GetAllDishes(ctx context.Context) ([]*sqlc.Dish, error) {
+func (r *queryResolver) Dishes(ctx context.Context) ([]*sqlc.Dish, error) {
 	return r.Database.GetAllDishes(ctx)
 }
 
-func (r *queryResolver) GetAllOccurrences(ctx context.Context) ([]*sqlc.Occurrence, error) {
+func (r *queryResolver) Occurrences(ctx context.Context) ([]*sqlc.Occurrence, error) {
 	return r.Database.GetAllOccurrences(ctx)
 }
 
-func (r *queryResolver) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error) {
+func (r *queryResolver) OccurrencesByDate(ctx context.Context, date time.Time) ([]*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrencesByDate(ctx, date)
 }
 
-func (r *queryResolver) GetOccurrencesAfterInclusiveDate(ctx context.Context, start time.Time) ([]*sqlc.Occurrence, error) {
+func (r *queryResolver) OccurrencesAfterInclusiveDate(ctx context.Context, start time.Time) ([]*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrencesAfterInclusiveDate(ctx, start)
 }
 
-func (r *queryResolver) GetAllReviews(ctx context.Context) ([]*sqlc.Review, error) {
+func (r *queryResolver) Reviews(ctx context.Context) ([]*sqlc.Review, error) {
 	return r.Database.GetAllReviews(ctx)
 }
 
-func (r *queryResolver) GetAllImages(ctx context.Context) ([]*sqlc.Image, error) {
+func (r *queryResolver) Images(ctx context.Context) ([]*sqlc.Image, error) {
 	return r.Database.GetAllImages(ctx)
 }
 
-func (r *queryResolver) GetAllLocations(ctx context.Context) ([]*sqlc.Location, error) {
+func (r *queryResolver) Locations(ctx context.Context) ([]*sqlc.Location, error) {
 	return r.Database.GetAllLocations(ctx)
 }
 
-func (r *queryResolver) GetLocationByID(ctx context.Context, id uuid.UUID) (*sqlc.Location, error) {
+func (r *queryResolver) LocationByID(ctx context.Context, id uuid.UUID) (*sqlc.Location, error) {
 	return r.Database.GetLocationByID(ctx, id)
 }
 
-func (r *queryResolver) GetVcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error) {
+func (r *queryResolver) VcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error) {
 	if r.VCSBuildInfo == nil {
 		return nil, errors.New("VCSBuildInfo not enabled/found")
 	}

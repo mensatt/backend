@@ -58,7 +58,7 @@ input CreateOccurrenceInput {
     location: UUID!
     dish: UUID!
     sideDishes: [UUID!]
-    date: Time!
+    date: Date!
     reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
@@ -78,7 +78,7 @@ input CreateOccurrenceInput {
 input UpdateOccurrenceInput {
     id: UUID!
     dish: UUID
-    date: Time
+    date: Date
     reviewStatus: ReviewStatus
     kj: Int,
     kcal: Int,
@@ -134,7 +134,7 @@ input UpdateReviewInput {
     displayName: String
     stars: Int
     text: String
-    acceptedAt: Time
+    acceptedAt: Timestamp
 }
 
 input DeleteReviewInput {
