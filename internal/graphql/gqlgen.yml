@@ -57,10 +57,14 @@ models:
       - github.com/99designs/gqlgen/graphql.Int32
       - github.com/99designs/gqlgen/graphql.Int64
       - github.com/mensatt/backend/internal/graphql/scalars.NullInt
-  Time:
+  Timestamp:
     model:
       - github.com/99designs/gqlgen/graphql.Time
       - github.com/mensatt/backend/internal/graphql/scalars.NullTime
+  Date:
+    model:
+      - github.com/mensatt/backend/internal/graphql/scalars.Date
+      - github.com/mensatt/backend/internal/graphql/scalars.NullDate
   UUID:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.UUID

@@ -47,7 +47,7 @@ type Occurrence {
     location: Location!
     dish: Dish!
     sideDishes: [Dish!]!
-    date: Time!
+    date: Date!
     reviewStatus: ReviewStatus!
     kj: Int,
     kcal: Int,
@@ -84,9 +84,9 @@ type Review {
     text: String
     upVotes: Int!
     downVotes: Int!
-    createdAt: Time!
-    updatedAt: Time!
-    acceptedAt: Time
+    createdAt: Timestamp!
+    updatedAt: Timestamp!
+    acceptedAt: Timestamp
 }
 
 type Image {
@@ -96,9 +96,9 @@ type Image {
     description: String
     upVotes: Int!
     downVotes: Int!
-    createdAt: Time!
-    updatedAt: Time!
-    acceptedAt: Time
+    createdAt: Timestamp!
+    updatedAt: Timestamp!
+    acceptedAt: Timestamp
 }
 
 type User {
