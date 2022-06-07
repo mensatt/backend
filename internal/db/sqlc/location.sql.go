@@ -12,7 +12,7 @@ import (
 )
 
 const getAllLocations = `-- name: GetAllLocations :many
-SELECT id, location_id, name
+SELECT id, external_id, name
 FROM location
 `
 
@@ -25,7 +25,7 @@ func (q *Queries) GetAllLocations(ctx context.Context) ([]*Location, error) {
 	var items []*Location
 	for rows.Next() {
 		var i Location
-		if err := rows.Scan(&i.ID, &i.LocationID, &i.Name); err != nil {
+		if err := rows.Scan(&i.ID, &i.ExternalID, &i.Name); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -37,7 +37,7 @@ func (q *Queries) GetAllLocations(ctx context.Context) ([]*Location, error) {
 }
 
 const getLocationByID = `-- name: GetLocationByID :one
-SELECT id, location_id, name
+SELECT id, external_id, name
 FROM location
 WHERE id = $1
 `
@@ -45,6 +45,6 @@ WHERE id = $1
 func (q *Queries) GetLocationByID(ctx context.Context, id uuid.UUID) (*Location, error) {
 	row := q.db.QueryRow(ctx, getLocationByID, id)
 	var i Location
-	err := row.Scan(&i.ID, &i.LocationID, &i.Name)
+	err := row.Scan(&i.ID, &i.ExternalID, &i.Name)
 	return &i, err
 }

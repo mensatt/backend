@@ -85,8 +85,8 @@ type ComplexityRoot struct {
 	}
 
 	Location struct {
+		ExternalID func(childComplexity int) int
 		ID         func(childComplexity int) int
-		LocationID func(childComplexity int) int
 		Name       func(childComplexity int) int
 	}
 
@@ -394,19 +394,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.UpdatedAt(childComplexity), true
 
+	case "Location.externalId":
+		if e.complexity.Location.ExternalID == nil {
+			break
+		}
+
+		return e.complexity.Location.ExternalID(childComplexity), true
+
 	case "Location.id":
 		if e.complexity.Location.ID == nil {
 			break
 		}
 
 		return e.complexity.Location.ID(childComplexity), true
-
-	case "Location.locationId":
-		if e.complexity.Location.LocationID == nil {
-			break
-		}
-
-		return e.complexity.Location.LocationID(childComplexity), true
 
 	case "Location.name":
 		if e.complexity.Location.Name == nil {
@@ -1379,7 +1379,7 @@ type DishAlias {
 
 type Location {
     id: UUID!
-    locationId: Int!
+    externalId: Int!
     name: String!
 }
 
@@ -2737,8 +2737,8 @@ func (ec *executionContext) fieldContext_Location_id(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Location_locationId(ctx context.Context, field graphql.CollectedField, obj *sqlc.Location) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Location_locationId(ctx, field)
+func (ec *executionContext) _Location_externalId(ctx context.Context, field graphql.CollectedField, obj *sqlc.Location) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Location_externalId(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2751,7 +2751,7 @@ func (ec *executionContext) _Location_locationId(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.LocationID, nil
+		return obj.ExternalID, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2768,7 +2768,7 @@ func (ec *executionContext) _Location_locationId(ctx context.Context, field grap
 	return ec.marshalNInt2int32(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Location_locationId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Location_externalId(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Location",
 		Field:      field,
@@ -4378,8 +4378,8 @@ func (ec *executionContext) fieldContext_Occurrence_location(ctx context.Context
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Location_id(ctx, field)
-			case "locationId":
-				return ec.fieldContext_Location_locationId(ctx, field)
+			case "externalId":
+				return ec.fieldContext_Location_externalId(ctx, field)
 			case "name":
 				return ec.fieldContext_Location_name(ctx, field)
 			}
@@ -6240,8 +6240,8 @@ func (ec *executionContext) fieldContext_Query_getAllLocations(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Location_id(ctx, field)
-			case "locationId":
-				return ec.fieldContext_Location_locationId(ctx, field)
+			case "externalId":
+				return ec.fieldContext_Location_externalId(ctx, field)
 			case "name":
 				return ec.fieldContext_Location_name(ctx, field)
 			}
@@ -6292,8 +6292,8 @@ func (ec *executionContext) fieldContext_Query_getLocationById(ctx context.Conte
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Location_id(ctx, field)
-			case "locationId":
-				return ec.fieldContext_Location_locationId(ctx, field)
+			case "externalId":
+				return ec.fieldContext_Location_externalId(ctx, field)
 			case "name":
 				return ec.fieldContext_Location_name(ctx, field)
 			}
@@ -10305,9 +10305,9 @@ func (ec *executionContext) _Location(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "locationId":
+		case "externalId":
 
-			out.Values[i] = ec._Location_locationId(ctx, field, obj)
+			out.Values[i] = ec._Location_externalId(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

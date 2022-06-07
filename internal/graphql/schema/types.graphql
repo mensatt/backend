@@ -38,7 +38,7 @@ type DishAlias {
 
 type Location {
     id: UUID!
-    locationId: Int!
+    externalId: Int!
     name: String!
 }
 
