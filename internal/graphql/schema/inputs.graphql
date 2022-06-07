@@ -1,4 +1,12 @@
-#Tag
+# User
+
+input LoginUserInput {
+    email: String!
+    password: String!
+}
+
+
+# Tag
 
 input CreateTagInput {
     key: String!

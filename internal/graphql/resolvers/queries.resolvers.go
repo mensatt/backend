@@ -15,19 +15,6 @@ import (
 	"github.com/mensatt/backend/pkg/utils"
 )
 
-func (r *queryResolver) Login(ctx context.Context, email string, password string) (string, error) {
-	user, err := r.Database.GetUserByEmail(ctx, email)
-	if err != nil {
-		return "", err
-	}
-
-	if !utils.CheckPasswordHash(password, user.PasswordHash) {
-		return "", errors.New("wrong password")
-	}
-
-	return r.JWTKeyStore.GenerateJWT(user.ID)
-}
-
 func (r *queryResolver) GetCurrentUser(ctx context.Context) (*sqlc.User, error) {
 	return middleware.GetUserIDFromCtx(ctx), nil
 }

@@ -101,6 +101,7 @@ type ComplexityRoot struct {
 		DeleteDishAlias              func(childComplexity int, input models.DeleteDishAliasInput) int
 		DeleteOccurrence             func(childComplexity int, input models.DeleteOccurrenceInput) int
 		DeleteReview                 func(childComplexity int, input models.DeleteReviewInput) int
+		LoginUser                    func(childComplexity int, input models.LoginUserInput) int
 		RemoveSideDishFromOccurrence func(childComplexity int, input sqlc.RemoveOccurrenceSideDishParams) int
 		RemoveTagFromOccurrence      func(childComplexity int, input sqlc.RemoveOccurrenceTagParams) int
 		UpdateDish                   func(childComplexity int, input sqlc.UpdateDishParams) int
@@ -155,7 +156,6 @@ type ComplexityRoot struct {
 		GetOccurrencesAfterInclusiveDate func(childComplexity int, start time.Time) int
 		GetOccurrencesByDate             func(childComplexity int, date time.Time) int
 		GetVcsBuildInfo                  func(childComplexity int) int
-		Login                            func(childComplexity int, email string, password string) int
 	}
 
 	Review struct {
@@ -201,6 +201,7 @@ type ImageResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error)
 }
 type MutationResolver interface {
+	LoginUser(ctx context.Context, input models.LoginUserInput) (string, error)
 	CreateTag(ctx context.Context, input sqlc.CreateTagParams) (*sqlc.Tag, error)
 	CreateDish(ctx context.Context, input sqlc.CreateDishParams) (*sqlc.Dish, error)
 	UpdateDish(ctx context.Context, input sqlc.UpdateDishParams) (*sqlc.Dish, error)
@@ -236,7 +237,6 @@ type OccurrenceTagResolver interface {
 	Tag(ctx context.Context, obj *sqlc.OccurrenceTag) (*sqlc.Tag, error)
 }
 type QueryResolver interface {
-	Login(ctx context.Context, email string, password string) (string, error)
 	GetCurrentUser(ctx context.Context) (*sqlc.User, error)
 	GetAllTags(ctx context.Context) ([]*sqlc.Tag, error)
 	GetAllDishes(ctx context.Context) ([]*sqlc.Dish, error)
@@ -534,6 +534,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteReview(childComplexity, args["input"].(models.DeleteReviewInput)), true
+
+	case "Mutation.loginUser":
+		if e.complexity.Mutation.LoginUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_loginUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.LoginUser(childComplexity, args["input"].(models.LoginUserInput)), true
 
 	case "Mutation.removeSideDishFromOccurrence":
 		if e.complexity.Mutation.RemoveSideDishFromOccurrence == nil {
@@ -874,18 +886,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetVcsBuildInfo(childComplexity), true
 
-	case "Query.login":
-		if e.complexity.Query.Login == nil {
-			break
-		}
-
-		args, err := ec.field_Query_login_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Login(childComplexity, args["email"].(string), args["password"].(string)), true
-
 	case "Review.acceptedAt":
 		if e.complexity.Review.AcceptedAt == nil {
 			break
@@ -1051,6 +1051,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDeleteDishAliasInput,
 		ec.unmarshalInputDeleteOccurrenceInput,
 		ec.unmarshalInputDeleteReviewInput,
+		ec.unmarshalInputLoginUserInput,
 		ec.unmarshalInputRemoveSideDishFromOccurrenceInput,
 		ec.unmarshalInputRemoveTagFromOccurrenceInput,
 		ec.unmarshalInputUpdateDishAliasInput,
@@ -1133,7 +1134,15 @@ directive @goTag(
 ) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
 
 directive @authenticated on FIELD_DEFINITION`, BuiltIn: false},
-	{Name: "../schema/inputs.graphql", Input: `#Tag
+	{Name: "../schema/inputs.graphql", Input: `# User
+
+input LoginUserInput {
+    email: String!
+    password: String!
+}
+
+
+# Tag
 
 input CreateTagInput {
     key: String!
@@ -1277,6 +1286,9 @@ input DeleteReviewInput {
 #    description: String
 #}`, BuiltIn: false},
 	{Name: "../schema/mutations.graphql", Input: `type Mutation {
+    # User
+    loginUser(input: LoginUserInput!): String!
+
     # Tag
     createTag(input: CreateTagInput!): Tag! @authenticated
 
@@ -1309,7 +1321,6 @@ input DeleteReviewInput {
 }`, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
     # User
-    login(email: String!, password: String!): String!
     getCurrentUser: User
 
     # Tag
@@ -1609,6 +1620,21 @@ func (ec *executionContext) field_Mutation_deleteReview_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.LoginUserInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNLoginUserInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐLoginUserInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Mutation_removeSideDishFromOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1756,30 +1782,6 @@ func (ec *executionContext) field_Query_getOccurrencesByDate_args(ctx context.Co
 		}
 	}
 	args["date"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["email"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["email"] = arg0
-	var arg1 string
-	if tmp, ok := rawArgs["password"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
-		arg1, err = ec.unmarshalNString2string(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["password"] = arg1
 	return args, nil
 }
 
@@ -2821,6 +2823,61 @@ func (ec *executionContext) fieldContext_Location_name(ctx context.Context, fiel
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_loginUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().LoginUser(rctx, fc.Args["input"].(models.LoginUserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_loginUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
@@ -5561,61 +5618,6 @@ func (ec *executionContext) fieldContext_OccurrenceTag_tag(ctx context.Context, 
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Tag", field.Name)
 		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_login(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Login(rctx, fc.Args["email"].(string), fc.Args["password"].(string))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
 	}
 	return fc, nil
 }
@@ -9691,6 +9693,37 @@ func (ec *executionContext) unmarshalInputDeleteReviewInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputLoginUserInput(ctx context.Context, obj interface{}) (models.LoginUserInput, error) {
+	var it models.LoginUserInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	for k, v := range asMap {
+		switch k {
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			it.Email, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			it.Password, err = ec.unmarshalNString2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputRemoveSideDishFromOccurrenceInput(ctx context.Context, obj interface{}) (sqlc.RemoveOccurrenceSideDishParams, error) {
 	var it sqlc.RemoveOccurrenceSideDishParams
 	asMap := map[string]interface{}{}
@@ -10349,6 +10382,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Mutation")
+		case "loginUser":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_loginUser(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "createTag":
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
@@ -10855,29 +10897,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "login":
-			field := field
-
-			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_login(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx, innerFunc)
-			}
-
-			out.Concurrently(i, func() graphql.Marshaler {
-				return rrm(innerCtx)
-			})
 		case "getCurrentUser":
 			field := field
 
@@ -11960,6 +11979,11 @@ func (ec *executionContext) marshalNLocation2ᚖgithubᚗcomᚋmensattᚋbackend
 		return graphql.Null
 	}
 	return ec._Location(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNLoginUserInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐLoginUserInput(ctx context.Context, v interface{}) (models.LoginUserInput, error) {
+	res, err := ec.unmarshalInputLoginUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalNOccurrence2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx context.Context, sel ast.SelectionSet, v sqlc.Occurrence) graphql.Marshaler {

@@ -1,4 +1,7 @@
 type Mutation {
+    # User
+    loginUser(input: LoginUserInput!): String!
+
     # Tag
     createTag(input: CreateTagInput!): Tag! @authenticated
 

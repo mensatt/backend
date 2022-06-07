@@ -5,11 +5,26 @@ package resolvers
 
 import (
 	"context"
+	"errors"
 
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/models"
+	"github.com/mensatt/backend/pkg/utils"
 )
+
+func (r *mutationResolver) LoginUser(ctx context.Context, input models.LoginUserInput) (string, error) {
+	user, err := r.Database.GetUserByEmail(ctx, input.Email)
+	if err != nil {
+		return "", err
+	}
+
+	if !utils.CheckPasswordHash(input.Password, user.PasswordHash) {
+		return "", errors.New("wrong password")
+	}
+
+	return r.JWTKeyStore.GenerateJWT(user.ID)
+}
 
 func (r *mutationResolver) CreateTag(ctx context.Context, input sqlc.CreateTagParams) (*sqlc.Tag, error) {
 	return r.Database.CreateTag(ctx, &input)
