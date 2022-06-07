@@ -3,7 +3,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE dish (
     id uuid DEFAULT uuid_generate_v4(),
     name_de varchar UNIQUE NOT NULL,
-    name_en varchar UNIQUE NOT NULL,
+    name_en varchar,
     PRIMARY KEY (id)
 );
 

@@ -19,8 +19,8 @@ RETURNING id, name_de, name_en
 `
 
 type CreateDishParams struct {
-	NameDe string `json:"name_de"`
-	NameEn string `json:"name_en"`
+	NameDe string         `json:"name_de"`
+	NameEn sql.NullString `json:"name_en"`
 }
 
 func (q *Queries) CreateDish(ctx context.Context, arg *CreateDishParams) (*Dish, error) {
