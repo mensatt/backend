@@ -154,8 +154,8 @@ type ComplexityRoot struct {
 		GetLocationByID                  func(childComplexity int, id uuid.UUID) int
 		GetOccurrencesAfterInclusiveDate func(childComplexity int, start time.Time) int
 		GetOccurrencesByDate             func(childComplexity int, date time.Time) int
+		GetToken                         func(childComplexity int, email string, password string) int
 		GetVcsBuildInfo                  func(childComplexity int) int
-		Login                            func(childComplexity int, email string, password string) int
 	}
 
 	Review struct {
@@ -236,7 +236,7 @@ type OccurrenceTagResolver interface {
 	Tag(ctx context.Context, obj *sqlc.OccurrenceTag) (*sqlc.Tag, error)
 }
 type QueryResolver interface {
-	Login(ctx context.Context, email string, password string) (string, error)
+	GetToken(ctx context.Context, email string, password string) (string, error)
 	GetCurrentUser(ctx context.Context) (*sqlc.User, error)
 	GetAllTags(ctx context.Context) ([]*sqlc.Tag, error)
 	GetAllDishes(ctx context.Context) ([]*sqlc.Dish, error)
@@ -867,24 +867,24 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.GetOccurrencesByDate(childComplexity, args["date"].(time.Time)), true
 
+	case "Query.getToken":
+		if e.complexity.Query.GetToken == nil {
+			break
+		}
+
+		args, err := ec.field_Query_getToken_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.GetToken(childComplexity, args["email"].(string), args["password"].(string)), true
+
 	case "Query.getVcsBuildInfo":
 		if e.complexity.Query.GetVcsBuildInfo == nil {
 			break
 		}
 
 		return e.complexity.Query.GetVcsBuildInfo(childComplexity), true
-
-	case "Query.login":
-		if e.complexity.Query.Login == nil {
-			break
-		}
-
-		args, err := ec.field_Query_login_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.Login(childComplexity, args["email"].(string), args["password"].(string)), true
 
 	case "Review.acceptedAt":
 		if e.complexity.Review.AcceptedAt == nil {
@@ -1309,7 +1309,7 @@ input DeleteReviewInput {
 }`, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
     # User
-    login(email: String!, password: String!): String!
+    getToken(email: String!, password: String!): String!
     getCurrentUser: User
 
     # Tag
@@ -1759,7 +1759,7 @@ func (ec *executionContext) field_Query_getOccurrencesByDate_args(ctx context.Co
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_login_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_getToken_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -5565,8 +5565,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_tag(ctx context.Context, 
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_login(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_login(ctx, field)
+func (ec *executionContext) _Query_getToken(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Query_getToken(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -5579,7 +5579,7 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Login(rctx, fc.Args["email"].(string), fc.Args["password"].(string))
+		return ec.resolvers.Query().GetToken(rctx, fc.Args["email"].(string), fc.Args["password"].(string))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5596,7 +5596,7 @@ func (ec *executionContext) _Query_login(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Query_login(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_getToken(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -5613,7 +5613,7 @@ func (ec *executionContext) fieldContext_Query_login(ctx context.Context, field 
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_login_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_getToken_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -10855,7 +10855,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "login":
+		case "getToken":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -10864,7 +10864,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_login(ctx, field)
+				res = ec._Query_getToken(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
