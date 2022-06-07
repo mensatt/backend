@@ -22,7 +22,7 @@ input CreateTagInput {
 
 input CreateDishInput {
     nameDe: String!
-    nameEn: String!
+    nameEn: String
 }
 
 input UpdateDishInput {
