@@ -1,6 +1,5 @@
 type Query {
     # User
-    login(email: String!, password: String!): String!
     getCurrentUser: User
 
     # Tag

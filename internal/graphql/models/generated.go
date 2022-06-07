@@ -17,3 +17,8 @@ type DeleteOccurrenceInput struct {
 type DeleteReviewInput struct {
 	ID uuid.UUID `json:"id"`
 }
+
+type LoginUserInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
