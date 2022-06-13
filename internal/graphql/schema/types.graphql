@@ -99,6 +99,8 @@ type Image {
     createdAt: Timestamp!
     updatedAt: Timestamp!
     acceptedAt: Timestamp
+    thumbnailUrl: String!
+    originalResUrl: String!
 }
 
 type User {

@@ -6,6 +6,7 @@ package resolvers
 import (
 	"context"
 	"errors"
+	"io/ioutil"
 
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
@@ -91,10 +92,19 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 }
 
 func (r *mutationResolver) CreateImage(ctx context.Context, input models.CreateImageInputHelper) (*sqlc.Image, error) {
-	err := r.ImageProcessor.StoreImage(input.Image)
+	if input.Image.Size > 10*1024*1024 {
+		return nil, errors.New("image size is too big")
+	}
+
+	imageBytes, err := ioutil.ReadAll(input.Image.File)
 	if err != nil {
 		return nil, err
 	}
+	imageStoreID, err := r.ImageProcessor.StoreImage(imageBytes)
+	if err != nil {
+		return nil, err
+	}
+	input.ImageStoreID = imageStoreID
 	return r.Database.CreateImage(ctx, &input.CreateImageParams)
 }
 
@@ -103,7 +113,7 @@ func (r *mutationResolver) UpdateImage(ctx context.Context, input sqlc.UpdateIma
 }
 
 func (r *mutationResolver) DeleteImage(ctx context.Context, input models.DeleteImageInput) (*sqlc.Image, error) {
-	err := r.ImageProcessor.RemoveImage(input.ID)
+	err := r.ImageProcessor.RemoveImage(input.ID.String())
 	if err != nil {
 		return nil, err
 	}

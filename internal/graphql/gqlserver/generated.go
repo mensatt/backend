@@ -73,15 +73,17 @@ type ComplexityRoot struct {
 	}
 
 	Image struct {
-		AcceptedAt  func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
-		Description func(childComplexity int) int
-		DisplayName func(childComplexity int) int
-		DownVotes   func(childComplexity int) int
-		ID          func(childComplexity int) int
-		Occurrence  func(childComplexity int) int
-		UpVotes     func(childComplexity int) int
-		UpdatedAt   func(childComplexity int) int
+		AcceptedAt     func(childComplexity int) int
+		CreatedAt      func(childComplexity int) int
+		Description    func(childComplexity int) int
+		DisplayName    func(childComplexity int) int
+		DownVotes      func(childComplexity int) int
+		ID             func(childComplexity int) int
+		Occurrence     func(childComplexity int) int
+		OriginalResURL func(childComplexity int) int
+		ThumbnailURL   func(childComplexity int) int
+		UpVotes        func(childComplexity int) int
+		UpdatedAt      func(childComplexity int) int
 	}
 
 	Location struct {
@@ -202,6 +204,9 @@ type DishResolver interface {
 }
 type ImageResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error)
+
+	ThumbnailURL(ctx context.Context, obj *sqlc.Image) (string, error)
+	OriginalResURL(ctx context.Context, obj *sqlc.Image) (string, error)
 }
 type MutationResolver interface {
 	LoginUser(ctx context.Context, input models.LoginUserInput) (string, error)
@@ -385,6 +390,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Image.Occurrence(childComplexity), true
+
+	case "Image.originalResUrl":
+		if e.complexity.Image.OriginalResURL == nil {
+			break
+		}
+
+		return e.complexity.Image.OriginalResURL(childComplexity), true
+
+	case "Image.thumbnailUrl":
+		if e.complexity.Image.ThumbnailURL == nil {
+			break
+		}
+
+		return e.complexity.Image.ThumbnailURL(childComplexity), true
 
 	case "Image.upVotes":
 		if e.complexity.Image.UpVotes == nil {
@@ -1327,7 +1346,7 @@ input DeleteReviewInput {
 
 input CreateImageInput {
    occurrence: UUID!
-   displayName: String!
+   displayName: String
    description: String
    image: Upload!
 }
@@ -1524,6 +1543,8 @@ type Image {
     createdAt: Timestamp!
     updatedAt: Timestamp!
     acceptedAt: Timestamp
+    thumbnailUrl: String!
+    originalResUrl: String!
 }
 
 type User {
@@ -2171,6 +2192,10 @@ func (ec *executionContext) fieldContext_Dish_images(ctx context.Context, field 
 				return ec.fieldContext_Image_updatedAt(ctx, field)
 			case "acceptedAt":
 				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "thumbnailUrl":
+				return ec.fieldContext_Image_thumbnailUrl(ctx, field)
+			case "originalResUrl":
+				return ec.fieldContext_Image_originalResUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -2805,6 +2830,94 @@ func (ec *executionContext) fieldContext_Image_acceptedAt(ctx context.Context, f
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Timestamp does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_thumbnailUrl(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Image_thumbnailUrl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Image().ThumbnailURL(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Image_thumbnailUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_originalResUrl(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Image_originalResUrl(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Image().OriginalResURL(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Image_originalResUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4522,6 +4635,10 @@ func (ec *executionContext) fieldContext_Mutation_createImage(ctx context.Contex
 				return ec.fieldContext_Image_updatedAt(ctx, field)
 			case "acceptedAt":
 				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "thumbnailUrl":
+				return ec.fieldContext_Image_thumbnailUrl(ctx, field)
+			case "originalResUrl":
+				return ec.fieldContext_Image_originalResUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -4597,6 +4714,10 @@ func (ec *executionContext) fieldContext_Mutation_updateImage(ctx context.Contex
 				return ec.fieldContext_Image_updatedAt(ctx, field)
 			case "acceptedAt":
 				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "thumbnailUrl":
+				return ec.fieldContext_Image_thumbnailUrl(ctx, field)
+			case "originalResUrl":
+				return ec.fieldContext_Image_originalResUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -4672,6 +4793,10 @@ func (ec *executionContext) fieldContext_Mutation_deleteImage(ctx context.Contex
 				return ec.fieldContext_Image_updatedAt(ctx, field)
 			case "acceptedAt":
 				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "thumbnailUrl":
+				return ec.fieldContext_Image_thumbnailUrl(ctx, field)
+			case "originalResUrl":
+				return ec.fieldContext_Image_originalResUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -5663,6 +5788,10 @@ func (ec *executionContext) fieldContext_Occurrence_images(ctx context.Context, 
 				return ec.fieldContext_Image_updatedAt(ctx, field)
 			case "acceptedAt":
 				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "thumbnailUrl":
+				return ec.fieldContext_Image_thumbnailUrl(ctx, field)
+			case "originalResUrl":
+				return ec.fieldContext_Image_originalResUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -6534,6 +6663,10 @@ func (ec *executionContext) fieldContext_Query_images(ctx context.Context, field
 				return ec.fieldContext_Image_updatedAt(ctx, field)
 			case "acceptedAt":
 				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "thumbnailUrl":
+				return ec.fieldContext_Image_thumbnailUrl(ctx, field)
+			case "originalResUrl":
+				return ec.fieldContext_Image_originalResUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -9716,7 +9849,7 @@ func (ec *executionContext) unmarshalInputCreateImageInput(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
-			it.DisplayName, err = ec.unmarshalNString2string(ctx, v)
+			it.DisplayName, err = ec.unmarshalOString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10772,6 +10905,46 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 
 			out.Values[i] = ec._Image_acceptedAt(ctx, field, obj)
 
+		case "thumbnailUrl":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Image_thumbnailUrl(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
+		case "originalResUrl":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Image_originalResUrl(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13195,6 +13368,16 @@ func (ec *executionContext) unmarshalOString2databaseᚋsqlᚐNullString(ctx con
 
 func (ec *executionContext) marshalOString2databaseᚋsqlᚐNullString(ctx context.Context, sel ast.SelectionSet, v sql.NullString) graphql.Marshaler {
 	res := scalars.MarshalNullString(v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
+	res, err := graphql.UnmarshalString(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
+	res := graphql.MarshalString(v)
 	return res
 }
 

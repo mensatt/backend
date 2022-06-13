@@ -15,8 +15,8 @@ JOIN dish ON (occurrence.dish = dish.id)
 WHERE dish.id = $1;
 
 -- name: CreateImage :one
-INSERT INTO image (occurrence, display_name, description)
-VALUES ($1, $2, $3)
+INSERT INTO image (image_store_id, occurrence, display_name, description)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: UpdateImage :one
