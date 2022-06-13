@@ -146,7 +146,7 @@ input DeleteReviewInput {
 
 input CreateImageInput {
    occurrence: UUID!
-   displayName: String!
+   displayName: String
    description: String
    image: Upload!
 }
