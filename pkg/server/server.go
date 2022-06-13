@@ -21,6 +21,8 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 	if err != nil {
 		return err
 	}
+	
+	imageProcessor := utils.NewImageProcessor(config.ImageProcessor)
 
 	database := db.NewExtended(pool)
 
@@ -59,9 +61,10 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 
 	gqlRouterGroup := app.Group(config.VersionedPath("/graphql"))
 	gqlServerParams := graphql.GraphQLParams{
-		DebugEnabled: config.DebugEnabled,
-		Database:     database,
-		JWTKeyStore:  jwtKeyStore,
+		DebugEnabled:   config.DebugEnabled,
+		Database:       database,
+		JWTKeyStore:    jwtKeyStore,
+		ImageProcessor: imageProcessor,
 	}
 	err = graphql.Run(gqlRouterGroup, &gqlServerParams)
 	if err != nil {
