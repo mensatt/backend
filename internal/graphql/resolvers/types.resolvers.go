@@ -18,6 +18,14 @@ func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
+func (r *imageResolver) ThumbnailURL(ctx context.Context, obj *sqlc.Image) (string, error) {
+	return r.ImageProcessor.GetThumbnailImagePath(obj.ID.String()), nil
+}
+
+func (r *imageResolver) OriginalResURL(ctx context.Context, obj *sqlc.Image) (string, error) {
+	return r.ImageProcessor.GetOriginalResImagePath(obj.ID.String()), nil
+}
+
 func (r *occurrenceResolver) Dish(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Dish, error) {
 	return r.Database.GetDishByID(ctx, obj.Dish)
 }

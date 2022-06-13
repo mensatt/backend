@@ -13,22 +13,29 @@ import (
 )
 
 const createImage = `-- name: CreateImage :one
-INSERT INTO image (occurrence, display_name, description)
-VALUES ($1, $2, $3)
-RETURNING id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+INSERT INTO image (image_store_id, occurrence, display_name, description)
+VALUES ($1, $2, $3, $4)
+RETURNING id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
 `
 
 type CreateImageParams struct {
-	Occurrence  uuid.UUID      `json:"occurrence"`
-	DisplayName string         `json:"display_name"`
-	Description sql.NullString `json:"description"`
+	ImageStoreID string         `json:"image_store_id"`
+	Occurrence   uuid.UUID      `json:"occurrence"`
+	DisplayName  string         `json:"display_name"`
+	Description  sql.NullString `json:"description"`
 }
 
 func (q *Queries) CreateImage(ctx context.Context, arg *CreateImageParams) (*Image, error) {
-	row := q.db.QueryRow(ctx, createImage, arg.Occurrence, arg.DisplayName, arg.Description)
+	row := q.db.QueryRow(ctx, createImage,
+		arg.ImageStoreID,
+		arg.Occurrence,
+		arg.DisplayName,
+		arg.Description,
+	)
 	var i Image
 	err := row.Scan(
 		&i.ID,
+		&i.ImageStoreID,
 		&i.Occurrence,
 		&i.DisplayName,
 		&i.Description,
@@ -44,7 +51,7 @@ func (q *Queries) CreateImage(ctx context.Context, arg *CreateImageParams) (*Ima
 const deleteImage = `-- name: DeleteImage :one
 DELETE FROM image
 WHERE id = $1
-RETURNING id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+RETURNING id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
 `
 
 func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error) {
@@ -52,6 +59,7 @@ func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error)
 	var i Image
 	err := row.Scan(
 		&i.ID,
+		&i.ImageStoreID,
 		&i.Occurrence,
 		&i.DisplayName,
 		&i.Description,
@@ -65,7 +73,7 @@ func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error)
 }
 
 const getAllImages = `-- name: GetAllImages :many
-SELECT id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+SELECT id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
 FROM image
 `
 
@@ -80,6 +88,7 @@ func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
 		var i Image
 		if err := rows.Scan(
 			&i.ID,
+			&i.ImageStoreID,
 			&i.Occurrence,
 			&i.DisplayName,
 			&i.Description,
@@ -100,7 +109,7 @@ func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
 }
 
 const getImageByID = `-- name: GetImageByID :one
-SELECT id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+SELECT id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
 FROM image
 WHERE id = $1
 `
@@ -110,6 +119,7 @@ func (q *Queries) GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error
 	var i Image
 	err := row.Scan(
 		&i.ID,
+		&i.ImageStoreID,
 		&i.Occurrence,
 		&i.DisplayName,
 		&i.Description,
@@ -131,7 +141,7 @@ SET
     updated_at = NOW(),
     accepted_at = COALESCE($5, accepted_at)
 WHERE id = $1
-RETURNING id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+RETURNING id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
 `
 
 type UpdateImageParams struct {
@@ -153,6 +163,7 @@ func (q *Queries) UpdateImage(ctx context.Context, arg *UpdateImageParams) (*Ima
 	var i Image
 	err := row.Scan(
 		&i.ID,
+		&i.ImageStoreID,
 		&i.Occurrence,
 		&i.DisplayName,
 		&i.Description,

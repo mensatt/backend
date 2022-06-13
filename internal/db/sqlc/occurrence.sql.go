@@ -150,7 +150,7 @@ func (q *Queries) GetAllOccurrences(ctx context.Context) ([]*Occurrence, error) 
 }
 
 const getImagesForOccurrence = `-- name: GetImagesForOccurrence :many
-SELECT image.id, image.occurrence, image.display_name, image.description, image.up_votes, image.down_votes, image.created_at, image.updated_at, image.accepted_at
+SELECT image.id, image.image_store_id, image.occurrence, image.display_name, image.description, image.up_votes, image.down_votes, image.created_at, image.updated_at, image.accepted_at
 FROM occurrence JOIN image ON occurrence.id = image.occurrence
 WHERE occurrence.id = $1
 `
@@ -166,6 +166,7 @@ func (q *Queries) GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*
 		var i Image
 		if err := rows.Scan(
 			&i.ID,
+			&i.ImageStoreID,
 			&i.Occurrence,
 			&i.DisplayName,
 			&i.Description,

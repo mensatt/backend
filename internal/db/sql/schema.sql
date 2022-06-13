@@ -80,6 +80,7 @@ CREATE TABLE review (
 
 CREATE TABLE image (
     id uuid DEFAULT uuid_generate_v4(),
+    image_store_id varchar NOT NULL,
     occurrence uuid NOT NULL,
     display_name varchar(32) NOT NULL,
     description text,

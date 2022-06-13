@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,9 +12,9 @@ import (
 )
 
 const (
-	outputFormat           = ".webp"
-	thumbnailImageFilename = "thumbnail" + outputFormat
-	originalImageFilename  = "original" + outputFormat
+	outputFormat             = ".webp"
+	thumbnailImageFilename   = "thumbnail" + outputFormat
+	originalResImageFilename = "original_res" + outputFormat
 )
 
 var encodeOption = map[int]int{lilliput.WebpQuality: 85}
@@ -30,36 +31,46 @@ func NewImageProcessor(dir string) *ImageProcessor {
 	}
 }
 
-func (ip *ImageProcessor) getImageBasePath(imageID string) string {
-	return filepath.Join(ip.imageDirectory, imageID, thumbnailImageFilename)
+func (ip *ImageProcessor) getImageBasePath(imageStoreID string) string {
+	return filepath.Join(ip.imageDirectory, imageStoreID, thumbnailImageFilename)
 }
 
-func (ip *ImageProcessor) GetThumbnailImagePath(imageID string) string {
-	return filepath.Join(ip.getImageBasePath(imageID), thumbnailImageFilename)
+func (ip *ImageProcessor) GetThumbnailImagePath(imageStoreID string) string {
+	return filepath.Join(ip.getImageBasePath(imageStoreID), thumbnailImageFilename)
 }
 
-func (ip *ImageProcessor) GetLargeImagePath(imageID string) string {
-	return filepath.Join(ip.getImageBasePath(imageID), originalImageFilename)
+func (ip *ImageProcessor) GetOriginalResImagePath(imageStoreID string) string {
+	return filepath.Join(ip.getImageBasePath(imageStoreID), originalResImageFilename)
 }
 
-func (ip *ImageProcessor) StoreImage(imageID string, image []byte) error {
-	imageDir := ip.getImageBasePath(imageID)
-	if _, err := os.Stat(imageDir); !os.IsNotExist(err) {
-		fmt.Printf("output filename %s exists, quitting\n", imageDir)
-		os.Exit(1)
+func (ip *ImageProcessor) StoreImage(image []byte) (string, error) {
+	imageHash := fmt.Sprintf("%x", sha256.Sum256(image))
+
+	imageDir := ip.getImageBasePath(imageHash)
+	thumbnailImageFilename := ip.GetThumbnailImagePath(imageHash)
+	originalResImageFilename := ip.GetOriginalResImagePath(imageHash)
+
+	if FileOrFirExists(imageDir) {
+		if FileOrFirExists(thumbnailImageFilename) && FileOrFirExists(originalResImageFilename) {
+			// image has already been processed
+			return imageHash, nil
+		}
+
+		// image has not been processed completely
+		ip.RemoveImage(imageHash)
 	}
 
 	decoder, err := lilliput.NewDecoder(image)
 	// this error reflects very basic checks, mostly just for the magic bytes of the file to match known image formats
 	if err != nil {
-		return fmt.Errorf("error decoding image: %v", err)
+		return "", fmt.Errorf("error decoding image: %v", err)
 	}
 	defer decoder.Close()
 
 	header, err := decoder.Header()
 	// this error is much more comprehensive and reflects format errors
 	if err != nil {
-		return fmt.Errorf("error decoding image: %v", err)
+		return "", fmt.Errorf("error decoding image: %v", err)
 	}
 
 	// print some basic info about the image
@@ -67,7 +78,7 @@ func (ip *ImageProcessor) StoreImage(imageID string, image []byte) error {
 	fmt.Printf("%dpx x %dpx\n", header.Width(), header.Height())
 
 	if decoder.Duration() != 0 {
-		return fmt.Errorf("image is duration is not 0 (duration: %.2f s)", float64(decoder.Duration())/float64(time.Second))
+		return "", fmt.Errorf("image is duration is not 0 (duration: %.2f s)", float64(decoder.Duration())/float64(time.Second))
 	}
 
 	frame := lilliput.NewFramebuffer(ip.maxResolution, ip.maxResolution)
@@ -75,12 +86,13 @@ func (ip *ImageProcessor) StoreImage(imageID string, image []byte) error {
 
 	err = decoder.DecodeTo(frame)
 	if err != nil {
-		return fmt.Errorf("error decoding image: %v", err)
+		return "", fmt.Errorf("error decoding image: %v", err)
 	}
 
+	// This will undo JPEG EXIF-based orientation.
 	frame.OrientationTransform(header.Orientation())
 
-	// create a buffer to store the output image, 50MB in this case
+	// create a buffer to store the output image
 	outputImageBuffer := make([]byte, ip.maxOutputSizeMB*1024*1024)
 
 	// create and store thumbnail image
@@ -91,61 +103,24 @@ func (ip *ImageProcessor) StoreImage(imageID string, image []byte) error {
 	}
 	err = ip.createEncoded(frame, outputImageBuffer, &encOpts)
 	if err != nil {
-		return fmt.Errorf("error creating thumbnail: %v", err)
+		return "", fmt.Errorf("error creating thumbnail image: %v", err)
 	}
-	err = ip.storeEncodedBuffer(ip.GetThumbnailImagePath(imageID), outputImageBuffer)
+	err = ip.storeEncodedBuffer(thumbnailImageFilename, outputImageBuffer)
 	if err != nil {
-		return fmt.Errorf("error storing thumbnail: %v", err)
+		return "", fmt.Errorf("error storing thumbnail image: %v", err)
 	}
 
-	// create and store original image
+	// create and store originalRes image
 	err = ip.createEncoded(frame, outputImageBuffer, nil)
 	if err != nil {
-		return fmt.Errorf("error creating original: %v", err)
+		return "", fmt.Errorf("error creating originalRes image: %v", err)
 	}
-	err = ip.storeEncodedBuffer(ip.GetThumbnailImagePath(imageID), outputImageBuffer)
+	err = ip.storeEncodedBuffer(originalResImageFilename, outputImageBuffer)
 	if err != nil {
-		return fmt.Errorf("error storing original: %v", err)
+		return "", fmt.Errorf("error storing originalRes image: %v", err)
 	}
 
-	// thumbnailImageFilename := ip.GetThumbnailImagePath(imageID)
-	// err = ioutil.WriteFile(thumbnailImageFilename, outputImg, 0400)
-	// if err != nil {
-	// 	return fmt.Errorf("error writing out resized image, %s", err)
-	// }
-
-	// // get ready to resize image,
-	// // using 8192x8192 maximum resize buffer size
-	// ops := lilliput.NewImageOps(8192)
-	// defer ops.Close()
-
-	// // create a buffer to store the output image, 50MB in this case
-	// outputImg := make([]byte, 50*1024*1024)
-
-	// opts := &lilliput.ImageOptions{
-	// 	FileType:             outputFormat,
-	// 	Width:                header.Width(),
-	// 	Height:               header.Height(),
-	// 	NormalizeOrientation: true,
-	// 	EncodeOptions:        encodeOption,
-	// }
-
-	// // resize and transcode image
-	// outputImg, err = ops.Transform(decoder, opts, outputImg)
-	// if err != nil {
-	// 	fmt.Printf("error transforming image, %s\n", err)
-	// 	return errors.New("error transforming image")
-	// }
-
-	// err = ioutil.WriteFile("outputFilename", outputImg, 0400)
-	// if err != nil {
-	// 	fmt.Printf("error writing out resized image, %s\n", err)
-	// 	return errors.New("error writing out resized image")
-	// }
-
-	// // fmt.Printf("image written to %s\n", outputFilename)
-
-	return nil
+	return imageHash, nil
 }
 
 type encodeOptions struct {
@@ -198,8 +173,8 @@ func (ip *ImageProcessor) storeEncodedBuffer(filename string, imageBuffer []byte
 	return ioutil.WriteFile(filename, imageBuffer, 0400)
 }
 
-func (ip *ImageProcessor) RemoveImage(imageID string) error {
-	imageDir := ip.getImageBasePath(imageID)
+func (ip *ImageProcessor) RemoveImage(imageStoreID string) error {
+	imageDir := ip.getImageBasePath(imageStoreID)
 	// maybe we should remove all images and the image directory separately, removeAll seems dangerous
 	return os.RemoveAll(imageDir)
 }

@@ -67,15 +67,16 @@ type DishAlias struct {
 }
 
 type Image struct {
-	ID          uuid.UUID      `json:"id"`
-	Occurrence  uuid.UUID      `json:"occurrence"`
-	DisplayName string         `json:"display_name"`
-	Description sql.NullString `json:"description"`
-	UpVotes     int32          `json:"up_votes"`
-	DownVotes   int32          `json:"down_votes"`
-	CreatedAt   time.Time      `json:"created_at"`
-	UpdatedAt   time.Time      `json:"updated_at"`
-	AcceptedAt  sql.NullTime   `json:"accepted_at"`
+	ID           uuid.UUID      `json:"id"`
+	ImageStoreID string         `json:"image_store_id"`
+	Occurrence   uuid.UUID      `json:"occurrence"`
+	DisplayName  string         `json:"display_name"`
+	Description  sql.NullString `json:"description"`
+	UpVotes      int32          `json:"up_votes"`
+	DownVotes    int32          `json:"down_votes"`
+	CreatedAt    time.Time      `json:"created_at"`
+	UpdatedAt    time.Time      `json:"updated_at"`
+	AcceptedAt   sql.NullTime   `json:"accepted_at"`
 }
 
 type Occurrence struct {
