@@ -14,6 +14,7 @@ type ServerConfig struct {
 	DebugEnabled   bool
 	JWT            utils.JWTKeyStoreConfig
 	AssetsDir      string
+	ImageProcessor utils.ImageProcessorConfig
 }
 
 // ListenEndpoint builds the endpoint string (host + port)

@@ -19,15 +19,23 @@ const (
 
 var encodeOption = map[int]int{lilliput.WebpQuality: 85}
 
-type ImageProcessor struct {
-	imageDirectory  string
-	maxOutputSizeMB int
-	maxResolution   int
+type ImageProcessorConfig struct {
+	ImageDirectory  string
+	MaxOutputSizeMB int32
+	MaxResolution   int32
 }
 
-func NewImageProcessor(dir string) *ImageProcessor {
+type ImageProcessor struct {
+	imageDirectory string
+	maxOutputSize  int
+	maxResolution  int
+}
+
+func NewImageProcessor(params ImageProcessorConfig) *ImageProcessor {
 	return &ImageProcessor{
-		imageDirectory: dir,
+		imageDirectory: params.ImageDirectory,
+		maxOutputSize:  int(params.MaxOutputSizeMB) * 1024 * 1024,
+		maxResolution:  int(params.MaxResolution),
 	}
 }
 
@@ -93,7 +101,7 @@ func (ip *ImageProcessor) StoreImage(image []byte) (string, error) {
 	frame.OrientationTransform(header.Orientation())
 
 	// create a buffer to store the output image
-	outputImageBuffer := make([]byte, ip.maxOutputSizeMB*1024*1024)
+	outputImageBuffer := make([]byte, ip.maxOutputSize)
 
 	// create and store thumbnail image
 	encOpts := encodeOptions{
