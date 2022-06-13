@@ -16,9 +16,10 @@ import (
 )
 
 type GraphQLParams struct {
-	DebugEnabled bool
-	Database     db.ExtendedQuerier
-	JWTKeyStore  *utils.JWTKeyStore
+	DebugEnabled   bool
+	Database       db.ExtendedQuerier
+	JWTKeyStore    *utils.JWTKeyStore
+	ImageProcessor *utils.ImageProcessor
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) error {
@@ -46,10 +47,10 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
 				Resolvers: &resolvers.Resolver{
-					Database:     params.Database,
-					JWTKeyStore:  params.JWTKeyStore,
-					VCSBuildInfo: vscBuildInfo,
-					// TODO add image processor
+					Database:       params.Database,
+					JWTKeyStore:    params.JWTKeyStore,
+					VCSBuildInfo:   vscBuildInfo,
+					ImageProcessor: params.ImageProcessor,
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,

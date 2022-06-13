@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"path/filepath"
 	"time"
 
 	"github.com/getsentry/sentry-go"
@@ -15,6 +16,13 @@ import (
 )
 
 func main() {
+	assetDir := utils.MustGet("ASSETS_DIR")
+	imageDir := filepath.Join(assetDir, "images")
+	err := utils.CreateDirIfNotExists(imageDir)
+	if err != nil {
+		log.Fatalf("failed to create image dir(%s): %s\n", imageDir, err)
+	}
+
 	config := server.ServerConfig{
 		Host:           utils.MustGet("HOST"),
 		Port:           utils.MustGetInt32("PORT"),
@@ -26,7 +34,12 @@ func main() {
 			Algorithm:      utils.MustGet("JWT_ALGORITHM"),
 			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
 		},
-		AssetsDir: utils.MustGet("ASSETS_DIR"),
+		AssetsDir: assetDir,
+		ImageProcessor: utils.ImageProcessorConfig{
+			ImageDirectory:  imageDir,
+			MaxOutputSizeMB: utils.MustGetInt32("IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB"),
+			MaxResolution:   utils.MustGetInt32("IMAGE_PROCESSOR_MAX_RESOLUTION"),
+		},
 	}
 
 	sentryDSN, err := utils.GetOrFile("SENTRY_DSN")
