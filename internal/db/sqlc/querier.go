@@ -36,6 +36,7 @@ type Querier interface {
 	GetAllTags(ctx context.Context) ([]*Tag, error)
 	GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error)
 	GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error)
+	GetImageStoreIDByID(ctx context.Context, id uuid.UUID) (string, error)
 	GetImagesByDish(ctx context.Context, id uuid.UUID) ([]*Image, error)
 	GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*Image, error)
 	GetLocationByID(ctx context.Context, id uuid.UUID) (*Location, error)

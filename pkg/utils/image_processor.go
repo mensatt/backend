@@ -20,21 +20,21 @@ const (
 var encodeOption = map[int]int{lilliput.WebpQuality: 85}
 
 type ImageProcessorConfig struct {
-	ImageDirectory  string
-	MaxOutputSizeMB int32
-	MaxResolution   int32
+	ImageDirectory string
+	MaxImageSizeMB int32
+	MaxResolution  int32
 }
 
 type ImageProcessor struct {
 	imageDirectory string
-	maxOutputSize  int
+	maxImageSize   int64
 	maxResolution  int
 }
 
 func NewImageProcessor(params ImageProcessorConfig) *ImageProcessor {
 	return &ImageProcessor{
 		imageDirectory: params.ImageDirectory,
-		maxOutputSize:  int(params.MaxOutputSizeMB) * 1024 * 1024,
+		maxImageSize:   int64(params.MaxImageSizeMB) * 1024 * 1024,
 		maxResolution:  int(params.MaxResolution),
 	}
 }
@@ -101,7 +101,7 @@ func (ip *ImageProcessor) StoreImage(image []byte) (string, error) {
 	frame.OrientationTransform(header.Orientation())
 
 	// create a buffer to store the output image
-	outputImageBuffer := make([]byte, ip.maxOutputSize)
+	outputImageBuffer := make([]byte, ip.maxImageSize)
 
 	// create and store thumbnail image
 	encOpts := encodeOptions{
@@ -185,4 +185,8 @@ func (ip *ImageProcessor) RemoveImage(imageStoreID string) error {
 	imageDir := ip.getImageBasePath(imageStoreID)
 	// maybe we should remove all images and the image directory separately, removeAll seems dangerous
 	return os.RemoveAll(imageDir)
+}
+
+func (ip *ImageProcessor) GetMaxImageSize() int64 {
+	return ip.maxImageSize
 }
