@@ -36,9 +36,9 @@ func main() {
 		},
 		AssetsDir: assetDir,
 		ImageProcessor: utils.ImageProcessorConfig{
-			ImageDirectory:  imageDir,
-			MaxOutputSizeMB: utils.MustGetInt32("IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB"),
-			MaxResolution:   utils.MustGetInt32("IMAGE_PROCESSOR_MAX_RESOLUTION"),
+			ImageDirectory: imageDir,
+			MaxImageSizeMB: utils.MustGetInt32("IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB"),
+			MaxResolution:  utils.MustGetInt32("IMAGE_PROCESSOR_MAX_RESOLUTION"),
 		},
 	}
 

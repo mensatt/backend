@@ -132,6 +132,19 @@ func (q *Queries) GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error
 	return &i, err
 }
 
+const getImageStoreIDByID = `-- name: GetImageStoreIDByID :one
+SELECT image_store_id
+FROM image
+WHERE id = $1
+`
+
+func (q *Queries) GetImageStoreIDByID(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getImageStoreIDByID, id)
+	var image_store_id string
+	err := row.Scan(&image_store_id)
+	return image_store_id, err
+}
+
 const updateImage = `-- name: UpdateImage :one
 UPDATE image
 SET 

@@ -78,7 +78,7 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 }
 
 func (r *mutationResolver) CreateImage(ctx context.Context, input models.CreateImageInputHelper) (*sqlc.Image, error) {
-	if input.Image.Size > 10*1024*1024 {
+	if input.Image.Size > r.ImageProcessor.GetMaxImageSize() {
 		return nil, errors.New("image size is too big")
 	}
 
@@ -99,11 +99,19 @@ func (r *mutationResolver) UpdateImage(ctx context.Context, input sqlc.UpdateIma
 }
 
 func (r *mutationResolver) DeleteImage(ctx context.Context, input models.DeleteImageInput) (*sqlc.Image, error) {
-	err := r.ImageProcessor.RemoveImage(input.ID.String())
+	imageStoreID, err := r.Database.GetImageStoreIDByID(ctx, input.ID)
 	if err != nil {
 		return nil, err
 	}
-	return r.Database.DeleteImage(ctx, input.ID)
+	image, err := r.Database.DeleteImage(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+	err = r.ImageProcessor.RemoveImage(imageStoreID)
+	if err != nil {
+		return nil, err
+	}
+	return image, nil
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.

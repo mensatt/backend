@@ -7,6 +7,11 @@ SELECT *
 FROM image
 WHERE id = $1;
 
+-- name: GetImageStoreIDByID :one
+SELECT image_store_id
+FROM image
+WHERE id = $1;
+
 -- name: CreateImage :one
 INSERT INTO image (image_store_id, occurrence, display_name, description)
 VALUES ($1, $2, $3, $4)
