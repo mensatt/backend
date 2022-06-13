@@ -18,6 +18,7 @@ services:
       target: dev
     volumes:
       - .:/opt/app/mensatt
+      - asset-data:/opt/app/mensatt/assets
     secrets:
       - "sentry_dsn"
       - "database_username"
@@ -38,6 +39,7 @@ services:
       JWT_PRIVATE_KEY_PATH: /run/secrets/jwt_private_key
       JWT_ALGORITHM: RS256
       JWT_TIMEOUT_SEC: 525600
+      ASSETS_DIR: /opt/app/mensatt/assets
     ports:
       - "4000:4000"
     links:
@@ -60,3 +62,4 @@ services:
 
 volumes:
   postgres-data:
+  asset-data:
