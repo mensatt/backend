@@ -8,11 +8,12 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/backend/internal/assets"
 	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/graphql"
+	"github.com/mensatt/backend/internal/images"
 	"github.com/mensatt/backend/internal/middleware"
 	"github.com/mensatt/backend/internal/misc"
+	"github.com/mensatt/backend/pkg/imageprocessor"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
@@ -21,8 +22,11 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 	if err != nil {
 		return err
 	}
-	
-	imageProcessor := utils.NewImageProcessor(config.ImageProcessor)
+
+	imageProcessor, err := imageprocessor.NewImageProcessor(config.ImageProcessor)
+	if err != nil {
+		return err
+	}
 
 	database := db.NewExtended(pool)
 
@@ -45,10 +49,10 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 	}))
 
 	assetsRouterGroup := app.Group(config.VersionedPath("/assets"))
-	assetsParams := assets.AssetParams{
-		AssetDirectory: config.AssetsDir,
-	}
-	err = assets.Run(assetsRouterGroup, &assetsParams)
+	imagesRouterGroup := assetsRouterGroup.Group("/images")
+	err = images.Run(imagesRouterGroup, &images.ImageParams{
+		ImageProcessor: imageProcessor,
+	})
 	if err != nil {
 		return err
 	}

@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 
+	"github.com/mensatt/backend/pkg/imageprocessor"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
@@ -14,7 +15,7 @@ type ServerConfig struct {
 	DebugEnabled   bool
 	JWT            utils.JWTKeyStoreConfig
 	AssetsDir      string
-	ImageProcessor utils.ImageProcessorConfig
+	ImageProcessor imageprocessor.ImageProcessorConfig
 }
 
 // ListenEndpoint builds the endpoint string (host + port)
@@ -25,12 +26,12 @@ func (cfg *ServerConfig) ListenEndpoint() string {
 	return fmt.Sprintf("%s:%d", cfg.Host, cfg.Port)
 }
 
-// VersionedEndpoint builds the endpoint string (host + port + version)
+// VersionedPath builds the path string (version + path)
 func (cfg *ServerConfig) VersionedPath(path string) string {
 	return "/" + cfg.ServiceVersion + path
 }
 
-// SchemaVersionedEndpoint builds the schema endpoint string (schema + host + port + version)
+// SchemaVersionedEndpoint builds the schema endpoint string (schema + host + port + version + path)
 func (cfg *ServerConfig) SchemaVersionedEndpoint(path string) string {
 	if cfg.Port == 80 {
 		return fmt.Sprintf("http://%s/%s%s", cfg.Host, cfg.ServiceVersion, path)

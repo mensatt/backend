@@ -12,6 +12,7 @@ import (
 	"github.com/mensatt/backend/internal/graphql/directives"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/resolvers"
+	"github.com/mensatt/backend/pkg/imageprocessor"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
@@ -19,7 +20,7 @@ type GraphQLParams struct {
 	DebugEnabled   bool
 	Database       db.ExtendedQuerier
 	JWTKeyStore    *utils.JWTKeyStore
-	ImageProcessor *utils.ImageProcessor
+	ImageProcessor *imageprocessor.ImageProcessor
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) error {
