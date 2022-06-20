@@ -26,12 +26,8 @@ func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
-func (r *imageResolver) ThumbnailURL(ctx context.Context, obj *sqlc.Image) (string, error) {
-	return r.ImageProcessor.GetThumbnailImagePath(obj.ID.String()), nil
-}
-
-func (r *imageResolver) OriginalResURL(ctx context.Context, obj *sqlc.Image) (string, error) {
-	return r.ImageProcessor.GetOriginalResImagePath(obj.ID.String()), nil
+func (r *imageResolver) ImageURL(ctx context.Context, obj *sqlc.Image) (string, error) {
+	return r.ImageProcessor.GetOriginal(obj.ImageStoreID)
 }
 
 func (r *occurrenceResolver) Location(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Location, error) {

@@ -34,6 +34,9 @@ type ImageProcessorConfig struct {
 type ImageProcessor struct {
 	originalDirectory string
 	resizedDirectory  string
+
+	maxImageSize  int64
+	maxResolution int
 }
 
 func NewImageProcessor(params ImageProcessorConfig) (*ImageProcessor, error) {
@@ -61,11 +64,13 @@ func NewImageProcessor(params ImageProcessorConfig) (*ImageProcessor, error) {
 	return &ImageProcessor{
 		originalDirectory: originalDirectory,
 		resizedDirectory:  resizedDirectory,
+		maxImageSize:      int64(params.MaxImageSizeMB) * 1024 * 1024,
+		maxResolution:     int(params.MaxResolution),
 	}, nil
 }
 
-func (ih *ImageProcessor) StoreImage() {
-
+func (ih *ImageProcessor) StoreImage(image []byte) (string, error) {
+	return "", nil
 }
 
 func (ih *ImageProcessor) RemoveImage(imageStoreID string) error {
@@ -114,4 +119,8 @@ func (ih *ImageProcessor) getResizedFilepath(imageStoreID string, width, height 
 
 func IsImageStoreIDValid(imageStoreID string) bool {
 	return isValidImageStoreID.MatchString(imageStoreID)
+}
+
+func (ip *ImageProcessor) GetMaxImageSize() int64 {
+	return ip.maxImageSize
 }
