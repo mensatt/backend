@@ -1,12 +1,13 @@
 package imageprocessor
 
 import (
+	"crypto/sha256"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
-
-	"log"
 
 	"github.com/mensatt/backend/pkg/utils"
 )
@@ -69,16 +70,27 @@ func NewImageProcessor(params ImageProcessorConfig) (*ImageProcessor, error) {
 	}, nil
 }
 
-func (ih *ImageProcessor) StoreImage(image []byte) (string, error) {
-	return "", nil
+func (ip *ImageProcessor) StoreImage(image []byte) (string, error) {
+	imageHash := fmt.Sprintf("%x", sha256.Sum256(image))
+
+	path := ip.getOriginalFilepath(imageHash)
+
+	if _, err := os.Stat(path); err == nil {
+		// an image with the same hash has already been processed
+		return imageHash, nil
+	}
+
+	err := ip.createAndStoreEncoded(image, path, nil)
+	return imageHash, err
 }
 
-func (ih *ImageProcessor) RemoveImage(imageStoreID string) error {
-	err := os.Remove(ih.getOriginalFilepath(imageStoreID))
+func (ip *ImageProcessor) RemoveImage(imageStoreID string) error {
+	err := os.Remove(ip.getOriginalFilepath(imageStoreID))
 	if err != nil {
 		return err
 	}
-	files, err := filepath.Glob(fmt.Sprintf("%s/%s_*%s", ih.resizedDirectory, imageStoreID, imageExtension))
+
+	files, err := filepath.Glob(fmt.Sprintf("%s/%s_*%s", ip.resizedDirectory, imageStoreID, imageExtension))
 	if err != nil {
 		return err
 	}
@@ -90,37 +102,46 @@ func (ih *ImageProcessor) RemoveImage(imageStoreID string) error {
 	return nil
 }
 
-func (ih *ImageProcessor) GetOriginal(imageStoreID string) (string, error) {
-	// if !IsImageStoreIDValid(imageStoreID) {
-	// 	return "", ErrInvalidImageStoreID
-	// }
-
-	return ih.getOriginalFilepath(imageStoreID), nil
+func (ip *ImageProcessor) GetOriginal(imageStoreID string) (string, error) {
+	return ip.getOriginalFilepath(imageStoreID), nil
 }
 
-func (ih *ImageProcessor) GetResized(imageStoreID string, width, height int) (string, error) {
-	// if !IsImageStoreIDValid(imageStoreID) {
-	// 	return "", ErrInvalidImageStoreID
-	// }
+func (ip *ImageProcessor) GetResized(imageStoreID string, width, height int) (string, error) {
+	originalPath := ip.getOriginalFilepath(imageStoreID)
 
-	// TODO - check if resized image exists
+	original, err := ioutil.ReadFile(originalPath)
+	if err == os.ErrNotExist {
+		return "", ErrOriginalImageNotFound
+	} else if err != nil {
+		return "", err
+	}
 
-	return ih.getResizedFilepath(imageStoreID, width, height), nil
+	resizedPath := ip.getResizedFilepath(imageStoreID, width, height)
+	if _, err := os.Stat(resizedPath); err == nil {
+		return resizedPath, nil
+	}
+
+	err = ip.createAndStoreEncoded(original, resizedPath, &resizeOptions{
+		Width:  width,
+		Height: height,
+	})
+
+	return resizedPath, err
 }
 
-func (ih *ImageProcessor) getOriginalFilepath(imageStoreID string) string {
-	return filepath.Join(ih.originalDirectory, imageStoreID+imageExtension)
+func (ip *ImageProcessor) getOriginalFilepath(imageStoreID string) string {
+	return filepath.Join(ip.originalDirectory, imageStoreID+imageExtension)
 }
 
-func (ih *ImageProcessor) getResizedFilepath(imageStoreID string, width, height int) string {
+func (ip *ImageProcessor) getResizedFilepath(imageStoreID string, width, height int) string {
 	filename := fmt.Sprintf("%s_%dx%d%s", imageStoreID, width, height, imageExtension)
-	return filepath.Join(ih.originalDirectory, filename)
-}
-
-func IsImageStoreIDValid(imageStoreID string) bool {
-	return isValidImageStoreID.MatchString(imageStoreID)
+	return filepath.Join(ip.originalDirectory, filename)
 }
 
 func (ip *ImageProcessor) GetMaxImageSize() int64 {
 	return ip.maxImageSize
+}
+
+func IsImageStoreIDValid(imageStoreID string) bool {
+	return isValidImageStoreID.MatchString(imageStoreID)
 }
