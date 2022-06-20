@@ -11,6 +11,7 @@ import (
 	"github.com/mensatt/backend/internal/db"
 
 	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/mensatt/backend/pkg/imageprocessor"
 	"github.com/mensatt/backend/pkg/server"
 	"github.com/mensatt/backend/pkg/utils"
 )
@@ -35,7 +36,7 @@ func main() {
 			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
 		},
 		AssetsDir: assetDir,
-		ImageProcessor: utils.ImageProcessorConfig{
+		ImageProcessor: imageprocessor.ImageProcessorConfig{
 			ImageDirectory: imageDir,
 			MaxImageSizeMB: utils.MustGetInt32("IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB"),
 			MaxResolution:  utils.MustGetInt32("IMAGE_PROCESSOR_MAX_RESOLUTION"),
