@@ -3,18 +3,18 @@ module github.com/mensatt/backend
 go 1.18
 
 require (
-	github.com/99designs/gqlgen v0.17.9
+	github.com/99designs/gqlgen v0.17.10
 	github.com/getsentry/sentry-go v0.13.0
 	github.com/gin-contrib/cors v1.3.1
-	github.com/gin-gonic/gin v1.8.0
+	github.com/gin-gonic/gin v1.8.1
 	github.com/golang-jwt/jwt/v4 v4.4.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgconn v1.12.1
 	github.com/jackc/pgx/v4 v4.16.1
-	github.com/kyleconroy/sqlc v1.13.1-0.20220603050148-2d18667685a6
+	github.com/kyleconroy/sqlc v1.14.0
 	github.com/lib/pq v1.10.6
-	github.com/vektah/gqlparser/v2 v2.4.4
+	github.com/vektah/gqlparser/v2 v2.4.5
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 )
 
