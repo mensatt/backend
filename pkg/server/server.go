@@ -69,6 +69,7 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 		Database:       database,
 		JWTKeyStore:    jwtKeyStore,
 		ImageProcessor: imageProcessor,
+		ImageBaseURL:   imagesRouterGroup.BasePath(),
 	}
 	err = graphql.Run(gqlRouterGroup, &gqlServerParams)
 	if err != nil {

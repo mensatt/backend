@@ -15,4 +15,5 @@ type Resolver struct {
 	JWTKeyStore    *utils.JWTKeyStore
 	VCSBuildInfo   *utils.VCSBuildInfo
 	ImageProcessor *imageprocessor.ImageProcessor
+	ImageBaseURL   string
 }
