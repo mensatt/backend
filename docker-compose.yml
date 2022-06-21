@@ -40,6 +40,8 @@ services:
       JWT_ALGORITHM: RS256
       JWT_TIMEOUT_SEC: 525600
       ASSETS_DIR: /opt/app/mensatt/assets
+      IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB: 10
+      IMAGE_PROCESSOR_MAX_RESOLUTION: 8192
     ports:
       - "4000:4000"
     links:
