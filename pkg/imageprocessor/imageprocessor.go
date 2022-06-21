@@ -107,6 +107,11 @@ func (ip *ImageProcessor) GetOriginal(imageStoreID string) (string, error) {
 }
 
 func (ip *ImageProcessor) GetResized(imageStoreID string, width, height int) (string, error) {
+	resizedPath := ip.getResizedFilepath(imageStoreID, width, height)
+	if _, err := os.Stat(resizedPath); err == nil {
+		return resizedPath, nil
+	}
+
 	originalPath := ip.getOriginalFilepath(imageStoreID)
 
 	original, err := ioutil.ReadFile(originalPath)
@@ -114,11 +119,6 @@ func (ip *ImageProcessor) GetResized(imageStoreID string, width, height int) (st
 		return "", ErrOriginalImageNotFound
 	} else if err != nil {
 		return "", err
-	}
-
-	resizedPath := ip.getResizedFilepath(imageStoreID, width, height)
-	if _, err := os.Stat(resizedPath); err == nil {
-		return resizedPath, nil
 	}
 
 	err = ip.createAndStoreEncoded(original, resizedPath, &resizeOptions{

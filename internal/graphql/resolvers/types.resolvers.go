@@ -5,6 +5,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
@@ -27,7 +28,7 @@ func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.
 }
 
 func (r *imageResolver) ImageURL(ctx context.Context, obj *sqlc.Image) (string, error) {
-	return r.ImageProcessor.GetOriginal(obj.ImageStoreID)
+	return fmt.Sprintf("%s/%s", r.ImageBaseURL, obj.ImageStoreID), nil
 }
 
 func (r *occurrenceResolver) Location(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Location, error) {

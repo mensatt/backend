@@ -21,6 +21,7 @@ type GraphQLParams struct {
 	Database       db.ExtendedQuerier
 	JWTKeyStore    *utils.JWTKeyStore
 	ImageProcessor *imageprocessor.ImageProcessor
+	ImageBaseURL   string
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) error {
@@ -52,6 +53,7 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 					JWTKeyStore:    params.JWTKeyStore,
 					VCSBuildInfo:   vscBuildInfo,
 					ImageProcessor: params.ImageProcessor,
+					ImageBaseURL:   params.ImageBaseURL,
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,
