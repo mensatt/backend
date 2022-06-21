@@ -1,10 +1,10 @@
 .PHONY: gen generate tidy log logs up down start stop sqlc gqlgen jwt jwt-keys
 
 DC = docker compose -f docker-compose.yml
-EXEC_MENSATT = $(DC) exec mensatt
-DBMATE_OPTS = --migrations-dir ./internal/db/sql/migrations --schema-file ./internal/db/sql/schema.sql
 
 # docker compose stuff
+build:
+	$(DC) build
 up:
 	$(DC) up -d
 down:
@@ -15,7 +15,7 @@ stop:
 	$(DC) stop
 log: logs
 logs:
-	$(DC) logs mensatt
+	$(DC) logs -f mensatt
 
 #go code generation
 gen: generate
