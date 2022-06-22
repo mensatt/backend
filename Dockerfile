@@ -20,7 +20,7 @@ FROM base as built
 WORKDIR /go/app/mensatt
 COPY . .
 
-ENV CGO_ENABLED=0
+ENV CGO_ENABLED=1
 
 RUN go mod download
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
