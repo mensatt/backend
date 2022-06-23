@@ -22,7 +22,7 @@ ENV CGO_ENABLED=1
 RUN go mod download
 RUN go build -ldflags="-extldflags=-static" -o /tmp/mensatt ./cmd/mensatt/main.go
 
-FROM busybox as prod
+FROM busybox:glibc as prod
 
 COPY --from=built /tmp/mensatt /usr/bin/mensatt
 
