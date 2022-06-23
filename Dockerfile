@@ -20,7 +20,7 @@ COPY . .
 ENV CGO_ENABLED=1
 
 RUN go mod download
-RUN go build -ldflags="-extldflags=-static" -o /tmp/mensatt ./cmd/mensatt/main.go
+RUN go build -tags netgo -ldflags="-extldflags=-static" -o /tmp/mensatt ./cmd/mensatt/main.go
 
 FROM busybox:glibc as prod
 
