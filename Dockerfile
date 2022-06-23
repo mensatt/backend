@@ -6,9 +6,6 @@ FROM base as dev
 # Install the air binary so we get live code-reloading when we save files
 RUN go install github.com/cosmtrek/air@latest
 
-# Install dbmate for datbase migrations
-RUN go install github.com/amacneil/dbmate@latest
-
 # Run the air command in the directory where our code will live
 WORKDIR /opt/app/mensatt
 
