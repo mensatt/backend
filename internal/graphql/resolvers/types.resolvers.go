@@ -33,8 +33,8 @@ func (r *dishResolver) Images(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Imag
 	return r.Database.GetImagesByDish(ctx, obj.ID)
 }
 
-func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
-	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
+func (r *imageResolver) Review(ctx context.Context, obj *sqlc.Image) (*sqlc.Review, error) {
+	return r.Database.GetReviewByImage(ctx, obj.ID)
 }
 
 func (r *imageResolver) ImageURL(ctx context.Context, obj *sqlc.Image) (string, error) {
@@ -87,6 +87,10 @@ func (r *occurrenceTagResolver) Tag(ctx context.Context, obj *sqlc.OccurrenceTag
 
 func (r *reviewResolver) Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
+}
+
+func (r *reviewResolver) Images(ctx context.Context, obj *sqlc.Review) ([]*sqlc.Image, error) {
+	return r.Database.GetImagesByReview(ctx, obj.ID)
 }
 
 func (r *reviewMetadataResolver) AverageStars(ctx context.Context, obj *sqlc.GetOccurrenceReviewMetadataRow) (*float64, error) {

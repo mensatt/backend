@@ -82,6 +82,7 @@ type Review {
     id: UUID!
     occurrence: Occurrence!
     displayName: String!
+    images: [Image!]!
     stars: Int!
     text: String
     upVotes: Int!
@@ -98,14 +99,7 @@ type ReviewMetadata {
 
 type Image {
     id: UUID!
-    occurrence: Occurrence!
-    displayName: String!
-    description: String
-    upVotes: Int!
-    downVotes: Int!
-    createdAt: Timestamp!
-    updatedAt: Timestamp!
-    acceptedAt: Timestamp
+    review: Review!
     imageUrl: String!
 }
 
