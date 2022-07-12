@@ -75,16 +75,9 @@ type ComplexityRoot struct {
 	}
 
 	Image struct {
-		AcceptedAt  func(childComplexity int) int
-		CreatedAt   func(childComplexity int) int
-		Description func(childComplexity int) int
-		DisplayName func(childComplexity int) int
-		DownVotes   func(childComplexity int) int
-		ID          func(childComplexity int) int
-		ImageURL    func(childComplexity int) int
-		Occurrence  func(childComplexity int) int
-		UpVotes     func(childComplexity int) int
-		UpdatedAt   func(childComplexity int) int
+		ID       func(childComplexity int) int
+		ImageURL func(childComplexity int) int
+		Review   func(childComplexity int) int
 	}
 
 	Location struct {
@@ -111,7 +104,6 @@ type ComplexityRoot struct {
 		RemoveTagFromOccurrence      func(childComplexity int, input sqlc.RemoveOccurrenceTagParams) int
 		UpdateDish                   func(childComplexity int, input sqlc.UpdateDishParams) int
 		UpdateDishAlias              func(childComplexity int, input sqlc.UpdateDishAliasParams) int
-		UpdateImage                  func(childComplexity int, input sqlc.UpdateImageParams) int
 		UpdateOccurrence             func(childComplexity int, input sqlc.UpdateOccurrenceParams) int
 		UpdateReview                 func(childComplexity int, input sqlc.UpdateReviewParams) int
 	}
@@ -171,6 +163,7 @@ type ComplexityRoot struct {
 		DisplayName func(childComplexity int) int
 		DownVotes   func(childComplexity int) int
 		ID          func(childComplexity int) int
+		Images      func(childComplexity int) int
 		Occurrence  func(childComplexity int) int
 		Stars       func(childComplexity int) int
 		Text        func(childComplexity int) int
@@ -211,8 +204,7 @@ type DishResolver interface {
 	Images(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Image, error)
 }
 type ImageResolver interface {
-	Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error)
-
+	Review(ctx context.Context, obj *sqlc.Image) (*sqlc.Review, error)
 	ImageURL(ctx context.Context, obj *sqlc.Image) (string, error)
 }
 type MutationResolver interface {
@@ -234,7 +226,6 @@ type MutationResolver interface {
 	UpdateReview(ctx context.Context, input sqlc.UpdateReviewParams) (*sqlc.Review, error)
 	DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*sqlc.Review, error)
 	CreateImage(ctx context.Context, input models.CreateImageInputHelper) (*sqlc.Image, error)
-	UpdateImage(ctx context.Context, input sqlc.UpdateImageParams) (*sqlc.Image, error)
 	DeleteImage(ctx context.Context, input models.DeleteImageInput) (*sqlc.Image, error)
 }
 type OccurrenceResolver interface {
@@ -270,6 +261,8 @@ type QueryResolver interface {
 }
 type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error)
+
+	Images(ctx context.Context, obj *sqlc.Review) ([]*sqlc.Image, error)
 }
 type ReviewMetadataResolver interface {
 	AverageStars(ctx context.Context, obj *sqlc.GetOccurrenceReviewMetadataRow) (*float64, error)
@@ -360,41 +353,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DishAlias.NormalizedAliasName(childComplexity), true
 
-	case "Image.acceptedAt":
-		if e.complexity.Image.AcceptedAt == nil {
-			break
-		}
-
-		return e.complexity.Image.AcceptedAt(childComplexity), true
-
-	case "Image.createdAt":
-		if e.complexity.Image.CreatedAt == nil {
-			break
-		}
-
-		return e.complexity.Image.CreatedAt(childComplexity), true
-
-	case "Image.description":
-		if e.complexity.Image.Description == nil {
-			break
-		}
-
-		return e.complexity.Image.Description(childComplexity), true
-
-	case "Image.displayName":
-		if e.complexity.Image.DisplayName == nil {
-			break
-		}
-
-		return e.complexity.Image.DisplayName(childComplexity), true
-
-	case "Image.downVotes":
-		if e.complexity.Image.DownVotes == nil {
-			break
-		}
-
-		return e.complexity.Image.DownVotes(childComplexity), true
-
 	case "Image.id":
 		if e.complexity.Image.ID == nil {
 			break
@@ -409,26 +367,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.ImageURL(childComplexity), true
 
-	case "Image.occurrence":
-		if e.complexity.Image.Occurrence == nil {
+	case "Image.review":
+		if e.complexity.Image.Review == nil {
 			break
 		}
 
-		return e.complexity.Image.Occurrence(childComplexity), true
-
-	case "Image.upVotes":
-		if e.complexity.Image.UpVotes == nil {
-			break
-		}
-
-		return e.complexity.Image.UpVotes(childComplexity), true
-
-	case "Image.updatedAt":
-		if e.complexity.Image.UpdatedAt == nil {
-			break
-		}
-
-		return e.complexity.Image.UpdatedAt(childComplexity), true
+		return e.complexity.Image.Review(childComplexity), true
 
 	case "Location.externalId":
 		if e.complexity.Location.ExternalID == nil {
@@ -654,18 +598,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateDishAlias(childComplexity, args["input"].(sqlc.UpdateDishAliasParams)), true
-
-	case "Mutation.updateImage":
-		if e.complexity.Mutation.UpdateImage == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_updateImage_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.UpdateImage(childComplexity, args["input"].(sqlc.UpdateImageParams)), true
 
 	case "Mutation.updateOccurrence":
 		if e.complexity.Mutation.UpdateOccurrence == nil {
@@ -1000,6 +932,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Review.ID(childComplexity), true
 
+	case "Review.images":
+		if e.complexity.Review.Images == nil {
+			break
+		}
+
+		return e.complexity.Review.Images(childComplexity), true
+
 	case "Review.occurrence":
 		if e.complexity.Review.Occurrence == nil {
 			break
@@ -1151,7 +1090,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputRemoveTagFromOccurrenceInput,
 		ec.unmarshalInputUpdateDishAliasInput,
 		ec.unmarshalInputUpdateDishInput,
-		ec.unmarshalInputUpdateImageInput,
 		ec.unmarshalInputUpdateOccurrenceInput,
 		ec.unmarshalInputUpdateReviewInput,
 	)
@@ -1377,18 +1315,8 @@ input DeleteReviewInput {
 # Image
 
 input CreateImageInput {
-   occurrence: UUID!
-   displayName: String
-   description: String
+   review: UUID!
    image: Upload!
-}
-
-input UpdateImageInput {
-    id: UUID!
-    occurrence: UUID
-    displayName: String
-    description: String
-    acceptedAt: Timestamp
 }
 
 input DeleteImageInput {
@@ -1427,8 +1355,7 @@ input DeleteImageInput {
     deleteReview(input: DeleteReviewInput!): Review! @authenticated
 
     # Image
-    createImage(input: CreateImageInput!): Image! 
-    updateImage(input: UpdateImageInput!): Image! 
+    createImage(input: CreateImageInput!): Image!
     deleteImage(input: DeleteImageInput!): Image! 
 }
 `, BuiltIn: false},
@@ -1558,6 +1485,7 @@ type Review {
     id: UUID!
     occurrence: Occurrence!
     displayName: String!
+    images: [Image!]!
     stars: Int!
     text: String
     upVotes: Int!
@@ -1574,14 +1502,7 @@ type ReviewMetadata {
 
 type Image {
     id: UUID!
-    occurrence: Occurrence!
-    displayName: String!
-    description: String
-    upVotes: Int!
-    downVotes: Int!
-    createdAt: Timestamp!
-    updatedAt: Timestamp!
-    acceptedAt: Timestamp
+    review: Review!
     imageUrl: String!
 }
 
@@ -1849,21 +1770,6 @@ func (ec *executionContext) field_Mutation_updateDish_args(ctx context.Context, 
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUpdateDishInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateDishParams(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_updateImage_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 sqlc.UpdateImageParams
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNUpdateImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateImageParams(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2218,6 +2124,8 @@ func (ec *executionContext) fieldContext_Dish_reviews(ctx context.Context, field
 				return ec.fieldContext_Review_occurrence(ctx, field)
 			case "displayName":
 				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
 			case "stars":
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
@@ -2330,22 +2238,8 @@ func (ec *executionContext) fieldContext_Dish_images(ctx context.Context, field 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Image_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Image_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Image_displayName(ctx, field)
-			case "description":
-				return ec.fieldContext_Image_description(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Image_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Image_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Image_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Image_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
 			case "imageUrl":
 				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
@@ -2531,8 +2425,8 @@ func (ec *executionContext) fieldContext_Image_id(ctx context.Context, field gra
 	return fc, nil
 }
 
-func (ec *executionContext) _Image_occurrence(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_occurrence(ctx, field)
+func (ec *executionContext) _Image_review(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Image_review(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -2545,7 +2439,7 @@ func (ec *executionContext) _Image_occurrence(ctx context.Context, field graphql
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Image().Occurrence(rctx, obj)
+		return ec.resolvers.Image().Review(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2557,12 +2451,12 @@ func (ec *executionContext) _Image_occurrence(ctx context.Context, field graphql
 		}
 		return graphql.Null
 	}
-	res := resTmp.(*sqlc.Occurrence)
+	res := resTmp.(*sqlc.Review)
 	fc.Result = res
-	return ec.marshalNOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrence(ctx, field.Selections, res)
+	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Image_occurrence(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Image_review(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Image",
 		Field:      field,
@@ -2571,353 +2465,29 @@ func (ec *executionContext) fieldContext_Image_occurrence(ctx context.Context, f
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
 			case "id":
-				return ec.fieldContext_Occurrence_id(ctx, field)
-			case "location":
-				return ec.fieldContext_Occurrence_location(ctx, field)
-			case "dish":
-				return ec.fieldContext_Occurrence_dish(ctx, field)
-			case "sideDishes":
-				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
-			case "date":
-				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
-			case "kj":
-				return ec.fieldContext_Occurrence_kj(ctx, field)
-			case "kcal":
-				return ec.fieldContext_Occurrence_kcal(ctx, field)
-			case "fat":
-				return ec.fieldContext_Occurrence_fat(ctx, field)
-			case "saturatedFat":
-				return ec.fieldContext_Occurrence_saturatedFat(ctx, field)
-			case "carbohydrates":
-				return ec.fieldContext_Occurrence_carbohydrates(ctx, field)
-			case "sugar":
-				return ec.fieldContext_Occurrence_sugar(ctx, field)
-			case "fiber":
-				return ec.fieldContext_Occurrence_fiber(ctx, field)
-			case "protein":
-				return ec.fieldContext_Occurrence_protein(ctx, field)
-			case "salt":
-				return ec.fieldContext_Occurrence_salt(ctx, field)
-			case "priceStudent":
-				return ec.fieldContext_Occurrence_priceStudent(ctx, field)
-			case "priceStaff":
-				return ec.fieldContext_Occurrence_priceStaff(ctx, field)
-			case "priceGuest":
-				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
-			case "tags":
-				return ec.fieldContext_Occurrence_tags(ctx, field)
-			case "reviews":
-				return ec.fieldContext_Occurrence_reviews(ctx, field)
-			case "reviewMetadata":
-				return ec.fieldContext_Occurrence_reviewMetadata(ctx, field)
+				return ec.fieldContext_Review_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Review_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Review_displayName(ctx, field)
 			case "images":
-				return ec.fieldContext_Occurrence_images(ctx, field)
+				return ec.fieldContext_Review_images(ctx, field)
+			case "stars":
+				return ec.fieldContext_Review_stars(ctx, field)
+			case "text":
+				return ec.fieldContext_Review_text(ctx, field)
+			case "upVotes":
+				return ec.fieldContext_Review_upVotes(ctx, field)
+			case "downVotes":
+				return ec.fieldContext_Review_downVotes(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Review_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Review_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Review_acceptedAt(ctx, field)
 			}
-			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_displayName(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_displayName(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DisplayName, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_displayName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_description(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_description(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Description, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(sql.NullString)
-	fc.Result = res
-	return ec.marshalOString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_description(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_upVotes(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_upVotes(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpVotes, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int32)
-	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_upVotes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_downVotes(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_downVotes(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DownVotes, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int32)
-	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_downVotes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_createdAt(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_createdAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.CreatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTimestamp2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_createdAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Timestamp does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_updatedAt(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_updatedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpdatedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(time.Time)
-	fc.Result = res
-	return ec.marshalNTimestamp2timeᚐTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_updatedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Timestamp does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_acceptedAt(ctx context.Context, field graphql.CollectedField, obj *sqlc.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_acceptedAt(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.AcceptedAt, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(sql.NullTime)
-	fc.Result = res
-	return ec.marshalOTimestamp2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_acceptedAt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Timestamp does not have child fields")
+			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
 		},
 	}
 	return fc, nil
@@ -4406,6 +3976,8 @@ func (ec *executionContext) fieldContext_Mutation_createReview(ctx context.Conte
 				return ec.fieldContext_Review_occurrence(ctx, field)
 			case "displayName":
 				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
 			case "stars":
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
@@ -4503,6 +4075,8 @@ func (ec *executionContext) fieldContext_Mutation_updateReview(ctx context.Conte
 				return ec.fieldContext_Review_occurrence(ctx, field)
 			case "displayName":
 				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
 			case "stars":
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
@@ -4600,6 +4174,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteReview(ctx context.Conte
 				return ec.fieldContext_Review_occurrence(ctx, field)
 			case "displayName":
 				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
 			case "stars":
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
@@ -4673,22 +4249,8 @@ func (ec *executionContext) fieldContext_Mutation_createImage(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Image_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Image_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Image_displayName(ctx, field)
-			case "description":
-				return ec.fieldContext_Image_description(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Image_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Image_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Image_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Image_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
 			case "imageUrl":
 				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
@@ -4703,83 +4265,6 @@ func (ec *executionContext) fieldContext_Mutation_createImage(ctx context.Contex
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createImage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_updateImage(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_updateImage(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().UpdateImage(rctx, fc.Args["input"].(sqlc.UpdateImageParams))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*sqlc.Image)
-	fc.Result = res
-	return ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_updateImage(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Image_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Image_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Image_displayName(ctx, field)
-			case "description":
-				return ec.fieldContext_Image_description(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Image_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Image_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Image_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Image_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Image_acceptedAt(ctx, field)
-			case "imageUrl":
-				return ec.fieldContext_Image_imageUrl(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_updateImage_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -4827,22 +4312,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteImage(ctx context.Contex
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Image_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Image_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Image_displayName(ctx, field)
-			case "description":
-				return ec.fieldContext_Image_description(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Image_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Image_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Image_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Image_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
 			case "imageUrl":
 				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
@@ -5762,6 +5233,8 @@ func (ec *executionContext) fieldContext_Occurrence_reviews(ctx context.Context,
 				return ec.fieldContext_Review_occurrence(ctx, field)
 			case "displayName":
 				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
 			case "stars":
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
@@ -5874,22 +5347,8 @@ func (ec *executionContext) fieldContext_Occurrence_images(ctx context.Context, 
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Image_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Image_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Image_displayName(ctx, field)
-			case "description":
-				return ec.fieldContext_Image_description(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Image_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Image_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Image_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Image_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
 			case "imageUrl":
 				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
@@ -6699,6 +6158,8 @@ func (ec *executionContext) fieldContext_Query_reviews(ctx context.Context, fiel
 				return ec.fieldContext_Review_occurrence(ctx, field)
 			case "displayName":
 				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
 			case "stars":
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
@@ -6761,22 +6222,8 @@ func (ec *executionContext) fieldContext_Query_images(ctx context.Context, field
 			switch field.Name {
 			case "id":
 				return ec.fieldContext_Image_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Image_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Image_displayName(ctx, field)
-			case "description":
-				return ec.fieldContext_Image_description(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Image_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Image_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Image_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Image_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Image_acceptedAt(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
 			case "imageUrl":
 				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
@@ -7252,6 +6699,58 @@ func (ec *executionContext) fieldContext_Review_displayName(ctx context.Context,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Review_images(ctx context.Context, field graphql.CollectedField, obj *sqlc.Review) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Review_images(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Review().Images(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*sqlc.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Review_images(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Review",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Image_id(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
+			case "imageUrl":
+				return ec.fieldContext_Image_imageUrl(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
 	}
 	return fc, nil
@@ -10036,27 +9535,11 @@ func (ec *executionContext) unmarshalInputCreateImageInput(ctx context.Context, 
 
 	for k, v := range asMap {
 		switch k {
-		case "occurrence":
+		case "review":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
-			it.Occurrence, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "displayName":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
-			it.DisplayName, err = ec.unmarshalOString2string(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "description":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
-			it.Description, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("review"))
+			it.Review, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10614,61 +10097,6 @@ func (ec *executionContext) unmarshalInputUpdateDishInput(ctx context.Context, o
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputUpdateImageInput(ctx context.Context, obj interface{}) (sqlc.UpdateImageParams, error) {
-	var it sqlc.UpdateImageParams
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	for k, v := range asMap {
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "occurrence":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
-			it.Occurrence, err = ec.unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐNullUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "displayName":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
-			it.DisplayName, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "description":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
-			it.Description, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "acceptedAt":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("acceptedAt"))
-			it.AcceptedAt, err = ec.unmarshalOTimestamp2databaseᚋsqlᚐNullTime(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Context, obj interface{}) (sqlc.UpdateOccurrenceParams, error) {
 	var it sqlc.UpdateOccurrenceParams
 	asMap := map[string]interface{}{}
@@ -11061,7 +10489,7 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "occurrence":
+		case "review":
 			field := field
 
 			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
@@ -11070,7 +10498,7 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Image_occurrence(ctx, field, obj)
+				res = ec._Image_review(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&invalids, 1)
 				}
@@ -11081,49 +10509,6 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 				return innerFunc(ctx)
 
 			})
-		case "displayName":
-
-			out.Values[i] = ec._Image_displayName(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "description":
-
-			out.Values[i] = ec._Image_description(ctx, field, obj)
-
-		case "upVotes":
-
-			out.Values[i] = ec._Image_upVotes(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "downVotes":
-
-			out.Values[i] = ec._Image_downVotes(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "createdAt":
-
-			out.Values[i] = ec._Image_createdAt(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "updatedAt":
-
-			out.Values[i] = ec._Image_updatedAt(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "acceptedAt":
-
-			out.Values[i] = ec._Image_acceptedAt(ctx, field, obj)
-
 		case "imageUrl":
 			field := field
 
@@ -11373,15 +10758,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createImage(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "updateImage":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_updateImage(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -12092,6 +11468,26 @@ func (ec *executionContext) _Review(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
+		case "images":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Review_images(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "stars":
 
 			out.Values[i] = ec._Review_stars(ctx, field, obj)
@@ -13299,11 +12695,6 @@ func (ec *executionContext) unmarshalNUpdateDishInput2githubᚗcomᚋmensattᚋb
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpdateImageInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateImageParams(ctx context.Context, v interface{}) (sqlc.UpdateImageParams, error) {
-	res, err := ec.unmarshalInputUpdateImageInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNUpdateOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐUpdateOccurrenceParams(ctx context.Context, v interface{}) (sqlc.UpdateOccurrenceParams, error) {
 	res, err := ec.unmarshalInputUpdateOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13677,16 +13068,6 @@ func (ec *executionContext) unmarshalOString2databaseᚋsqlᚐNullString(ctx con
 
 func (ec *executionContext) marshalOString2databaseᚋsqlᚐNullString(ctx context.Context, sel ast.SelectionSet, v sql.NullString) graphql.Marshaler {
 	res := scalars.MarshalNullString(v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
 	return res
 }
 

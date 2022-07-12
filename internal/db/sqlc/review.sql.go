@@ -132,6 +132,31 @@ func (q *Queries) GetReviewByID(ctx context.Context, id uuid.UUID) (*Review, err
 	return &i, err
 }
 
+const getReviewByImage = `-- name: GetReviewByImage :one
+SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.up_votes, review.down_votes, review.created_at, review.updated_at, review.accepted_at
+FROM review
+JOIN image ON (image.review = review.id)
+WHERE image.id = $1
+`
+
+func (q *Queries) GetReviewByImage(ctx context.Context, id uuid.UUID) (*Review, error) {
+	row := q.db.QueryRow(ctx, getReviewByImage, id)
+	var i Review
+	err := row.Scan(
+		&i.ID,
+		&i.Occurrence,
+		&i.DisplayName,
+		&i.Stars,
+		&i.Text,
+		&i.UpVotes,
+		&i.DownVotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AcceptedAt,
+	)
+	return &i, err
+}
+
 const getReviewsByDish = `-- name: GetReviewsByDish :many
 SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.up_votes, review.down_votes, review.created_at, review.updated_at, review.accepted_at
 FROM review

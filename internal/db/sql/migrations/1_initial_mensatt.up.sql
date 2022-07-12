@@ -93,14 +93,7 @@ CREATE TABLE review (
 CREATE TABLE image (
     id uuid DEFAULT uuid_generate_v4(),
     image_store_id varchar NOT NULL,
-    occurrence uuid NOT NULL,
-    display_name varchar(32) NOT NULL,
-    description text,
-    up_votes integer DEFAULT 0 NOT NULL,
-    down_votes integer DEFAULT 0 NOT NULL,
-    created_at timestamptz DEFAULT NOW() NOT NULL,
-    updated_at timestamptz DEFAULT NOW() NOT NULL,
-    accepted_at timestamptz,
+    review uuid NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY(occurrence) REFERENCES occurrence(id)
+    FOREIGN KEY(review) REFERENCES review(id)
 );

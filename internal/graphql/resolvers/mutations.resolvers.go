@@ -108,10 +108,6 @@ func (r *mutationResolver) CreateImage(ctx context.Context, input models.CreateI
 	return r.Database.CreateImage(ctx, &input.CreateImageParams)
 }
 
-func (r *mutationResolver) UpdateImage(ctx context.Context, input sqlc.UpdateImageParams) (*sqlc.Image, error) {
-	return r.Database.UpdateImage(ctx, &input)
-}
-
 func (r *mutationResolver) DeleteImage(ctx context.Context, input models.DeleteImageInput) (*sqlc.Image, error) {
 	imageStoreID, err := r.Database.GetImageStoreIDByID(ctx, input.ID)
 	if err != nil {

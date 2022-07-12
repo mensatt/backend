@@ -23,6 +23,16 @@ type Querier interface {
 	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
 	DeleteDishAlias(ctx context.Context, aliasName string) (*DishAlias, error)
+	// -- name: UpdateImage :one
+	// UPDATE image
+	// SET
+	//     occurrence = COALESCE(sqlc.narg('occurrence'), occurrence),
+	//     display_name = COALESCE(sqlc.narg('display_name'), display_name),
+	//     description = COALESCE(sqlc.narg('description'), description),
+	//     updated_at = NOW(),
+	//     accepted_at = COALESCE(sqlc.narg('accepted_at'), accepted_at)
+	// WHERE id = $1
+	// RETURNING *;
 	DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	DeleteReview(ctx context.Context, id uuid.UUID) (*Review, error)
@@ -39,6 +49,8 @@ type Querier interface {
 	GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error)
 	GetImageStoreIDByID(ctx context.Context, id uuid.UUID) (string, error)
 	GetImagesByDish(ctx context.Context, id uuid.UUID) ([]*Image, error)
+	GetImagesByOccurrence(ctx context.Context, id uuid.UUID) ([]*Image, error)
+	GetImagesByReview(ctx context.Context, id uuid.UUID) ([]*Image, error)
 	GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*Image, error)
 	GetLocationByID(ctx context.Context, id uuid.UUID) (*Location, error)
 	GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurrence, error)
@@ -46,6 +58,7 @@ type Querier interface {
 	GetOccurrencesAfterInclusiveDate(ctx context.Context, date time.Time) ([]*Occurrence, error)
 	GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*Occurrence, error)
 	GetReviewByID(ctx context.Context, id uuid.UUID) (*Review, error)
+	GetReviewByImage(ctx context.Context, id uuid.UUID) (*Review, error)
 	GetReviewsByDish(ctx context.Context, id uuid.UUID) ([]*Review, error)
 	GetReviewsForOccurrence(ctx context.Context, id uuid.UUID) ([]*Review, error)
 	GetSideDishesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Dish, error)
@@ -57,7 +70,6 @@ type Querier interface {
 	RemoveOccurrenceTag(ctx context.Context, arg *RemoveOccurrenceTagParams) (*OccurrenceTag, error)
 	UpdateDish(ctx context.Context, arg *UpdateDishParams) (*Dish, error)
 	UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error)
-	UpdateImage(ctx context.Context, arg *UpdateImageParams) (*Image, error)
 	UpdateOccurrence(ctx context.Context, arg *UpdateOccurrenceParams) (*Occurrence, error)
 	UpdateReview(ctx context.Context, arg *UpdateReviewParams) (*Review, error)
 }

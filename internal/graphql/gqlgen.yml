@@ -155,10 +155,6 @@ models:
   UpdateReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.UpdateReviewParams
-  # Image
-  UpdateImageInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.UpdateImageParams
 
   # Input helper types      
   CreateOccurrenceInput:

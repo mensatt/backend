@@ -35,3 +35,9 @@ FROM review
 JOIN occurrence ON (review.occurrence = occurrence.id)
 JOIN dish ON (occurrence.dish = dish.id)
 WHERE dish.id = $1;
+
+-- name: GetReviewByImage :one
+SELECT review.*
+FROM review
+JOIN image ON (image.review = review.id)
+WHERE image.id = $1;

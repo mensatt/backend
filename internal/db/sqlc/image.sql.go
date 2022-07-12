@@ -7,73 +7,54 @@ package sqlc
 
 import (
 	"context"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
 
 const createImage = `-- name: CreateImage :one
-INSERT INTO image (image_store_id, occurrence, display_name, description)
-VALUES ($1, $2, $3, $4)
-RETURNING id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+INSERT INTO image (image_store_id, review)
+VALUES ($1, $2)
+RETURNING id, image_store_id, review
 `
 
 type CreateImageParams struct {
-	ImageStoreID string         `json:"image_store_id"`
-	Occurrence   uuid.UUID      `json:"occurrence"`
-	DisplayName  string         `json:"display_name"`
-	Description  sql.NullString `json:"description"`
+	ImageStoreID string    `json:"image_store_id"`
+	Review       uuid.UUID `json:"review"`
 }
 
 func (q *Queries) CreateImage(ctx context.Context, arg *CreateImageParams) (*Image, error) {
-	row := q.db.QueryRow(ctx, createImage,
-		arg.ImageStoreID,
-		arg.Occurrence,
-		arg.DisplayName,
-		arg.Description,
-	)
+	row := q.db.QueryRow(ctx, createImage, arg.ImageStoreID, arg.Review)
 	var i Image
-	err := row.Scan(
-		&i.ID,
-		&i.ImageStoreID,
-		&i.Occurrence,
-		&i.DisplayName,
-		&i.Description,
-		&i.UpVotes,
-		&i.DownVotes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.AcceptedAt,
-	)
+	err := row.Scan(&i.ID, &i.ImageStoreID, &i.Review)
 	return &i, err
 }
 
 const deleteImage = `-- name: DeleteImage :one
+
 DELETE FROM image
 WHERE id = $1
-RETURNING id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+RETURNING id, image_store_id, review
 `
 
+// -- name: UpdateImage :one
+// UPDATE image
+// SET
+//     occurrence = COALESCE(sqlc.narg('occurrence'), occurrence),
+//     display_name = COALESCE(sqlc.narg('display_name'), display_name),
+//     description = COALESCE(sqlc.narg('description'), description),
+//     updated_at = NOW(),
+//     accepted_at = COALESCE(sqlc.narg('accepted_at'), accepted_at)
+// WHERE id = $1
+// RETURNING *;
 func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error) {
 	row := q.db.QueryRow(ctx, deleteImage, id)
 	var i Image
-	err := row.Scan(
-		&i.ID,
-		&i.ImageStoreID,
-		&i.Occurrence,
-		&i.DisplayName,
-		&i.Description,
-		&i.UpVotes,
-		&i.DownVotes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.AcceptedAt,
-	)
+	err := row.Scan(&i.ID, &i.ImageStoreID, &i.Review)
 	return &i, err
 }
 
 const getAllImages = `-- name: GetAllImages :many
-SELECT id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+SELECT id, image_store_id, review
 FROM image
 `
 
@@ -86,18 +67,7 @@ func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
 	var items []*Image
 	for rows.Next() {
 		var i Image
-		if err := rows.Scan(
-			&i.ID,
-			&i.ImageStoreID,
-			&i.Occurrence,
-			&i.DisplayName,
-			&i.Description,
-			&i.UpVotes,
-			&i.DownVotes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.AcceptedAt,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -109,7 +79,7 @@ func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
 }
 
 const getImageByID = `-- name: GetImageByID :one
-SELECT id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+SELECT id, image_store_id, review
 FROM image
 WHERE id = $1
 `
@@ -117,18 +87,7 @@ WHERE id = $1
 func (q *Queries) GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error) {
 	row := q.db.QueryRow(ctx, getImageByID, id)
 	var i Image
-	err := row.Scan(
-		&i.ID,
-		&i.ImageStoreID,
-		&i.Occurrence,
-		&i.DisplayName,
-		&i.Description,
-		&i.UpVotes,
-		&i.DownVotes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.AcceptedAt,
-	)
+	err := row.Scan(&i.ID, &i.ImageStoreID, &i.Review)
 	return &i, err
 }
 
@@ -146,9 +105,10 @@ func (q *Queries) GetImageStoreIDByID(ctx context.Context, id uuid.UUID) (string
 }
 
 const getImagesByDish = `-- name: GetImagesByDish :many
-SELECT image.id, image.image_store_id, image.occurrence, image.display_name, image.description, image.up_votes, image.down_votes, image.created_at, image.updated_at, image.accepted_at
+SELECT image.id, image.image_store_id, image.review
 FROM image
-JOIN occurrence ON (image.occurrence = occurrence.id)
+JOIN review ON (image.review = review.id)
+JOIN occurrence ON (review.occurrence = occurrence.id)
 JOIN dish ON (occurrence.dish = dish.id)
 WHERE dish.id = $1
 `
@@ -162,18 +122,7 @@ func (q *Queries) GetImagesByDish(ctx context.Context, id uuid.UUID) ([]*Image, 
 	var items []*Image
 	for rows.Next() {
 		var i Image
-		if err := rows.Scan(
-			&i.ID,
-			&i.ImageStoreID,
-			&i.Occurrence,
-			&i.DisplayName,
-			&i.Description,
-			&i.UpVotes,
-			&i.DownVotes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.AcceptedAt,
-		); err != nil {
+		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -184,46 +133,57 @@ func (q *Queries) GetImagesByDish(ctx context.Context, id uuid.UUID) ([]*Image, 
 	return items, nil
 }
 
-const updateImage = `-- name: UpdateImage :one
-UPDATE image
-SET 
-    occurrence = COALESCE($2, occurrence),
-    display_name = COALESCE($3, display_name),
-    description = COALESCE($4, description),
-    updated_at = NOW(),
-    accepted_at = COALESCE($5, accepted_at)
-WHERE id = $1
-RETURNING id, image_store_id, occurrence, display_name, description, up_votes, down_votes, created_at, updated_at, accepted_at
+const getImagesByOccurrence = `-- name: GetImagesByOccurrence :many
+SELECT image.id, image.image_store_id, image.review
+FROM image
+JOIN review ON (image.review = review.id)
+JOIN occurrence ON (review.occurrence = occurrence.id)
+WHERE occurrence.id = $1
 `
 
-type UpdateImageParams struct {
-	ID          uuid.UUID      `json:"id"`
-	Occurrence  uuid.NullUUID  `json:"occurrence"`
-	DisplayName sql.NullString `json:"display_name"`
-	Description sql.NullString `json:"description"`
-	AcceptedAt  sql.NullTime   `json:"accepted_at"`
+func (q *Queries) GetImagesByOccurrence(ctx context.Context, id uuid.UUID) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getImagesByOccurrence, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Image
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
-func (q *Queries) UpdateImage(ctx context.Context, arg *UpdateImageParams) (*Image, error) {
-	row := q.db.QueryRow(ctx, updateImage,
-		arg.ID,
-		arg.Occurrence,
-		arg.DisplayName,
-		arg.Description,
-		arg.AcceptedAt,
-	)
-	var i Image
-	err := row.Scan(
-		&i.ID,
-		&i.ImageStoreID,
-		&i.Occurrence,
-		&i.DisplayName,
-		&i.Description,
-		&i.UpVotes,
-		&i.DownVotes,
-		&i.CreatedAt,
-		&i.UpdatedAt,
-		&i.AcceptedAt,
-	)
-	return &i, err
+const getImagesByReview = `-- name: GetImagesByReview :many
+SELECT image.id, image.image_store_id, image.review
+FROM image
+JOIN review ON (image.review = review.id)
+WHERE review.id = $1
+`
+
+func (q *Queries) GetImagesByReview(ctx context.Context, id uuid.UUID) ([]*Image, error) {
+	rows, err := q.db.Query(ctx, getImagesByReview, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Image
+	for rows.Next() {
+		var i Image
+		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
