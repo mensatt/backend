@@ -63,6 +63,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviews: [Review!]!
+    averageReviewStars: Float!
     images: [Image!]!
 }
 

@@ -115,27 +115,28 @@ type ComplexityRoot struct {
 	}
 
 	Occurrence struct {
-		Carbohydrates func(childComplexity int) int
-		Date          func(childComplexity int) int
-		Dish          func(childComplexity int) int
-		Fat           func(childComplexity int) int
-		Fiber         func(childComplexity int) int
-		ID            func(childComplexity int) int
-		Images        func(childComplexity int) int
-		Kcal          func(childComplexity int) int
-		Kj            func(childComplexity int) int
-		Location      func(childComplexity int) int
-		PriceGuest    func(childComplexity int) int
-		PriceStaff    func(childComplexity int) int
-		PriceStudent  func(childComplexity int) int
-		Protein       func(childComplexity int) int
-		ReviewStatus  func(childComplexity int) int
-		Reviews       func(childComplexity int) int
-		Salt          func(childComplexity int) int
-		SaturatedFat  func(childComplexity int) int
-		SideDishes    func(childComplexity int) int
-		Sugar         func(childComplexity int) int
-		Tags          func(childComplexity int) int
+		AverageReviewStars func(childComplexity int) int
+		Carbohydrates      func(childComplexity int) int
+		Date               func(childComplexity int) int
+		Dish               func(childComplexity int) int
+		Fat                func(childComplexity int) int
+		Fiber              func(childComplexity int) int
+		ID                 func(childComplexity int) int
+		Images             func(childComplexity int) int
+		Kcal               func(childComplexity int) int
+		Kj                 func(childComplexity int) int
+		Location           func(childComplexity int) int
+		PriceGuest         func(childComplexity int) int
+		PriceStaff         func(childComplexity int) int
+		PriceStudent       func(childComplexity int) int
+		Protein            func(childComplexity int) int
+		ReviewStatus       func(childComplexity int) int
+		Reviews            func(childComplexity int) int
+		Salt               func(childComplexity int) int
+		SaturatedFat       func(childComplexity int) int
+		SideDishes         func(childComplexity int) int
+		Sugar              func(childComplexity int) int
+		Tags               func(childComplexity int) int
 	}
 
 	OccurrenceSideDish struct {
@@ -235,6 +236,7 @@ type OccurrenceResolver interface {
 
 	Tags(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Tag, error)
 	Reviews(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Review, error)
+	AverageReviewStars(ctx context.Context, obj *sqlc.Occurrence) (float64, error)
 	Images(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Image, error)
 }
 type OccurrenceSideDishResolver interface {
@@ -670,6 +672,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateReview(childComplexity, args["input"].(sqlc.UpdateReviewParams)), true
+
+	case "Occurrence.averageReviewStars":
+		if e.complexity.Occurrence.AverageReviewStars == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.AverageReviewStars(childComplexity), true
 
 	case "Occurrence.carbohydrates":
 		if e.complexity.Occurrence.Carbohydrates == nil {
@@ -1498,6 +1507,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviews: [Review!]!
+    averageReviewStars: Float!
     images: [Image!]!
 }
 
@@ -2512,6 +2522,8 @@ func (ec *executionContext) fieldContext_Image_occurrence(ctx context.Context, f
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -3669,6 +3681,8 @@ func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -3788,6 +3802,8 @@ func (ec *executionContext) fieldContext_Mutation_updateOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -3907,6 +3923,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -5669,6 +5687,50 @@ func (ec *executionContext) fieldContext_Occurrence_reviews(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Occurrence_averageReviewStars(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Occurrence().AverageReviewStars(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(float64)
+	fc.Result = res
+	return ec.marshalNFloat2float64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Occurrence_averageReviewStars(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Occurrence_images(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Occurrence_images(ctx, field)
 	if err != nil {
@@ -5814,6 +5876,8 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_occurrence(ctx conte
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -5960,6 +6024,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_occurrence(ctx context.Co
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -6269,6 +6335,8 @@ func (ec *executionContext) fieldContext_Query_occurrences(ctx context.Context, 
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -6357,6 +6425,8 @@ func (ec *executionContext) fieldContext_Query_occurrencesByDate(ctx context.Con
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -6456,6 +6526,8 @@ func (ec *executionContext) fieldContext_Query_occurrencesAfterInclusiveDate(ctx
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -7024,6 +7096,8 @@ func (ec *executionContext) fieldContext_Review_occurrence(ctx context.Context, 
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviews":
 				return ec.fieldContext_Occurrence_reviews(ctx, field)
+			case "averageReviewStars":
+				return ec.fieldContext_Occurrence_averageReviewStars(ctx, field)
 			case "images":
 				return ec.fieldContext_Occurrence_images(ctx, field)
 			}
@@ -11301,6 +11375,26 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 				return innerFunc(ctx)
 
 			})
+		case "averageReviewStars":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Occurrence_averageReviewStars(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "images":
 			field := field
 
@@ -12453,6 +12547,21 @@ func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbacken
 		return graphql.Null
 	}
 	return ec._DishAlias(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNFloat2float64(ctx context.Context, v interface{}) (float64, error) {
+	res, err := graphql.UnmarshalFloatContext(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNFloat2float64(ctx context.Context, sel ast.SelectionSet, v float64) graphql.Marshaler {
+	res := graphql.MarshalFloatContext(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return graphql.WrapContextMarshaler(ctx, res)
 }
 
 func (ec *executionContext) marshalNImage2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐImage(ctx context.Context, sel ast.SelectionSet, v sqlc.Image) graphql.Marshaler {

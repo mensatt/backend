@@ -51,6 +51,10 @@ func (r *occurrenceResolver) Reviews(ctx context.Context, obj *sqlc.Occurrence) 
 	return r.Database.GetReviewsForOccurrence(ctx, obj.ID)
 }
 
+func (r *occurrenceResolver) AverageReviewStars(ctx context.Context, obj *sqlc.Occurrence) (float64, error) {
+	return r.Database.GetAverageReviewStars(ctx, obj.ID)
+}
+
 func (r *occurrenceResolver) Images(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Image, error) {
 	return r.Database.GetImagesForOccurrence(ctx, obj.ID)
 }

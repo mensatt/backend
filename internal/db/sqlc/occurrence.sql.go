@@ -154,6 +154,19 @@ func (q *Queries) GetAllOccurrences(ctx context.Context) ([]*Occurrence, error) 
 	return items, nil
 }
 
+const getAverageReviewStars = `-- name: GetAverageReviewStars :one
+SELECT Cast(review.stars as Float)
+FROM occurrence JOIN review ON occurrence.id = review.occurrence
+WHERE occurrence.id = $1
+`
+
+func (q *Queries) GetAverageReviewStars(ctx context.Context, id uuid.UUID) (float64, error) {
+	row := q.db.QueryRow(ctx, getAverageReviewStars, id)
+	var review_stars float64
+	err := row.Scan(&review_stars)
+	return review_stars, err
+}
+
 const getImagesForOccurrence = `-- name: GetImagesForOccurrence :many
 SELECT image.id, image.image_store_id, image.occurrence, image.display_name, image.description, image.up_votes, image.down_votes, image.created_at, image.updated_at, image.accepted_at
 FROM occurrence JOIN image ON occurrence.id = image.occurrence
