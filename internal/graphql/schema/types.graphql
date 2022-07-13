@@ -26,8 +26,9 @@ type Dish {
     nameDe: String!
     nameEn: String
     aliases: [String!]!
-    images: [Image!]!
     reviews: [Review!]!
+    averageStars: Float!
+    images: [Image!]!
 }
 
 type DishAlias {
@@ -63,7 +64,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviews: [Review!]!
-    averageReviewStars: Float!
+    averageStars: Float!
     images: [Image!]!
 }
 
