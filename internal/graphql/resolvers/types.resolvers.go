@@ -15,12 +15,16 @@ func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, e
 	return r.Database.GetAliasesForDish(ctx, obj.ID)
 }
 
-func (r *dishResolver) Images(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Image, error) {
-	return r.Database.GetImagesByDish(ctx, obj.ID)
-}
-
 func (r *dishResolver) Reviews(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Review, error) {
 	return r.Database.GetReviewsByDish(ctx, obj.ID)
+}
+
+func (r *dishResolver) AverageStars(ctx context.Context, obj *sqlc.Dish) (float64, error) {
+	return r.Database.GetAverageStarsByDish(ctx, obj.ID)
+}
+
+func (r *dishResolver) Images(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Image, error) {
+	return r.Database.GetImagesByDish(ctx, obj.ID)
 }
 
 func (r *imageResolver) Occurrence(ctx context.Context, obj *sqlc.Image) (*sqlc.Occurrence, error) {
@@ -51,8 +55,8 @@ func (r *occurrenceResolver) Reviews(ctx context.Context, obj *sqlc.Occurrence) 
 	return r.Database.GetReviewsForOccurrence(ctx, obj.ID)
 }
 
-func (r *occurrenceResolver) AverageReviewStars(ctx context.Context, obj *sqlc.Occurrence) (float64, error) {
-	return r.Database.GetAverageReviewStars(ctx, obj.ID)
+func (r *occurrenceResolver) AverageStars(ctx context.Context, obj *sqlc.Occurrence) (float64, error) {
+	return r.Database.GetAverageStarsByOccurrence(ctx, obj.ID)
 }
 
 func (r *occurrenceResolver) Images(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Image, error) {

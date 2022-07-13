@@ -108,6 +108,34 @@ func (q *Queries) GetAllReviews(ctx context.Context) ([]*Review, error) {
 	return items, nil
 }
 
+const getAverageStarsByDish = `-- name: GetAverageStarsByDish :one
+SELECT CAST(AVG(stars) AS FLOAT) AS average_rating
+FROM review
+JOIN occurrence ON (review.occurrence = occurrence.id)
+JOIN dish ON (occurrence.dish = dish.id)
+WHERE dish.id = $1
+`
+
+func (q *Queries) GetAverageStarsByDish(ctx context.Context, id uuid.UUID) (float64, error) {
+	row := q.db.QueryRow(ctx, getAverageStarsByDish, id)
+	var average_rating float64
+	err := row.Scan(&average_rating)
+	return average_rating, err
+}
+
+const getAverageStarsByOccurrence = `-- name: GetAverageStarsByOccurrence :one
+SELECT CAST(AVG(stars) AS FLOAT) AS average_rating
+FROM review
+WHERE review.occurrence = $1
+`
+
+func (q *Queries) GetAverageStarsByOccurrence(ctx context.Context, occurrence uuid.UUID) (float64, error) {
+	row := q.db.QueryRow(ctx, getAverageStarsByOccurrence, occurrence)
+	var average_rating float64
+	err := row.Scan(&average_rating)
+	return average_rating, err
+}
+
 const getReviewByID = `-- name: GetReviewByID :one
 SELECT id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
 FROM review
