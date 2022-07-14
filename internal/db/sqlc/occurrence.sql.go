@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgtype"
 )
 
 const createOccurrence = `-- name: CreateOccurrence :one
@@ -219,6 +220,24 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 		&i.PriceStaff,
 		&i.PriceGuest,
 	)
+	return &i, err
+}
+
+const getOccurrenceReviewMetadata = `-- name: GetOccurrenceReviewMetadata :one
+SELECT AVG(CAST(review.stars as Float)) AS average_stars, COUNT(*) AS review_count
+FROM review
+WHERE review.occurrence = $1
+`
+
+type GetOccurrenceReviewMetadataRow struct {
+	AverageStars pgtype.Numeric `json:"average_stars"`
+	ReviewCount  int64          `json:"review_count"`
+}
+
+func (q *Queries) GetOccurrenceReviewMetadata(ctx context.Context, occurrence uuid.UUID) (*GetOccurrenceReviewMetadataRow, error) {
+	row := q.db.QueryRow(ctx, getOccurrenceReviewMetadata, occurrence)
+	var i GetOccurrenceReviewMetadataRow
+	err := row.Scan(&i.AverageStars, &i.ReviewCount)
 	return &i, err
 }
 

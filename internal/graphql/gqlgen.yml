@@ -100,6 +100,9 @@ models:
   Review:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.Review
+  ReviewMetadata:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.GetOccurrenceReviewMetadataRow
   Image:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.Image

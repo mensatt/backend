@@ -7,18 +7,6 @@ SELECT *
 FROM review
 WHERE id = $1;
 
--- name: GetAverageStarsByDish :one
-SELECT CAST(AVG(stars) AS FLOAT) AS average_rating
-FROM review
-JOIN occurrence ON (review.occurrence = occurrence.id)
-JOIN dish ON (occurrence.dish = dish.id)
-WHERE dish.id = $1;
-
--- name: GetAverageStarsByOccurrence :one
-SELECT CAST(AVG(stars) AS FLOAT) AS average_rating
-FROM review
-WHERE review.occurrence = $1;
-
 -- name: CreateReview :one
 INSERT INTO review (occurrence, display_name, stars, text)
 VALUES ($1, $2, $3, $4)
