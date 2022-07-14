@@ -27,7 +27,7 @@ type Dish {
     nameEn: String
     aliases: [String!]!
     reviews: [Review!]!
-    averageStars: Float!
+    reviewMetadata: ReviewMetadata!
     images: [Image!]!
 }
 
@@ -64,7 +64,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviews: [Review!]!
-    averageStars: Float!
+    reviewMetadata: ReviewMetadata!
     images: [Image!]!
 }
 
@@ -89,6 +89,11 @@ type Review {
     createdAt: Timestamp!
     updatedAt: Timestamp!
     acceptedAt: Timestamp
+}
+
+type ReviewMetadata {
+    averageStars: Float
+    reviewCount: Int!
 }
 
 type Image {

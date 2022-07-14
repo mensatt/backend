@@ -7,6 +7,13 @@ SELECT *
 FROM dish
 WHERE id = $1;
 
+-- name: GetDishReviewMetadata :one
+SELECT AVG(CAST(review.stars as Float)) AS average_stars, COUNT(*) AS review_count
+FROM review
+JOIN occurrence ON (review.occurrence = occurrence.id)
+JOIN dish ON (occurrence.dish = dish.id)
+WHERE dish.id = $1;
+
 -- name: CreateDish :one
 INSERT INTO dish (name_de, name_en)
 VALUES ($1, $2)
