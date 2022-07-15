@@ -38,7 +38,7 @@ FROM occurrence JOIN image ON occurrence.id = image.occurrence
 WHERE occurrence.id = $1;
 
 -- name: GetOccurrenceReviewMetadata :one
-SELECT AVG(CAST(review.stars as Float)) AS average_stars, COUNT(*) AS review_count
+SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
 FROM review
 WHERE review.occurrence = $1;
 
