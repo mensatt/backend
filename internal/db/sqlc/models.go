@@ -15,7 +15,6 @@ import (
 type Priority string
 
 const (
-	PriorityUNSET  Priority = "UNSET"
 	PriorityLOW    Priority = "LOW"
 	PriorityMEDIUM Priority = "MEDIUM"
 	PriorityHIGH   Priority = "HIGH"

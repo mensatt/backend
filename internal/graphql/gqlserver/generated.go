@@ -1493,7 +1493,7 @@ type Tag {
     name: String!
     description: String!
     shortName: String
-    priority: Priority
+    priority: Priority!
     isAllergy: Boolean!
 }
 
@@ -7838,11 +7838,14 @@ func (ec *executionContext) _Tag_priority(ctx context.Context, field graphql.Col
 		return graphql.Null
 	}
 	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
 		return graphql.Null
 	}
 	res := resTmp.(sqlc.Priority)
 	fc.Result = res
-	return ec.marshalOPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx, field.Selections, res)
+	return ec.marshalNPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_priority(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -12230,6 +12233,9 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 
 			out.Values[i] = ec._Tag_priority(ctx, field, obj)
 
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
 		case "isAllergy":
 
 			out.Values[i] = ec._Tag_isAllergy(ctx, field, obj)
@@ -13040,6 +13046,21 @@ func (ec *executionContext) marshalNOccurrenceTag2ᚖgithubᚗcomᚋmensattᚋba
 		return graphql.Null
 	}
 	return ec._OccurrenceTag(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalNPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, v interface{}) (sqlc.Priority, error) {
+	res, err := scalars.UnmarshalPriority(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, sel ast.SelectionSet, v sqlc.Priority) graphql.Marshaler {
+	res := scalars.MarshalPriority(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
 }
 
 func (ec *executionContext) unmarshalNRemoveSideDishFromOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐRemoveOccurrenceSideDishParams(ctx context.Context, v interface{}) (sqlc.RemoveOccurrenceSideDishParams, error) {
