@@ -8,7 +8,7 @@ FROM dish
 WHERE id = $1;
 
 -- name: GetDishReviewMetadata :one
-SELECT AVG(CAST(review.stars as Float)) AS average_stars, COUNT(*) AS review_count
+SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
 FROM review
 JOIN occurrence ON (review.occurrence = occurrence.id)
 JOIN dish ON (occurrence.dish = dish.id)

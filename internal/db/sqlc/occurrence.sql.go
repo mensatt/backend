@@ -224,7 +224,7 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 }
 
 const getOccurrenceReviewMetadata = `-- name: GetOccurrenceReviewMetadata :one
-SELECT AVG(CAST(review.stars as Float)) AS average_stars, COUNT(*) AS review_count
+SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
 FROM review
 WHERE review.occurrence = $1
 `
