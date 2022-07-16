@@ -19,14 +19,14 @@ CREATE TABLE dish_alias (
 CREATE TYPE priority AS ENUM ('LOWER', 'MEDIUM', 'HIGHER');
 
 CREATE TABLE tag (
-     key varchar,
-     name varchar NOT NULL,
-     description varchar NOT NULL,
-     short_name varchar,
-     priority priority default 'MEDIUM' NOT NULL,
-     is_hidden boolean DEFAULT true NOT NULL,
-     is_allergy boolean NOT NULL,
-     PRIMARY KEY (key)
+    key varchar,
+    name varchar NOT NULL,
+    description varchar NOT NULL,
+    short_name varchar,
+    priority priority default 'MEDIUM' NOT NULL,
+    is_hidden boolean DEFAULT true NOT NULL,
+    is_allergy boolean NOT NULL,
+    PRIMARY KEY (key)
 );
 
 CREATE TYPE review_status AS ENUM('CONFIRMED', 'APPROVED', 'AWAITING_APPROVAL', 'UPDATED', 'PENDING_DELETION');
