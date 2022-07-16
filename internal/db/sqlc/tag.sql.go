@@ -13,7 +13,7 @@ import (
 const createTag = `-- name: CreateTag :one
 INSERT INTO tag (key, name, description, short_name, priority, is_allergy)
 VALUES ($1, $2, $3, $4, $5, $6)
-RETURNING key, name, description, short_name, priority, is_allergy
+RETURNING key, name, description, short_name, priority, is_hidden, is_allergy
 `
 
 type CreateTagParams struct {
@@ -41,13 +41,14 @@ func (q *Queries) CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, er
 		&i.Description,
 		&i.ShortName,
 		&i.Priority,
+		&i.IsHidden,
 		&i.IsAllergy,
 	)
 	return &i, err
 }
 
 const getAllTags = `-- name: GetAllTags :many
-SELECT key, name, description, short_name, priority, is_allergy
+SELECT key, name, description, short_name, priority, is_hidden, is_allergy
 FROM tag
 `
 
@@ -66,6 +67,7 @@ func (q *Queries) GetAllTags(ctx context.Context) ([]*Tag, error) {
 			&i.Description,
 			&i.ShortName,
 			&i.Priority,
+			&i.IsHidden,
 			&i.IsAllergy,
 		); err != nil {
 			return nil, err
@@ -79,7 +81,7 @@ func (q *Queries) GetAllTags(ctx context.Context) ([]*Tag, error) {
 }
 
 const getTagByKey = `-- name: GetTagByKey :one
-SELECT key, name, description, short_name, priority, is_allergy
+SELECT key, name, description, short_name, priority, is_hidden, is_allergy
 FROM tag
 WHERE key = $1
 `
@@ -93,6 +95,7 @@ func (q *Queries) GetTagByKey(ctx context.Context, key string) (*Tag, error) {
 		&i.Description,
 		&i.ShortName,
 		&i.Priority,
+		&i.IsHidden,
 		&i.IsAllergy,
 	)
 	return &i, err

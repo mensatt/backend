@@ -18,6 +18,7 @@ type Tag {
     description: String!
     shortName: String
     priority: Priority!
+    isHidden: Boolean!
     isAllergy: Boolean!
 }
 

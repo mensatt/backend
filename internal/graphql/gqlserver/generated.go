@@ -186,6 +186,7 @@ type ComplexityRoot struct {
 	Tag struct {
 		Description func(childComplexity int) int
 		IsAllergy   func(childComplexity int) int
+		IsHidden    func(childComplexity int) int
 		Key         func(childComplexity int) int
 		Name        func(childComplexity int) int
 		Priority    func(childComplexity int) int
@@ -1063,6 +1064,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tag.IsAllergy(childComplexity), true
 
+	case "Tag.isHidden":
+		if e.complexity.Tag.IsHidden == nil {
+			break
+		}
+
+		return e.complexity.Tag.IsHidden(childComplexity), true
+
 	case "Tag.key":
 		if e.complexity.Tag.Key == nil {
 			break
@@ -1494,6 +1502,7 @@ type Tag {
     description: String!
     shortName: String
     priority: Priority!
+    isHidden: Boolean!
     isAllergy: Boolean!
 }
 
@@ -3223,6 +3232,8 @@ func (ec *executionContext) fieldContext_Mutation_createTag(ctx context.Context,
 				return ec.fieldContext_Tag_shortName(ctx, field)
 			case "priority":
 				return ec.fieldContext_Tag_priority(ctx, field)
+			case "isHidden":
+				return ec.fieldContext_Tag_isHidden(ctx, field)
 			case "isAllergy":
 				return ec.fieldContext_Tag_isAllergy(ctx, field)
 			}
@@ -5708,6 +5719,8 @@ func (ec *executionContext) fieldContext_Occurrence_tags(ctx context.Context, fi
 				return ec.fieldContext_Tag_shortName(ctx, field)
 			case "priority":
 				return ec.fieldContext_Tag_priority(ctx, field)
+			case "isHidden":
+				return ec.fieldContext_Tag_isHidden(ctx, field)
 			case "isAllergy":
 				return ec.fieldContext_Tag_isAllergy(ctx, field)
 			}
@@ -6188,6 +6201,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_tag(ctx context.Context, 
 				return ec.fieldContext_Tag_shortName(ctx, field)
 			case "priority":
 				return ec.fieldContext_Tag_priority(ctx, field)
+			case "isHidden":
+				return ec.fieldContext_Tag_isHidden(ctx, field)
 			case "isAllergy":
 				return ec.fieldContext_Tag_isAllergy(ctx, field)
 			}
@@ -6293,6 +6308,8 @@ func (ec *executionContext) fieldContext_Query_tags(ctx context.Context, field g
 				return ec.fieldContext_Tag_shortName(ctx, field)
 			case "priority":
 				return ec.fieldContext_Tag_priority(ctx, field)
+			case "isHidden":
+				return ec.fieldContext_Tag_isHidden(ctx, field)
 			case "isAllergy":
 				return ec.fieldContext_Tag_isAllergy(ctx, field)
 			}
@@ -7856,6 +7873,50 @@ func (ec *executionContext) fieldContext_Tag_priority(ctx context.Context, field
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type Priority does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Tag_isHidden(ctx context.Context, field graphql.CollectedField, obj *sqlc.Tag) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Tag_isHidden(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.IsHidden, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(bool)
+	fc.Result = res
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Tag_isHidden(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Tag",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -12232,6 +12293,13 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 		case "priority":
 
 			out.Values[i] = ec._Tag_priority(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "isHidden":
+
+			out.Values[i] = ec._Tag_isHidden(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++

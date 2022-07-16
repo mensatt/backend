@@ -15,9 +15,9 @@ import (
 type Priority string
 
 const (
-	PriorityLOW    Priority = "LOW"
+	PriorityLOWER  Priority = "LOWER"
 	PriorityMEDIUM Priority = "MEDIUM"
-	PriorityHIGH   Priority = "HIGH"
+	PriorityHIGHER Priority = "HIGHER"
 )
 
 func (e *Priority) Scan(src interface{}) error {
@@ -134,6 +134,7 @@ type Tag struct {
 	Description string         `json:"description"`
 	ShortName   sql.NullString `json:"short_name"`
 	Priority    Priority       `json:"priority"`
+	IsHidden    bool           `json:"is_hidden"`
 	IsAllergy   bool           `json:"is_allergy"`
 }
 
