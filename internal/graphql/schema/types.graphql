@@ -1,4 +1,5 @@
 enum Priority {
+    HIDE
     LOW
     MEDIUM
     HIGH
@@ -17,7 +18,7 @@ type Tag {
     name: String!
     description: String!
     shortName: String
-    priority: Priority
+    priority: Priority!
     isAllergy: Boolean!
 }
 
