@@ -16,14 +16,14 @@ CREATE TABLE dish_alias (
     FOREIGN KEY (dish) REFERENCES dish(id)
 );
 
-CREATE TYPE priority AS ENUM ('UNSET', 'LOW', 'MEDIUM', 'HIGH');
+CREATE TYPE priority AS ENUM ('HIDE', 'LOW', 'MEDIUM', 'HIGH');
 
 CREATE TABLE tag (
     key varchar,
     name varchar NOT NULL,
     description varchar NOT NULL,
     short_name varchar,
-    priority priority DEFAULT 'UNSET' NOT NULL,
+    priority priority DEFAULT 'HIDE' NOT NULL,
     is_allergy boolean DEFAULT FALSE NOT NULL,
     PRIMARY KEY (key)
 );
