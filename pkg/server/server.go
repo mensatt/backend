@@ -6,7 +6,6 @@ import (
 	sentrygin "github.com/getsentry/sentry-go/gin"
 	"github.com/jackc/pgx/v4/pgxpool"
 
-	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/graphql"
@@ -30,17 +29,13 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 
 	database := db.NewExtended(pool)
 
-	
 	if !config.DebugEnabled {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
 	app := gin.Default()
 
-	corsConfig := cors.DefaultConfig()
-	corsConfig.AllowAllOrigins = true
-	corsConfig.AddAllowHeaders("Authorization")
-	app.Use(cors.New(corsConfig))
+	app.Use(cors)
 
 	app.Use(sentrygin.New(sentrygin.Options{}))
 	app.Use(middleware.Auth(middleware.AuthParams{
