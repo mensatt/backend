@@ -86,7 +86,7 @@ CREATE TABLE review (
     accepted_at timestamptz,
     PRIMARY KEY (id),
     FOREIGN KEY(occurrence) REFERENCES occurrence(id),
-    CONSTRAINT stars CHECK (stars >= 0 AND stars <= 10)
+    CONSTRAINT stars CHECK (stars >= 1 AND stars <= 5)
 );
 
 CREATE TABLE image (
