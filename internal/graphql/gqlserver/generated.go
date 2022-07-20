@@ -1485,7 +1485,7 @@ type OccurrenceTag {
 type Review {
     id: UUID!
     occurrence: Occurrence!
-    displayName: String!
+    displayName: String
     images: [Image!]!
     stars: Int!
     text: String
@@ -6682,14 +6682,11 @@ func (ec *executionContext) _Review_displayName(ctx context.Context, field graph
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(sql.NullString)
 	fc.Result = res
-	return ec.marshalNString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
+	return ec.marshalOString2databaseᚋsqlᚐNullString(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_displayName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11469,9 +11466,6 @@ func (ec *executionContext) _Review(ctx context.Context, sel ast.SelectionSet, o
 
 			out.Values[i] = ec._Review_displayName(ctx, field, obj)
 
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "images":
 			field := field
 

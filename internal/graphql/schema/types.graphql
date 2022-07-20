@@ -82,7 +82,7 @@ type OccurrenceTag {
 type Review {
     id: UUID!
     occurrence: Occurrence!
-    displayName: String!
+    displayName: String
     images: [Image!]!
     stars: Int!
     text: String
