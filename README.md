@@ -1,5 +1,8 @@
 # Mensatt Backend
 
+[![Build & Deploy](https://github.com/mensatt/backend/actions/workflows/go.yml/badge.svg)](https://github.com/mensatt/backend/actions/workflows/go.yml)
+[![Deployment](https://github.com/mensatt/backend/actions/workflows/deploy-main-in-dev-env.yml/badge.svg)](https://github.com/mensatt/backend/actions/workflows/deploy-main-in-dev-env.yml)
+
 The backend repository for Mensatt written in go.
 
 ## Requirements
