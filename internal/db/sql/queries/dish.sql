@@ -12,7 +12,7 @@ SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
 FROM review
 JOIN occurrence ON (review.occurrence = occurrence.id)
 JOIN dish ON (occurrence.dish = dish.id)
-WHERE dish.id = $1;
+WHERE dish.id = $1 AND review.accepted_at IS NOT NULL;
 
 -- name: CreateDish :one
 INSERT INTO dish (name_de, name_en)
