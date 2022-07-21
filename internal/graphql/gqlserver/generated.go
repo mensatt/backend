@@ -1293,7 +1293,7 @@ input RemoveSideDishFromOccurrenceInput {
 
 input CreateReviewInput {
     occurrence: UUID!
-    displayName: String!
+    displayName: String
     stars: Int!
     text: String
 }
@@ -9738,7 +9738,7 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
-			it.DisplayName, err = ec.unmarshalNString2databaseᚋsqlᚐNullString(ctx, v)
+			it.DisplayName, err = ec.unmarshalOString2databaseᚋsqlᚐNullString(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -12543,21 +12543,6 @@ func (ec *executionContext) unmarshalNReviewStatus2githubᚗcomᚋmensattᚋback
 
 func (ec *executionContext) marshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.ReviewStatus) graphql.Marshaler {
 	res := scalars.MarshalReviewStatus(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNString2databaseᚋsqlᚐNullString(ctx context.Context, v interface{}) (sql.NullString, error) {
-	res, err := scalars.UnmarshalNullString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNString2databaseᚋsqlᚐNullString(ctx context.Context, sel ast.SelectionSet, v sql.NullString) graphql.Marshaler {
-	res := scalars.MarshalNullString(v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
