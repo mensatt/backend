@@ -123,7 +123,7 @@ input RemoveSideDishFromOccurrenceInput {
 
 input CreateReviewInput {
     occurrence: UUID!
-    displayName: String!
+    displayName: String
     stars: Int!
     text: String
 }
