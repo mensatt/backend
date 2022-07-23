@@ -34,7 +34,7 @@ WHERE occurrence.id = $1;
 
 -- name: GetImagesForOccurrence :many
 SELECT image.*
-FROM occurrence JOIN image ON occurrence.id = image.occurrence
+FROM occurrence JOIN review ON occurrence.id = review.occurrence JOIN image on review.id = image.review
 WHERE occurrence.id = $1;
 
 -- name: GetOccurrenceReviewMetadata :one
