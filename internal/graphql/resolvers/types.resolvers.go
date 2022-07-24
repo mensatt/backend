@@ -7,30 +7,19 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgtype"
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
+	"github.com/mensatt/backend/internal/graphql/models"
 )
 
 func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error) {
 	return r.Database.GetAliasesForDish(ctx, obj.ID)
 }
 
-func (r *dishResolver) Reviews(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Review, error) {
-	return r.Database.GetReviewsByDish(ctx, obj.ID)
-}
-
-func (r *dishResolver) ReviewMetadata(ctx context.Context, obj *sqlc.Dish) (*sqlc.GetOccurrenceReviewMetadataRow, error) {
-	m, err := r.Database.GetDishReviewMetadata(ctx, obj.ID)
-	// should be done differently, but for now this is fine
-	return &sqlc.GetOccurrenceReviewMetadataRow{
-		AverageStars: m.AverageStars,
-		ReviewCount:  m.ReviewCount,
-	}, err
-}
-
-func (r *dishResolver) Images(ctx context.Context, obj *sqlc.Dish) ([]*sqlc.Image, error) {
-	return r.Database.GetImagesByDish(ctx, obj.ID)
+func (r *dishResolver) ReviewData(ctx context.Context, obj *sqlc.Dish) (*models.ReviewDataDish, error) {
+	return &models.ReviewDataDish{
+		DishID: obj.ID,
+	}, nil
 }
 
 func (r *imageResolver) Review(ctx context.Context, obj *sqlc.Image) (*sqlc.Review, error) {
@@ -57,16 +46,10 @@ func (r *occurrenceResolver) Tags(ctx context.Context, obj *sqlc.Occurrence) ([]
 	return r.Database.GetTagsForOccurrence(ctx, obj.ID)
 }
 
-func (r *occurrenceResolver) Reviews(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Review, error) {
-	return r.Database.GetReviewsForOccurrence(ctx, obj.ID)
-}
-
-func (r *occurrenceResolver) ReviewMetadata(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.GetOccurrenceReviewMetadataRow, error) {
-	return r.Database.GetOccurrenceReviewMetadata(ctx, obj.ID)
-}
-
-func (r *occurrenceResolver) Images(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Image, error) {
-	return r.Database.GetImagesForOccurrence(ctx, obj.ID)
+func (r *occurrenceResolver) ReviewData(ctx context.Context, obj *sqlc.Occurrence) (*models.ReviewDataOccurrence, error) {
+	return &models.ReviewDataOccurrence{
+		OccurrenceID: obj.ID,
+	}, nil
 }
 
 func (r *occurrenceSideDishResolver) Occurrence(ctx context.Context, obj *sqlc.OccurrenceSideDish) (*sqlc.Occurrence, error) {
@@ -93,14 +76,28 @@ func (r *reviewResolver) Images(ctx context.Context, obj *sqlc.Review) ([]*sqlc.
 	return r.Database.GetImagesByReview(ctx, obj.ID)
 }
 
-func (r *reviewMetadataResolver) AverageStars(ctx context.Context, obj *sqlc.GetOccurrenceReviewMetadataRow) (*float64, error) {
-	if obj.AverageStars.Status == pgtype.Null {
-		return nil, nil
-	}
+func (r *reviewDataDishResolver) Reviews(ctx context.Context, obj *models.ReviewDataDish) ([]*sqlc.Review, error) {
+	return r.Database.GetReviewsForOccurrence(ctx, obj.DishID)
+}
 
-	var f float64
-	err := obj.AverageStars.AssignTo(&f)
-	return &f, err
+func (r *reviewDataDishResolver) Metadata(ctx context.Context, obj *models.ReviewDataDish) (*sqlc.GetDishReviewMetadataRow, error) {
+	return r.Database.GetDishReviewMetadata(ctx, obj.DishID)
+}
+
+func (r *reviewDataOccurrenceResolver) Reviews(ctx context.Context, obj *models.ReviewDataOccurrence) ([]*sqlc.Review, error) {
+	return r.Database.GetReviewsForOccurrence(ctx, obj.OccurrenceID)
+}
+
+func (r *reviewDataOccurrenceResolver) Metadata(ctx context.Context, obj *models.ReviewDataOccurrence) (*sqlc.GetOccurrenceReviewMetadataRow, error) {
+	return r.Database.GetOccurrenceReviewMetadata(ctx, obj.OccurrenceID)
+}
+
+func (r *reviewMetadataDishResolver) AverageStars(ctx context.Context, obj *sqlc.GetDishReviewMetadataRow) (*float64, error) {
+	return pgtypeNumericToFloat(obj.AverageStars)
+}
+
+func (r *reviewMetadataOccurrenceResolver) AverageStars(ctx context.Context, obj *sqlc.GetOccurrenceReviewMetadataRow) (*float64, error) {
+	return pgtypeNumericToFloat(obj.AverageStars)
 }
 
 // Dish returns gqlserver.DishResolver implementation.
@@ -123,9 +120,24 @@ func (r *Resolver) OccurrenceTag() gqlserver.OccurrenceTagResolver { return &occ
 // Review returns gqlserver.ReviewResolver implementation.
 func (r *Resolver) Review() gqlserver.ReviewResolver { return &reviewResolver{r} }
 
-// ReviewMetadata returns gqlserver.ReviewMetadataResolver implementation.
-func (r *Resolver) ReviewMetadata() gqlserver.ReviewMetadataResolver {
-	return &reviewMetadataResolver{r}
+// ReviewDataDish returns gqlserver.ReviewDataDishResolver implementation.
+func (r *Resolver) ReviewDataDish() gqlserver.ReviewDataDishResolver {
+	return &reviewDataDishResolver{r}
+}
+
+// ReviewDataOccurrence returns gqlserver.ReviewDataOccurrenceResolver implementation.
+func (r *Resolver) ReviewDataOccurrence() gqlserver.ReviewDataOccurrenceResolver {
+	return &reviewDataOccurrenceResolver{r}
+}
+
+// ReviewMetadataDish returns gqlserver.ReviewMetadataDishResolver implementation.
+func (r *Resolver) ReviewMetadataDish() gqlserver.ReviewMetadataDishResolver {
+	return &reviewMetadataDishResolver{r}
+}
+
+// ReviewMetadataOccurrence returns gqlserver.ReviewMetadataOccurrenceResolver implementation.
+func (r *Resolver) ReviewMetadataOccurrence() gqlserver.ReviewMetadataOccurrenceResolver {
+	return &reviewMetadataOccurrenceResolver{r}
 }
 
 type dishResolver struct{ *Resolver }
@@ -134,4 +146,7 @@ type occurrenceResolver struct{ *Resolver }
 type occurrenceSideDishResolver struct{ *Resolver }
 type occurrenceTagResolver struct{ *Resolver }
 type reviewResolver struct{ *Resolver }
-type reviewMetadataResolver struct{ *Resolver }
+type reviewDataDishResolver struct{ *Resolver }
+type reviewDataOccurrenceResolver struct{ *Resolver }
+type reviewMetadataDishResolver struct{ *Resolver }
+type reviewMetadataOccurrenceResolver struct{ *Resolver }

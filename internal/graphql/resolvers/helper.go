@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"time"
 
+	"github.com/jackc/pgtype"
 	"github.com/mensatt/backend/internal/graphql/models"
 )
 
@@ -27,4 +28,14 @@ func approvedBoolToNullTime(approved bool) sql.NullTime {
 		return sql.NullTime{Valid: true, Time: time.Now()}
 	}
 	return sql.NullTime{Valid: false}
+}
+
+func pgtypeNumericToFloat(numeric pgtype.Numeric) (*float64, error) {
+	if numeric.Status == pgtype.Null {
+		return nil, nil
+	}
+
+	var f float64
+	err := numeric.AssignTo(&f)
+	return &f, err
 }
