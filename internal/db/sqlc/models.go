@@ -12,6 +12,28 @@ import (
 	"github.com/google/uuid"
 )
 
+type OccurrenceStatus string
+
+const (
+	OccurrenceStatusCONFIRMED        OccurrenceStatus = "CONFIRMED"
+	OccurrenceStatusAPPROVED         OccurrenceStatus = "APPROVED"
+	OccurrenceStatusAWAITINGAPPROVAL OccurrenceStatus = "AWAITING_APPROVAL"
+	OccurrenceStatusUPDATED          OccurrenceStatus = "UPDATED"
+	OccurrenceStatusPENDINGDELETION  OccurrenceStatus = "PENDING_DELETION"
+)
+
+func (e *OccurrenceStatus) Scan(src interface{}) error {
+	switch s := src.(type) {
+	case []byte:
+		*e = OccurrenceStatus(s)
+	case string:
+		*e = OccurrenceStatus(s)
+	default:
+		return fmt.Errorf("unsupported scan type for OccurrenceStatus: %T", src)
+	}
+	return nil
+}
+
 type Priority string
 
 const (
@@ -29,28 +51,6 @@ func (e *Priority) Scan(src interface{}) error {
 		*e = Priority(s)
 	default:
 		return fmt.Errorf("unsupported scan type for Priority: %T", src)
-	}
-	return nil
-}
-
-type ReviewStatus string
-
-const (
-	ReviewStatusCONFIRMED        ReviewStatus = "CONFIRMED"
-	ReviewStatusAPPROVED         ReviewStatus = "APPROVED"
-	ReviewStatusAWAITINGAPPROVAL ReviewStatus = "AWAITING_APPROVAL"
-	ReviewStatusUPDATED          ReviewStatus = "UPDATED"
-	ReviewStatusPENDINGDELETION  ReviewStatus = "PENDING_DELETION"
-)
-
-func (e *ReviewStatus) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = ReviewStatus(s)
-	case string:
-		*e = ReviewStatus(s)
-	default:
-		return fmt.Errorf("unsupported scan type for ReviewStatus: %T", src)
 	}
 	return nil
 }
@@ -80,23 +80,23 @@ type Location struct {
 }
 
 type Occurrence struct {
-	ID            uuid.UUID     `json:"id"`
-	Location      uuid.UUID     `json:"location"`
-	Dish          uuid.UUID     `json:"dish"`
-	Date          time.Time     `json:"date"`
-	ReviewStatus  ReviewStatus  `json:"review_status"`
-	Kj            sql.NullInt32 `json:"kj"`
-	Kcal          sql.NullInt32 `json:"kcal"`
-	Fat           sql.NullInt32 `json:"fat"`
-	SaturatedFat  sql.NullInt32 `json:"saturated_fat"`
-	Carbohydrates sql.NullInt32 `json:"carbohydrates"`
-	Sugar         sql.NullInt32 `json:"sugar"`
-	Fiber         sql.NullInt32 `json:"fiber"`
-	Protein       sql.NullInt32 `json:"protein"`
-	Salt          sql.NullInt32 `json:"salt"`
-	PriceStudent  sql.NullInt32 `json:"price_student"`
-	PriceStaff    sql.NullInt32 `json:"price_staff"`
-	PriceGuest    sql.NullInt32 `json:"price_guest"`
+	ID            uuid.UUID        `json:"id"`
+	Location      uuid.UUID        `json:"location"`
+	Dish          uuid.UUID        `json:"dish"`
+	Date          time.Time        `json:"date"`
+	Status        OccurrenceStatus `json:"status"`
+	Kj            sql.NullInt32    `json:"kj"`
+	Kcal          sql.NullInt32    `json:"kcal"`
+	Fat           sql.NullInt32    `json:"fat"`
+	SaturatedFat  sql.NullInt32    `json:"saturated_fat"`
+	Carbohydrates sql.NullInt32    `json:"carbohydrates"`
+	Sugar         sql.NullInt32    `json:"sugar"`
+	Fiber         sql.NullInt32    `json:"fiber"`
+	Protein       sql.NullInt32    `json:"protein"`
+	Salt          sql.NullInt32    `json:"salt"`
+	PriceStudent  sql.NullInt32    `json:"price_student"`
+	PriceStaff    sql.NullInt32    `json:"price_staff"`
+	PriceGuest    sql.NullInt32    `json:"price_guest"`
 }
 
 type OccurrenceSideDish struct {
