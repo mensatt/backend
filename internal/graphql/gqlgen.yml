@@ -151,7 +151,7 @@ models:
   # Review
   CreateReviewInput:
     model:
-      - github.com/mensatt/backend/internal/db/sqlc.CreateReviewParams
+      - github.com/mensatt/backend/internal/db.CreateReviewWithImagesParams
   UpdateReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.UpdateReviewParams
