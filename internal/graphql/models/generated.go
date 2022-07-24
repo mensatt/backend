@@ -3,15 +3,22 @@
 package models
 
 import (
+	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 )
+
+type AddImagesToReviewInput struct {
+	Review uuid.UUID     `json:"review"`
+	Images []*ImageInput `json:"images"`
+}
 
 type DeleteDishAliasInput struct {
 	Alias string `json:"alias"`
 }
 
-type DeleteImageInput struct {
-	ID uuid.UUID `json:"id"`
+type DeleteImageToReviewInput struct {
+	Review uuid.UUID `json:"review"`
+	ID     uuid.UUID `json:"id"`
 }
 
 type DeleteOccurrenceInput struct {
@@ -20,6 +27,10 @@ type DeleteOccurrenceInput struct {
 
 type DeleteReviewInput struct {
 	ID uuid.UUID `json:"id"`
+}
+
+type ImageInput struct {
+	Image graphql.Upload `json:"image"`
 }
 
 type LoginUserInput struct {

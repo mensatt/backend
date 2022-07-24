@@ -33,21 +33,14 @@ SELECT image_store_id
 FROM image
 WHERE id = $1;
 
--- name: CreateImage :one
-INSERT INTO image (image_store_id, review)
+-- name: AddImageToReview :one
+INSERT INTO image (review, image_store_id)
 VALUES ($1, $2)
 RETURNING *;
 
--- -- name: UpdateImage :one
--- UPDATE image
--- SET
---     occurrence = COALESCE(sqlc.narg('occurrence'), occurrence),
---     display_name = COALESCE(sqlc.narg('display_name'), display_name),
---     description = COALESCE(sqlc.narg('description'), description),
---     updated_at = NOW(),
---     accepted_at = COALESCE(sqlc.narg('accepted_at'), accepted_at)
--- WHERE id = $1
--- RETURNING *;
+-- name: AddMultipleImagesToReview :copyfrom
+INSERT INTO image (review, image_store_id)
+VALUES ($1, $2);
 
 -- name: DeleteImage :one
 DELETE FROM image

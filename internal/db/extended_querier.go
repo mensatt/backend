@@ -11,6 +11,7 @@ import (
 type ExtendedQuerier interface {
 	sqlc.Querier
 	CreateOccurrenceWithSideDishesAndTags(ctx context.Context, occParams *sqlc.CreateOccurrenceParams, sideDishes []uuid.UUID, tags []string) (*sqlc.Occurrence, error)
+	CreateReviewWithImages(ctx context.Context, reviewParams *CreateReviewWithImagesParams) (*sqlc.Review, error) 
 }
 
 var _ ExtendedQuerier = (*ExtendedQueries)(nil)
@@ -74,4 +75,51 @@ func (eq *ExtendedQueries) CreateOccurrenceWithSideDishesAndTags(ctx context.Con
 	}
 
 	return occ, nil
+}
+
+type CreateImageParams struct {
+	ImageStoreID string    `json:"image_store_id"`
+}
+
+type CreateReviewWithImagesParams struct {
+	*sqlc.CreateReviewParams
+	Images []*CreateImageParams
+}
+
+func (eq *ExtendedQueries) CreateReviewWithImages(ctx context.Context, reviewParams *CreateReviewWithImagesParams) (*sqlc.Review, error) {
+	tx, err := eq.pool.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		if err != nil {
+			tx.Rollback(ctx)
+		} else {
+			tx.Commit(ctx)
+		}
+	}()
+
+	qtx := eq.WithTx(tx)
+
+	review, err := qtx.CreateReview(ctx, reviewParams.CreateReviewParams)
+	if err != nil {
+		return nil, err
+	}
+
+	addImagesToReviewParams := make([]*sqlc.AddMultipleImagesToReviewParams , len(reviewParams.Images))
+
+	for i, imageParam := range reviewParams.Images {
+		addImagesToReviewParams[i] = &sqlc.AddMultipleImagesToReviewParams {
+			Review: review.ID,
+			ImageStoreID: imageParam.ImageStoreID,
+		}
+	}
+
+	_, err = qtx.AddMultipleImagesToReview(ctx, addImagesToReviewParams)
+	if err != nil {
+		return nil, err
+	}
+
+	return review, nil
 }

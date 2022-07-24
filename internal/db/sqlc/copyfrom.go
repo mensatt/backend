@@ -9,6 +9,39 @@ import (
 	"context"
 )
 
+// iteratorForAddMultipleImagesToReview implements pgx.CopyFromSource.
+type iteratorForAddMultipleImagesToReview struct {
+	rows                 []*AddMultipleImagesToReviewParams
+	skippedFirstNextCall bool
+}
+
+func (r *iteratorForAddMultipleImagesToReview) Next() bool {
+	if len(r.rows) == 0 {
+		return false
+	}
+	if !r.skippedFirstNextCall {
+		r.skippedFirstNextCall = true
+		return true
+	}
+	r.rows = r.rows[1:]
+	return len(r.rows) > 0
+}
+
+func (r iteratorForAddMultipleImagesToReview) Values() ([]interface{}, error) {
+	return []interface{}{
+		r.rows[0].Review,
+		r.rows[0].ImageStoreID,
+	}, nil
+}
+
+func (r iteratorForAddMultipleImagesToReview) Err() error {
+	return nil
+}
+
+func (q *Queries) AddMultipleImagesToReview(ctx context.Context, arg []*AddMultipleImagesToReviewParams) (int64, error) {
+	return q.db.CopyFrom(ctx, []string{"image"}, []string{"review", "image_store_id"}, &iteratorForAddMultipleImagesToReview{rows: arg})
+}
+
 // iteratorForAddMultipleOccurrenceSideDishes implements pgx.CopyFromSource.
 type iteratorForAddMultipleOccurrenceSideDishes struct {
 	rows                 []*AddMultipleOccurrenceSideDishesParams

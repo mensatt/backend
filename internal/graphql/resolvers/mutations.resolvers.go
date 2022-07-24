@@ -6,8 +6,8 @@ package resolvers
 import (
 	"context"
 	"errors"
-	"io/ioutil"
 
+	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/models"
@@ -79,8 +79,8 @@ func (r *mutationResolver) RemoveSideDishFromOccurrence(ctx context.Context, inp
 	return r.Database.RemoveOccurrenceSideDish(ctx, &input)
 }
 
-func (r *mutationResolver) CreateReview(ctx context.Context, input sqlc.CreateReviewParams) (*sqlc.Review, error) {
-	return r.Database.CreateReview(ctx, &input)
+func (r *mutationResolver) CreateReview(ctx context.Context, input db.CreateReviewWithImagesParams) (*sqlc.Review, error) {
+	return r.Database.CreateReviewWithImages(ctx, &input)
 }
 
 func (r *mutationResolver) UpdateReview(ctx context.Context, input sqlc.UpdateReviewParams) (*sqlc.Review, error) {
@@ -89,39 +89,6 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input sqlc.UpdateRe
 
 func (r *mutationResolver) DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*sqlc.Review, error) {
 	return r.Database.DeleteReview(ctx, input.ID)
-}
-
-func (r *mutationResolver) CreateImage(ctx context.Context, input models.CreateImageInputHelper) (*sqlc.Image, error) {
-	if input.Image.Size > r.ImageProcessor.GetMaxImageSize() {
-		return nil, errors.New("image size is too big")
-	}
-
-	imageBytes, err := ioutil.ReadAll(input.Image.File)
-	if err != nil {
-		return nil, err
-	}
-	imageStoreID, err := r.ImageProcessor.StoreImage(imageBytes)
-	if err != nil {
-		return nil, err
-	}
-	input.ImageStoreID = imageStoreID
-	return r.Database.CreateImage(ctx, &input.CreateImageParams)
-}
-
-func (r *mutationResolver) DeleteImage(ctx context.Context, input models.DeleteImageInput) (*sqlc.Image, error) {
-	imageStoreID, err := r.Database.GetImageStoreIDByID(ctx, input.ID)
-	if err != nil {
-		return nil, err
-	}
-	image, err := r.Database.DeleteImage(ctx, input.ID)
-	if err != nil {
-		return nil, err
-	}
-	err = r.ImageProcessor.RemoveImage(imageStoreID)
-	if err != nil {
-		return nil, err
-	}
-	return image, nil
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.

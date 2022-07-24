@@ -12,27 +12,18 @@ import (
 )
 
 type Querier interface {
+	AddImageToReview(ctx context.Context, arg *AddImageToReviewParams) (*Image, error)
+	AddMultipleImagesToReview(ctx context.Context, arg []*AddMultipleImagesToReviewParams) (int64, error)
 	AddMultipleOccurrenceSideDishes(ctx context.Context, arg []*AddMultipleOccurrenceSideDishesParams) (int64, error)
 	AddMultipleOccurrenceTags(ctx context.Context, arg []*AddMultipleOccurrenceTagsParams) (int64, error)
 	AddOccurrenceSideDish(ctx context.Context, arg *AddOccurrenceSideDishParams) (*OccurrenceSideDish, error)
 	AddOccurrenceTag(ctx context.Context, arg *AddOccurrenceTagParams) (*OccurrenceTag, error)
 	CreateDish(ctx context.Context, arg *CreateDishParams) (*Dish, error)
 	CreateDishAlias(ctx context.Context, arg *CreateDishAliasParams) (*DishAlias, error)
-	CreateImage(ctx context.Context, arg *CreateImageParams) (*Image, error)
 	CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error)
 	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
 	DeleteDishAlias(ctx context.Context, aliasName string) (*DishAlias, error)
-	// -- name: UpdateImage :one
-	// UPDATE image
-	// SET
-	//     occurrence = COALESCE(sqlc.narg('occurrence'), occurrence),
-	//     display_name = COALESCE(sqlc.narg('display_name'), display_name),
-	//     description = COALESCE(sqlc.narg('description'), description),
-	//     updated_at = NOW(),
-	//     accepted_at = COALESCE(sqlc.narg('accepted_at'), accepted_at)
-	// WHERE id = $1
-	// RETURNING *;
 	DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
 	DeleteReview(ctx context.Context, id uuid.UUID) (*Review, error)

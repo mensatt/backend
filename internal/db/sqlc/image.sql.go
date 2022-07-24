@@ -11,41 +11,35 @@ import (
 	"github.com/google/uuid"
 )
 
-const createImage = `-- name: CreateImage :one
-INSERT INTO image (image_store_id, review)
+const addImageToReview = `-- name: AddImageToReview :one
+INSERT INTO image (review, image_store_id)
 VALUES ($1, $2)
 RETURNING id, image_store_id, review
 `
 
-type CreateImageParams struct {
-	ImageStoreID string    `json:"image_store_id"`
+type AddImageToReviewParams struct {
 	Review       uuid.UUID `json:"review"`
+	ImageStoreID string    `json:"image_store_id"`
 }
 
-func (q *Queries) CreateImage(ctx context.Context, arg *CreateImageParams) (*Image, error) {
-	row := q.db.QueryRow(ctx, createImage, arg.ImageStoreID, arg.Review)
+func (q *Queries) AddImageToReview(ctx context.Context, arg *AddImageToReviewParams) (*Image, error) {
+	row := q.db.QueryRow(ctx, addImageToReview, arg.Review, arg.ImageStoreID)
 	var i Image
 	err := row.Scan(&i.ID, &i.ImageStoreID, &i.Review)
 	return &i, err
 }
 
-const deleteImage = `-- name: DeleteImage :one
+type AddMultipleImagesToReviewParams struct {
+	Review       uuid.UUID `json:"review"`
+	ImageStoreID string    `json:"image_store_id"`
+}
 
+const deleteImage = `-- name: DeleteImage :one
 DELETE FROM image
 WHERE id = $1
 RETURNING id, image_store_id, review
 `
 
-// -- name: UpdateImage :one
-// UPDATE image
-// SET
-//     occurrence = COALESCE(sqlc.narg('occurrence'), occurrence),
-//     display_name = COALESCE(sqlc.narg('display_name'), display_name),
-//     description = COALESCE(sqlc.narg('description'), description),
-//     updated_at = NOW(),
-//     accepted_at = COALESCE(sqlc.narg('accepted_at'), accepted_at)
-// WHERE id = $1
-// RETURNING *;
 func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error) {
 	row := q.db.QueryRow(ctx, deleteImage, id)
 	var i Image

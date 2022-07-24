@@ -30,6 +30,6 @@ type Mutation {
     deleteReview(input: DeleteReviewInput!): Review! @authenticated
 
     # Image
-    createImage(input: CreateImageInput!): Image!
-    deleteImage(input: DeleteImageInput!): Image! 
+    # addImagesToReview(input: AddImagesToReviewInput!): Review!
+    # deleteImageFromReview(input: DeleteImageToReviewInput!): Image! 
 }
