@@ -10,3 +10,11 @@ type CreateOccurrenceInputHelper struct {
 	SideDishes []uuid.UUID `json:"sideDishes"`
 	Tags       []string    `json:"tags"`
 }
+
+type ReviewDataDish struct {
+	DishID uuid.UUID `json:"-"`
+}
+
+type ReviewDataOccurrence struct {
+	OccurrenceID uuid.UUID `json:"-"`
+}

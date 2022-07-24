@@ -155,6 +155,18 @@ models:
   UpdateReviewInput:
     model:
       - github.com/mensatt/backend/internal/db/sqlc.UpdateReviewParams
+  ReviewDataDish:
+    model:
+      - github.com/mensatt/backend/internal/graphql/models.ReviewDataDish
+  ReviewDataOccurrence:
+    model:
+      - github.com/mensatt/backend/internal/graphql/models.ReviewDataOccurrence
+  ReviewMetadataDish:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.GetDishReviewMetadataRow
+  ReviewMetadataOccurrence:
+    model:
+      - github.com/mensatt/backend/internal/db/sqlc.GetOccurrenceReviewMetadataRow
 
   # Input helper types      
   CreateOccurrenceInput:
