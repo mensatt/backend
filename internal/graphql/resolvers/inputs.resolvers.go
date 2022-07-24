@@ -12,6 +12,7 @@ import (
 	"github.com/mensatt/backend/internal/graphql/models"
 )
 
+// Images is the resolver for the images field.
 func (r *createReviewInputResolver) Images(ctx context.Context, obj *db.CreateReviewWithImagesParams, data []*models.ImageInput) error {
 	if len(data) == 0 {
 		return nil
@@ -33,6 +34,7 @@ func (r *createReviewInputResolver) Images(ctx context.Context, obj *db.CreateRe
 	return nil
 }
 
+// Approved is the resolver for the approved field.
 func (r *updateReviewInputResolver) Approved(ctx context.Context, obj *sqlc.UpdateReviewParams, data *bool) error {
 	obj.AcceptedAt = approvedBoolToNullTime(data == nil && *data)
 	return nil

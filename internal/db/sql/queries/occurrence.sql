@@ -2,6 +2,14 @@
 SELECT *
 FROM occurrence;
 
+-- name: GetFilteredOccurrences :many
+SELECT *
+FROM occurrence
+WHERE
+    (date >= sqlc.narg('startDate') OR sqlc.narg('startDate') IS NULL)
+    AND (date <= sqlc.narg('endDate') OR sqlc.narg('endDate') IS NULL)
+    AND (status = sqlc.narg('status') OR sqlc.narg('status') IS NULL);
+
 -- name: GetOccurrenceByID :one
 SELECT * 
 FROM occurrence

@@ -155,6 +155,59 @@ func (q *Queries) GetAllOccurrences(ctx context.Context) ([]*Occurrence, error) 
 	return items, nil
 }
 
+const getFilteredOccurrences = `-- name: GetFilteredOccurrences :many
+SELECT id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+FROM occurrence
+WHERE
+    (date >= $1 OR $1 IS NULL)
+    AND (date <= $2 OR $2 IS NULL)
+    AND (status = $3 OR $3 IS NULL)
+`
+
+type GetFilteredOccurrencesParams struct {
+	StartDate sql.NullTime         `json:"startDate"`
+	EndDate   sql.NullTime         `json:"endDate"`
+	Status    NullOccurrenceStatus `json:"status"`
+}
+
+func (q *Queries) GetFilteredOccurrences(ctx context.Context, arg *GetFilteredOccurrencesParams) ([]*Occurrence, error) {
+	rows, err := q.db.Query(ctx, getFilteredOccurrences, arg.StartDate, arg.EndDate, arg.Status)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Occurrence
+	for rows.Next() {
+		var i Occurrence
+		if err := rows.Scan(
+			&i.ID,
+			&i.Location,
+			&i.Dish,
+			&i.Date,
+			&i.Status,
+			&i.Kj,
+			&i.Kcal,
+			&i.Fat,
+			&i.SaturatedFat,
+			&i.Carbohydrates,
+			&i.Sugar,
+			&i.Fiber,
+			&i.Protein,
+			&i.Salt,
+			&i.PriceStudent,
+			&i.PriceStaff,
+			&i.PriceGuest,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getImagesForOccurrence = `-- name: GetImagesForOccurrence :many
 SELECT image.id, image.image_store_id, image.review
 FROM occurrence JOIN review ON occurrence.id = review.occurrence JOIN image on review.id = image.review
@@ -437,22 +490,22 @@ RETURNING id, location, dish, date, status, kj, kcal, fat, saturated_fat, carboh
 `
 
 type UpdateOccurrenceParams struct {
-	ID            uuid.UUID        `json:"id"`
-	Dish          uuid.NullUUID    `json:"dish"`
-	Date          sql.NullTime     `json:"date"`
-	Status        OccurrenceStatus `json:"status"`
-	Kj            sql.NullInt32    `json:"kj"`
-	Kcal          sql.NullInt32    `json:"kcal"`
-	Fat           sql.NullInt32    `json:"fat"`
-	SaturatedFat  sql.NullInt32    `json:"saturated_fat"`
-	Carbohydrates sql.NullInt32    `json:"carbohydrates"`
-	Sugar         sql.NullInt32    `json:"sugar"`
-	Fiber         sql.NullInt32    `json:"fiber"`
-	Protein       sql.NullInt32    `json:"protein"`
-	Salt          sql.NullInt32    `json:"salt"`
-	PriceStudent  sql.NullInt32    `json:"price_student"`
-	PriceStaff    sql.NullInt32    `json:"price_staff"`
-	PriceGuest    sql.NullInt32    `json:"price_guest"`
+	ID            uuid.UUID            `json:"id"`
+	Dish          uuid.NullUUID        `json:"dish"`
+	Date          sql.NullTime         `json:"date"`
+	Status        NullOccurrenceStatus `json:"status"`
+	Kj            sql.NullInt32        `json:"kj"`
+	Kcal          sql.NullInt32        `json:"kcal"`
+	Fat           sql.NullInt32        `json:"fat"`
+	SaturatedFat  sql.NullInt32        `json:"saturated_fat"`
+	Carbohydrates sql.NullInt32        `json:"carbohydrates"`
+	Sugar         sql.NullInt32        `json:"sugar"`
+	Fiber         sql.NullInt32        `json:"fiber"`
+	Protein       sql.NullInt32        `json:"protein"`
+	Salt          sql.NullInt32        `json:"salt"`
+	PriceStudent  sql.NullInt32        `json:"price_student"`
+	PriceStaff    sql.NullInt32        `json:"price_staff"`
+	PriceGuest    sql.NullInt32        `json:"price_guest"`
 }
 
 func (q *Queries) UpdateOccurrence(ctx context.Context, arg *UpdateOccurrenceParams) (*Occurrence, error) {

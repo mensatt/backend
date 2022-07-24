@@ -6,6 +6,7 @@ package sqlc
 
 import (
 	"database/sql"
+	"database/sql/driver"
 	"fmt"
 	"time"
 
@@ -34,6 +35,29 @@ func (e *OccurrenceStatus) Scan(src interface{}) error {
 	return nil
 }
 
+type NullOccurrenceStatus struct {
+	OccurrenceStatus OccurrenceStatus
+	Valid            bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullOccurrenceStatus) Scan(value interface{}) error {
+	if value == nil {
+		ns.OccurrenceStatus, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.OccurrenceStatus.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullOccurrenceStatus) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.OccurrenceStatus, nil
+}
+
 type Priority string
 
 const (
@@ -53,6 +77,29 @@ func (e *Priority) Scan(src interface{}) error {
 		return fmt.Errorf("unsupported scan type for Priority: %T", src)
 	}
 	return nil
+}
+
+type NullPriority struct {
+	Priority Priority
+	Valid    bool // Valid is true if String is not NULL
+}
+
+// Scan implements the Scanner interface.
+func (ns *NullPriority) Scan(value interface{}) error {
+	if value == nil {
+		ns.Priority, ns.Valid = "", false
+		return nil
+	}
+	ns.Valid = true
+	return ns.Priority.Scan(value)
+}
+
+// Value implements the driver Valuer interface.
+func (ns NullPriority) Value() (driver.Value, error) {
+	if !ns.Valid {
+		return nil, nil
+	}
+	return ns.Priority, nil
 }
 
 type Dish struct {
