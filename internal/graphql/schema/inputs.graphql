@@ -135,11 +135,16 @@ input UpdateReviewInput {
     displayName: String
     stars: Int
     text: String
-    acceptedAt: Timestamp
+    approved: Boolean
 }
 
 input DeleteReviewInput {
     id: UUID!
+}
+
+input SetReviewApprovalInput {
+    id: UUID!
+    approved: Boolean!
 }
 
 

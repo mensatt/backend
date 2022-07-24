@@ -37,3 +37,8 @@ type LoginUserInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
+
+type SetReviewApprovalInput struct {
+	ID       uuid.UUID `json:"id"`
+	Approved bool      `json:"approved"`
+}

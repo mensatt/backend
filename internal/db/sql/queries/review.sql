@@ -24,6 +24,12 @@ SET
 WHERE id = $1
 RETURNING *;
 
+-- name: SetReviewApproval :one
+UPDATE review
+SET accepted_at = $1
+WHERE id = $2
+RETURNING *;
+
 -- name: DeleteReview :one
 DELETE FROM review
 WHERE id = $1
