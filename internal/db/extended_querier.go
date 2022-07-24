@@ -11,7 +11,7 @@ import (
 type ExtendedQuerier interface {
 	sqlc.Querier
 	CreateOccurrenceWithSideDishesAndTags(ctx context.Context, occParams *sqlc.CreateOccurrenceParams, sideDishes []uuid.UUID, tags []string) (*sqlc.Occurrence, error)
-	CreateReviewWithImages(ctx context.Context, reviewParams *CreateReviewWithImagesParams) (*sqlc.Review, error) 
+	CreateReviewWithImages(ctx context.Context, reviewParams *CreateReviewWithImagesParams) (*sqlc.Review, error)
 }
 
 var _ ExtendedQuerier = (*ExtendedQueries)(nil)
@@ -78,7 +78,7 @@ func (eq *ExtendedQueries) CreateOccurrenceWithSideDishesAndTags(ctx context.Con
 }
 
 type CreateImageParams struct {
-	ImageStoreID string    `json:"image_store_id"`
+	ImageStoreID string `json:"image_store_id"`
 }
 
 type CreateReviewWithImagesParams struct {
@@ -107,11 +107,11 @@ func (eq *ExtendedQueries) CreateReviewWithImages(ctx context.Context, reviewPar
 		return nil, err
 	}
 
-	addImagesToReviewParams := make([]*sqlc.AddMultipleImagesToReviewParams , len(reviewParams.Images))
+	addImagesToReviewParams := make([]*sqlc.AddMultipleImagesToReviewParams, len(reviewParams.Images))
 
 	for i, imageParam := range reviewParams.Images {
-		addImagesToReviewParams[i] = &sqlc.AddMultipleImagesToReviewParams {
-			Review: review.ID,
+		addImagesToReviewParams[i] = &sqlc.AddMultipleImagesToReviewParams{
+			Review:       review.ID,
 			ImageStoreID: imageParam.ImageStoreID,
 		}
 	}
