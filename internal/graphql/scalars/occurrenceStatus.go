@@ -9,14 +9,14 @@ import (
 	"github.com/mensatt/backend/internal/db/sqlc"
 )
 
-func MarshalReviewStatus(p sqlc.ReviewStatus) graphql.Marshaler {
+func MarshalOccurrenceStatus(p sqlc.OccurrenceStatus) graphql.Marshaler {
 	return graphql.WriterFunc(func(w io.Writer) {
 		w.Write([]byte(strconv.Quote(string(p))))
 	})
 }
 
-func UnmarshalReviewStatus(v interface{}) (sqlc.ReviewStatus, error) {
-	var p sqlc.ReviewStatus
+func UnmarshalOccurrenceStatus(v interface{}) (sqlc.OccurrenceStatus, error) {
+	var p sqlc.OccurrenceStatus
 	if pStr, ok := v.(string); ok {
 		err := p.Scan(pStr)
 		if err != nil {
@@ -24,5 +24,5 @@ func UnmarshalReviewStatus(v interface{}) (sqlc.ReviewStatus, error) {
 		}
 		return p, nil
 	}
-	return p, fmt.Errorf("%T is not a ReviewStatus string", v)
+	return p, fmt.Errorf("%T is not a OccurrenceStatus string", v)
 }

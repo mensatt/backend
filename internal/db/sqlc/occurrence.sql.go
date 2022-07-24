@@ -15,28 +15,28 @@ import (
 )
 
 const createOccurrence = `-- name: CreateOccurrence :one
-INSERT INTO occurrence (location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
+INSERT INTO occurrence (location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-RETURNING id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+RETURNING id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 type CreateOccurrenceParams struct {
-	Location      uuid.UUID     `json:"location"`
-	Dish          uuid.UUID     `json:"dish"`
-	Date          time.Time     `json:"date"`
-	ReviewStatus  ReviewStatus  `json:"review_status"`
-	Kj            sql.NullInt32 `json:"kj"`
-	Kcal          sql.NullInt32 `json:"kcal"`
-	Fat           sql.NullInt32 `json:"fat"`
-	SaturatedFat  sql.NullInt32 `json:"saturated_fat"`
-	Carbohydrates sql.NullInt32 `json:"carbohydrates"`
-	Sugar         sql.NullInt32 `json:"sugar"`
-	Fiber         sql.NullInt32 `json:"fiber"`
-	Protein       sql.NullInt32 `json:"protein"`
-	Salt          sql.NullInt32 `json:"salt"`
-	PriceStudent  sql.NullInt32 `json:"price_student"`
-	PriceStaff    sql.NullInt32 `json:"price_staff"`
-	PriceGuest    sql.NullInt32 `json:"price_guest"`
+	Location      uuid.UUID        `json:"location"`
+	Dish          uuid.UUID        `json:"dish"`
+	Date          time.Time        `json:"date"`
+	Status        OccurrenceStatus `json:"status"`
+	Kj            sql.NullInt32    `json:"kj"`
+	Kcal          sql.NullInt32    `json:"kcal"`
+	Fat           sql.NullInt32    `json:"fat"`
+	SaturatedFat  sql.NullInt32    `json:"saturated_fat"`
+	Carbohydrates sql.NullInt32    `json:"carbohydrates"`
+	Sugar         sql.NullInt32    `json:"sugar"`
+	Fiber         sql.NullInt32    `json:"fiber"`
+	Protein       sql.NullInt32    `json:"protein"`
+	Salt          sql.NullInt32    `json:"salt"`
+	PriceStudent  sql.NullInt32    `json:"price_student"`
+	PriceStaff    sql.NullInt32    `json:"price_staff"`
+	PriceGuest    sql.NullInt32    `json:"price_guest"`
 }
 
 func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error) {
@@ -44,7 +44,7 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrencePar
 		arg.Location,
 		arg.Dish,
 		arg.Date,
-		arg.ReviewStatus,
+		arg.Status,
 		arg.Kj,
 		arg.Kcal,
 		arg.Fat,
@@ -64,7 +64,7 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrencePar
 		&i.Location,
 		&i.Dish,
 		&i.Date,
-		&i.ReviewStatus,
+		&i.Status,
 		&i.Kj,
 		&i.Kcal,
 		&i.Fat,
@@ -84,7 +84,7 @@ func (q *Queries) CreateOccurrence(ctx context.Context, arg *CreateOccurrencePar
 const deleteOccurrence = `-- name: DeleteOccurrence :one
 DELETE FROM occurrence
 WHERE id = $1
-RETURNING id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+RETURNING id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error) {
@@ -95,7 +95,7 @@ func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurren
 		&i.Location,
 		&i.Dish,
 		&i.Date,
-		&i.ReviewStatus,
+		&i.Status,
 		&i.Kj,
 		&i.Kcal,
 		&i.Fat,
@@ -113,7 +113,7 @@ func (q *Queries) DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurren
 }
 
 const getAllOccurrences = `-- name: GetAllOccurrences :many
-SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+SELECT id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 `
 
@@ -131,7 +131,7 @@ func (q *Queries) GetAllOccurrences(ctx context.Context) ([]*Occurrence, error) 
 			&i.Location,
 			&i.Dish,
 			&i.Date,
-			&i.ReviewStatus,
+			&i.Status,
 			&i.Kj,
 			&i.Kcal,
 			&i.Fat,
@@ -182,7 +182,7 @@ func (q *Queries) GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*
 }
 
 const getOccurrenceByID = `-- name: GetOccurrenceByID :one
-SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest 
+SELECT id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest 
 FROM occurrence
 WHERE id = $1
 `
@@ -195,7 +195,7 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 		&i.Location,
 		&i.Dish,
 		&i.Date,
-		&i.ReviewStatus,
+		&i.Status,
 		&i.Kj,
 		&i.Kcal,
 		&i.Fat,
@@ -231,7 +231,7 @@ func (q *Queries) GetOccurrenceReviewMetadata(ctx context.Context, occurrence uu
 }
 
 const getOccurrencesAfterInclusiveDate = `-- name: GetOccurrencesAfterInclusiveDate :many
-SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+SELECT id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 WHERE date >= $1
 `
@@ -250,7 +250,7 @@ func (q *Queries) GetOccurrencesAfterInclusiveDate(ctx context.Context, date tim
 			&i.Location,
 			&i.Dish,
 			&i.Date,
-			&i.ReviewStatus,
+			&i.Status,
 			&i.Kj,
 			&i.Kcal,
 			&i.Fat,
@@ -275,7 +275,7 @@ func (q *Queries) GetOccurrencesAfterInclusiveDate(ctx context.Context, date tim
 }
 
 const getOccurrencesByDate = `-- name: GetOccurrencesByDate :many
-SELECT id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+SELECT id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
 WHERE date = $1
 `
@@ -294,7 +294,7 @@ func (q *Queries) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*
 			&i.Location,
 			&i.Dish,
 			&i.Date,
-			&i.ReviewStatus,
+			&i.Status,
 			&i.Kj,
 			&i.Kcal,
 			&i.Fat,
@@ -419,7 +419,7 @@ UPDATE occurrence
 SET 
     dish = COALESCE($2, dish),
     date = COALESCE($3, date),
-    review_status = COALESCE($4, review_status),
+    status = COALESCE($4, status),
     kj = COALESCE($5, kj),
     kcal = COALESCE($6, kcal),
     fat = COALESCE($7, fat),
@@ -433,26 +433,26 @@ SET
     price_staff = COALESCE($15, price_staff),
     price_guest = COALESCE($16, price_guest)
 WHERE id = $1
-RETURNING id, location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
+RETURNING id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 `
 
 type UpdateOccurrenceParams struct {
-	ID            uuid.UUID     `json:"id"`
-	Dish          uuid.NullUUID `json:"dish"`
-	Date          sql.NullTime  `json:"date"`
-	ReviewStatus  ReviewStatus  `json:"review_status"`
-	Kj            sql.NullInt32 `json:"kj"`
-	Kcal          sql.NullInt32 `json:"kcal"`
-	Fat           sql.NullInt32 `json:"fat"`
-	SaturatedFat  sql.NullInt32 `json:"saturated_fat"`
-	Carbohydrates sql.NullInt32 `json:"carbohydrates"`
-	Sugar         sql.NullInt32 `json:"sugar"`
-	Fiber         sql.NullInt32 `json:"fiber"`
-	Protein       sql.NullInt32 `json:"protein"`
-	Salt          sql.NullInt32 `json:"salt"`
-	PriceStudent  sql.NullInt32 `json:"price_student"`
-	PriceStaff    sql.NullInt32 `json:"price_staff"`
-	PriceGuest    sql.NullInt32 `json:"price_guest"`
+	ID            uuid.UUID        `json:"id"`
+	Dish          uuid.NullUUID    `json:"dish"`
+	Date          sql.NullTime     `json:"date"`
+	Status        OccurrenceStatus `json:"status"`
+	Kj            sql.NullInt32    `json:"kj"`
+	Kcal          sql.NullInt32    `json:"kcal"`
+	Fat           sql.NullInt32    `json:"fat"`
+	SaturatedFat  sql.NullInt32    `json:"saturated_fat"`
+	Carbohydrates sql.NullInt32    `json:"carbohydrates"`
+	Sugar         sql.NullInt32    `json:"sugar"`
+	Fiber         sql.NullInt32    `json:"fiber"`
+	Protein       sql.NullInt32    `json:"protein"`
+	Salt          sql.NullInt32    `json:"salt"`
+	PriceStudent  sql.NullInt32    `json:"price_student"`
+	PriceStaff    sql.NullInt32    `json:"price_staff"`
+	PriceGuest    sql.NullInt32    `json:"price_guest"`
 }
 
 func (q *Queries) UpdateOccurrence(ctx context.Context, arg *UpdateOccurrenceParams) (*Occurrence, error) {
@@ -460,7 +460,7 @@ func (q *Queries) UpdateOccurrence(ctx context.Context, arg *UpdateOccurrencePar
 		arg.ID,
 		arg.Dish,
 		arg.Date,
-		arg.ReviewStatus,
+		arg.Status,
 		arg.Kj,
 		arg.Kcal,
 		arg.Fat,
@@ -480,7 +480,7 @@ func (q *Queries) UpdateOccurrence(ctx context.Context, arg *UpdateOccurrencePar
 		&i.Location,
 		&i.Dish,
 		&i.Date,
-		&i.ReviewStatus,
+		&i.Status,
 		&i.Kj,
 		&i.Kcal,
 		&i.Fat,

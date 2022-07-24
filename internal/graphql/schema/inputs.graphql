@@ -59,7 +59,7 @@ input CreateOccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Date!
-    reviewStatus: ReviewStatus!
+    status: OccurrenceStatus!
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -79,7 +79,7 @@ input UpdateOccurrenceInput {
     id: UUID!
     dish: UUID
     date: Date
-    reviewStatus: ReviewStatus
+    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,

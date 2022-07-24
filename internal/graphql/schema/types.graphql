@@ -5,7 +5,7 @@ enum Priority {
     HIGH
 }
 
-enum ReviewStatus {
+enum OccurrenceStatus {
     CONFIRMED
     APPROVED
     AWAITING_APPROVAL
@@ -50,7 +50,7 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Date!
-    reviewStatus: ReviewStatus!
+    status: OccurrenceStatus!
     kj: Int,
     kcal: Int,
     fat: Int,

@@ -28,7 +28,7 @@ CREATE TABLE tag (
     PRIMARY KEY (key)
 );
 
-CREATE TYPE review_status AS ENUM('CONFIRMED', 'APPROVED', 'AWAITING_APPROVAL', 'UPDATED', 'PENDING_DELETION');
+CREATE TYPE occurrence_status AS ENUM('CONFIRMED', 'APPROVED', 'AWAITING_APPROVAL', 'UPDATED', 'PENDING_DELETION');
 
 CREATE TABLE location (
     id uuid DEFAULT uuid_generate_v4(),
@@ -42,7 +42,7 @@ CREATE TABLE occurrence (
     location uuid NOT NULL,
     dish uuid NOT NULL,
     date date NOT NULL,
-    review_status review_status DEFAULT 'AWAITING_APPROVAL' NOT NULL,
+    status occurrence_status DEFAULT 'AWAITING_APPROVAL' NOT NULL,
     kj integer,
     kcal integer,
     fat integer,

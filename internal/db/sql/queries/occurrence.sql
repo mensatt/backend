@@ -43,7 +43,7 @@ FROM review
 WHERE review.occurrence = $1;
 
 -- name: CreateOccurrence :one
-INSERT INTO occurrence (location, dish, date, review_status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
+INSERT INTO occurrence (location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)
 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 RETURNING *;
 
@@ -52,7 +52,7 @@ UPDATE occurrence
 SET 
     dish = COALESCE(sqlc.narg('dish'), dish),
     date = COALESCE(sqlc.narg('date'), date),
-    review_status = COALESCE(sqlc.narg('review_status'), review_status),
+    status = COALESCE(sqlc.narg('status'), status),
     kj = COALESCE(sqlc.narg('kj'), kj),
     kcal = COALESCE(sqlc.narg('kcal'), kcal),
     fat = COALESCE(sqlc.narg('fat'), fat),

@@ -74,9 +74,9 @@ models:
   Priority:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.Priority
-  ReviewStatus:
+  OccurrenceStatus:
     model:
-      - github.com/mensatt/backend/internal/graphql/scalars.ReviewStatus
+      - github.com/mensatt/backend/internal/graphql/scalars.OccurrenceStatus
   
   # SQLC models
   Tag:

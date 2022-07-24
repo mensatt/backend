@@ -126,11 +126,11 @@ type ComplexityRoot struct {
 		PriceStudent   func(childComplexity int) int
 		Protein        func(childComplexity int) int
 		ReviewMetadata func(childComplexity int) int
-		ReviewStatus   func(childComplexity int) int
 		Reviews        func(childComplexity int) int
 		Salt           func(childComplexity int) int
 		SaturatedFat   func(childComplexity int) int
 		SideDishes     func(childComplexity int) int
+		Status         func(childComplexity int) int
 		Sugar          func(childComplexity int) int
 		Tags           func(childComplexity int) int
 	}
@@ -724,13 +724,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Occurrence.ReviewMetadata(childComplexity), true
 
-	case "Occurrence.reviewStatus":
-		if e.complexity.Occurrence.ReviewStatus == nil {
-			break
-		}
-
-		return e.complexity.Occurrence.ReviewStatus(childComplexity), true
-
 	case "Occurrence.reviews":
 		if e.complexity.Occurrence.Reviews == nil {
 			break
@@ -758,6 +751,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Occurrence.SideDishes(childComplexity), true
+
+	case "Occurrence.status":
+		if e.complexity.Occurrence.Status == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.Status(childComplexity), true
 
 	case "Occurrence.sugar":
 		if e.complexity.Occurrence.Sugar == nil {
@@ -1227,7 +1227,7 @@ input CreateOccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Date!
-    reviewStatus: ReviewStatus!
+    status: OccurrenceStatus!
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -1247,7 +1247,7 @@ input UpdateOccurrenceInput {
     id: UUID!
     dish: UUID
     date: Date
-    reviewStatus: ReviewStatus
+    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -1418,7 +1418,7 @@ scalar Upload
     HIGH
 }
 
-enum ReviewStatus {
+enum OccurrenceStatus {
     CONFIRMED
     APPROVED
     AWAITING_APPROVAL
@@ -1463,7 +1463,7 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Date!
-    reviewStatus: ReviewStatus!
+    status: OccurrenceStatus!
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -3309,8 +3309,8 @@ func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -3430,8 +3430,8 @@ func (ec *executionContext) fieldContext_Mutation_updateOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -3551,8 +3551,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -4563,8 +4563,8 @@ func (ec *executionContext) fieldContext_Occurrence_date(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Occurrence_reviewStatus(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+func (ec *executionContext) _Occurrence_status(ctx context.Context, field graphql.CollectedField, obj *sqlc.Occurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Occurrence_status(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -4577,7 +4577,7 @@ func (ec *executionContext) _Occurrence_reviewStatus(ctx context.Context, field 
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.ReviewStatus, nil
+		return obj.Status, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4589,19 +4589,19 @@ func (ec *executionContext) _Occurrence_reviewStatus(ctx context.Context, field 
 		}
 		return graphql.Null
 	}
-	res := resTmp.(sqlc.ReviewStatus)
+	res := resTmp.(sqlc.OccurrenceStatus)
 	fc.Result = res
-	return ec.marshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, field.Selections, res)
+	return ec.marshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceStatus(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_Occurrence_reviewStatus(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Occurrence_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Occurrence",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type ReviewStatus does not have child fields")
+			return nil, errors.New("field of type OccurrenceStatus does not have child fields")
 		},
 	}
 	return fc, nil
@@ -5376,8 +5376,8 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_occurrence(ctx conte
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -5526,8 +5526,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_occurrence(ctx context.Co
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -5839,8 +5839,8 @@ func (ec *executionContext) fieldContext_Query_occurrences(ctx context.Context, 
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -5929,8 +5929,8 @@ func (ec *executionContext) fieldContext_Query_occurrencesByDate(ctx context.Con
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -6030,8 +6030,8 @@ func (ec *executionContext) fieldContext_Query_occurrencesAfterInclusiveDate(ctx
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -6588,8 +6588,8 @@ func (ec *executionContext) fieldContext_Review_occurrence(ctx context.Context, 
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "reviewStatus":
-				return ec.fieldContext_Occurrence_reviewStatus(ctx, field)
+			case "status":
+				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -9567,11 +9567,11 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			if err != nil {
 				return it, err
 			}
-		case "reviewStatus":
+		case "status":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewStatus"))
-			it.ReviewStatus, err = ec.unmarshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			it.Status, err = ec.unmarshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10172,11 +10172,11 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			if err != nil {
 				return it, err
 			}
-		case "reviewStatus":
+		case "status":
 			var err error
 
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("reviewStatus"))
-			it.ReviewStatus, err = ec.unmarshalOReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx, v)
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+			it.Status, err = ec.unmarshalOOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -10903,9 +10903,9 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
 			}
-		case "reviewStatus":
+		case "status":
 
-			out.Values[i] = ec._Occurrence_reviewStatus(ctx, field, obj)
+			out.Values[i] = ec._Occurrence_status(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&invalids, 1)
@@ -12468,6 +12468,21 @@ func (ec *executionContext) marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensatt
 	return ec._OccurrenceSideDish(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceStatus(ctx context.Context, v interface{}) (sqlc.OccurrenceStatus, error) {
+	res, err := scalars.UnmarshalOccurrenceStatus(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.OccurrenceStatus) graphql.Marshaler {
+	res := scalars.MarshalOccurrenceStatus(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
 func (ec *executionContext) marshalNOccurrenceTag2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceTag(ctx context.Context, sel ast.SelectionSet, v sqlc.OccurrenceTag) graphql.Marshaler {
 	return ec._OccurrenceTag(ctx, sel, &v)
 }
@@ -12577,21 +12592,6 @@ func (ec *executionContext) marshalNReviewMetadata2ᚖgithubᚗcomᚋmensattᚋb
 		return graphql.Null
 	}
 	return ec._ReviewMetadata(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, v interface{}) (sqlc.ReviewStatus, error) {
-	res, err := scalars.UnmarshalReviewStatus(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.ReviewStatus) graphql.Marshaler {
-	res := scalars.MarshalReviewStatus(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
 }
 
 func (ec *executionContext) unmarshalNSetReviewApprovalInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐSetReviewApprovalInput(ctx context.Context, v interface{}) (models.SetReviewApprovalInput, error) {
@@ -13084,6 +13084,16 @@ func (ec *executionContext) marshalOInt2databaseᚋsqlᚐNullInt32(ctx context.C
 	return res
 }
 
+func (ec *executionContext) unmarshalOOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceStatus(ctx context.Context, v interface{}) (sqlc.OccurrenceStatus, error) {
+	res, err := scalars.UnmarshalOccurrenceStatus(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐOccurrenceStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.OccurrenceStatus) graphql.Marshaler {
+	res := scalars.MarshalOccurrenceStatus(v)
+	return res
+}
+
 func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, v interface{}) (sqlc.Priority, error) {
 	res, err := scalars.UnmarshalPriority(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13091,16 +13101,6 @@ func (ec *executionContext) unmarshalOPriority2githubᚗcomᚋmensattᚋbackend�
 
 func (ec *executionContext) marshalOPriority2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐPriority(ctx context.Context, sel ast.SelectionSet, v sqlc.Priority) graphql.Marshaler {
 	res := scalars.MarshalPriority(v)
-	return res
-}
-
-func (ec *executionContext) unmarshalOReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, v interface{}) (sqlc.ReviewStatus, error) {
-	res, err := scalars.UnmarshalReviewStatus(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOReviewStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReviewStatus(ctx context.Context, sel ast.SelectionSet, v sqlc.ReviewStatus) graphql.Marshaler {
-	res := scalars.MarshalReviewStatus(v)
 	return res
 }
 
