@@ -28,6 +28,7 @@ type Mutation {
     createReview(input: CreateReviewInput!): Review!
     updateReview(input: UpdateReviewInput!): Review! @authenticated
     deleteReview(input: DeleteReviewInput!): Review! @authenticated
+    setReviewApproval(input: SetReviewApprovalInput!): Review! @authenticated
 
     # Image
     # addImagesToReview(input: AddImagesToReviewInput!): Review!

@@ -59,6 +59,7 @@ type Querier interface {
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 	RemoveOccurrenceSideDish(ctx context.Context, arg *RemoveOccurrenceSideDishParams) (*OccurrenceSideDish, error)
 	RemoveOccurrenceTag(ctx context.Context, arg *RemoveOccurrenceTagParams) (*OccurrenceTag, error)
+	SetReviewApproval(ctx context.Context, arg *SetReviewApprovalParams) (*Review, error)
 	UpdateDish(ctx context.Context, arg *UpdateDishParams) (*Dish, error)
 	UpdateDishAlias(ctx context.Context, arg *UpdateDishAliasParams) (*DishAlias, error)
 	UpdateOccurrence(ctx context.Context, arg *UpdateOccurrenceParams) (*Occurrence, error)

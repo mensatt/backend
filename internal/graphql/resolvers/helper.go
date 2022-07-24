@@ -2,8 +2,10 @@ package resolvers
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"io/ioutil"
+	"time"
 
 	"github.com/mensatt/backend/internal/graphql/models"
 )
@@ -18,4 +20,11 @@ func (r *Resolver) transcodeAndStoreImage(ctx context.Context, image *models.Ima
 		return "", err
 	}
 	return r.ImageProcessor.StoreImage(imageBytes)
+}
+
+func approvedBoolToNullTime(approved bool) sql.NullTime {
+	if approved {
+		return sql.NullTime{Valid: true, Time: time.Now()}
+	}
+	return sql.NullTime{Valid: false}
 }

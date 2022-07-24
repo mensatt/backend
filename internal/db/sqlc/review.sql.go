@@ -196,6 +196,36 @@ func (q *Queries) GetReviewsByDish(ctx context.Context, id uuid.UUID) ([]*Review
 	return items, nil
 }
 
+const setReviewApproval = `-- name: SetReviewApproval :one
+UPDATE review
+SET accepted_at = $1
+WHERE id = $2
+RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+`
+
+type SetReviewApprovalParams struct {
+	AcceptedAt sql.NullTime `json:"accepted_at"`
+	ID         uuid.UUID    `json:"id"`
+}
+
+func (q *Queries) SetReviewApproval(ctx context.Context, arg *SetReviewApprovalParams) (*Review, error) {
+	row := q.db.QueryRow(ctx, setReviewApproval, arg.AcceptedAt, arg.ID)
+	var i Review
+	err := row.Scan(
+		&i.ID,
+		&i.Occurrence,
+		&i.DisplayName,
+		&i.Stars,
+		&i.Text,
+		&i.UpVotes,
+		&i.DownVotes,
+		&i.CreatedAt,
+		&i.UpdatedAt,
+		&i.AcceptedAt,
+	)
+	return &i, err
+}
+
 const updateReview = `-- name: UpdateReview :one
 UPDATE review
 SET 
