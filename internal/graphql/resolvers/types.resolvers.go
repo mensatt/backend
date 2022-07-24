@@ -12,98 +12,121 @@ import (
 	"github.com/mensatt/backend/internal/graphql/models"
 )
 
+// Aliases is the resolver for the aliases field.
 func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, error) {
 	return r.Database.GetAliasesForDish(ctx, obj.ID)
 }
 
+// ReviewData is the resolver for the reviewData field.
 func (r *dishResolver) ReviewData(ctx context.Context, obj *sqlc.Dish) (*models.ReviewDataDish, error) {
 	return &models.ReviewDataDish{
 		DishID: obj.ID,
 	}, nil
 }
 
+// Review is the resolver for the review field.
 func (r *imageResolver) Review(ctx context.Context, obj *sqlc.Image) (*sqlc.Review, error) {
 	return r.Database.GetReviewByImage(ctx, obj.ID)
 }
 
+// ImageURL is the resolver for the imageUrl field.
 func (r *imageResolver) ImageURL(ctx context.Context, obj *sqlc.Image) (string, error) {
 	return fmt.Sprintf("%s/%s", r.ImageBaseURL, obj.ImageStoreID), nil
 }
 
+// Location is the resolver for the location field.
 func (r *occurrenceResolver) Location(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Location, error) {
 	return r.Database.GetLocationByID(ctx, obj.Location)
 }
 
+// Dish is the resolver for the dish field.
 func (r *occurrenceResolver) Dish(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Dish, error) {
 	return r.Database.GetDishByID(ctx, obj.Dish)
 }
 
+// SideDishes is the resolver for the sideDishes field.
 func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Dish, error) {
 	return r.Database.GetSideDishesForOccurrence(ctx, obj.ID)
 }
 
+// Tags is the resolver for the tags field.
 func (r *occurrenceResolver) Tags(ctx context.Context, obj *sqlc.Occurrence) ([]*sqlc.Tag, error) {
 	return r.Database.GetTagsForOccurrence(ctx, obj.ID)
 }
 
+// ReviewData is the resolver for the reviewData field.
 func (r *occurrenceResolver) ReviewData(ctx context.Context, obj *sqlc.Occurrence) (*models.ReviewDataOccurrence, error) {
 	return &models.ReviewDataOccurrence{
 		OccurrenceID: obj.ID,
 	}, nil
 }
 
+// Occurrence is the resolver for the occurrence field.
 func (r *occurrenceSideDishResolver) Occurrence(ctx context.Context, obj *sqlc.OccurrenceSideDish) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
+// Dish is the resolver for the dish field.
 func (r *occurrenceSideDishResolver) Dish(ctx context.Context, obj *sqlc.OccurrenceSideDish) (*sqlc.Dish, error) {
 	return r.Database.GetDishByID(ctx, obj.Dish)
 }
 
+// Occurrence is the resolver for the occurrence field.
 func (r *occurrenceTagResolver) Occurrence(ctx context.Context, obj *sqlc.OccurrenceTag) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
+// Tag is the resolver for the tag field.
 func (r *occurrenceTagResolver) Tag(ctx context.Context, obj *sqlc.OccurrenceTag) (*sqlc.Tag, error) {
 	return r.Database.GetTagByKey(ctx, obj.Tag)
 }
 
+// Occurrence is the resolver for the occurrence field.
 func (r *reviewResolver) Occurrence(ctx context.Context, obj *sqlc.Review) (*sqlc.Occurrence, error) {
 	return r.Database.GetOccurrenceByID(ctx, obj.Occurrence)
 }
 
+// Images is the resolver for the images field.
 func (r *reviewResolver) Images(ctx context.Context, obj *sqlc.Review) ([]*sqlc.Image, error) {
 	return r.Database.GetImagesByReview(ctx, obj.ID)
 }
 
+// Reviews is the resolver for the reviews field.
 func (r *reviewDataDishResolver) Reviews(ctx context.Context, obj *models.ReviewDataDish) ([]*sqlc.Review, error) {
 	return r.Database.GetReviewsByDish(ctx, obj.DishID)
 }
 
+// Images is the resolver for the images field.
 func (r *reviewDataDishResolver) Images(ctx context.Context, obj *models.ReviewDataDish) ([]*sqlc.Image, error) {
 	return r.Database.GetImagesByDish(ctx, obj.DishID)
 }
 
+// Metadata is the resolver for the metadata field.
 func (r *reviewDataDishResolver) Metadata(ctx context.Context, obj *models.ReviewDataDish) (*sqlc.GetDishReviewMetadataRow, error) {
 	return r.Database.GetDishReviewMetadata(ctx, obj.DishID)
 }
 
+// Reviews is the resolver for the reviews field.
 func (r *reviewDataOccurrenceResolver) Reviews(ctx context.Context, obj *models.ReviewDataOccurrence) ([]*sqlc.Review, error) {
 	return r.Database.GetReviewsForOccurrence(ctx, obj.OccurrenceID)
 }
 
+// Images is the resolver for the images field.
 func (r *reviewDataOccurrenceResolver) Images(ctx context.Context, obj *models.ReviewDataOccurrence) ([]*sqlc.Image, error) {
 	return r.Database.GetImagesByOccurrence(ctx, obj.OccurrenceID)
 }
 
+// Metadata is the resolver for the metadata field.
 func (r *reviewDataOccurrenceResolver) Metadata(ctx context.Context, obj *models.ReviewDataOccurrence) (*sqlc.GetOccurrenceReviewMetadataRow, error) {
 	return r.Database.GetOccurrenceReviewMetadata(ctx, obj.OccurrenceID)
 }
 
+// AverageStars is the resolver for the averageStars field.
 func (r *reviewMetadataDishResolver) AverageStars(ctx context.Context, obj *sqlc.GetDishReviewMetadataRow) (*float64, error) {
 	return pgtypeNumericToFloat(obj.AverageStars)
 }
 
+// AverageStars is the resolver for the averageStars field.
 func (r *reviewMetadataOccurrenceResolver) AverageStars(ctx context.Context, obj *sqlc.GetOccurrenceReviewMetadataRow) (*float64, error) {
 	return pgtypeNumericToFloat(obj.AverageStars)
 }

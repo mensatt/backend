@@ -118,6 +118,12 @@ input RemoveSideDishFromOccurrenceInput {
     dish: UUID!
 }
 
+input OccurrenceFilter {
+    status: OccurrenceStatus
+    startDate: Date
+    endDate: Date
+}
+
 
 # Review
 

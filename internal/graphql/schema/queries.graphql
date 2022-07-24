@@ -9,9 +9,7 @@ type Query {
     dishes: [Dish!]!
 
     # Occurrence
-    occurrences: [Occurrence!]!
-    occurrencesByDate(date: Date!): [Occurrence!]!
-    occurrencesAfterInclusiveDate(start: Date!): [Occurrence!]!
+    occurrences(filter: OccurrenceFilter): [Occurrence!]!
 
     # Review
     reviews: [Review!]!
