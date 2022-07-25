@@ -82,7 +82,7 @@ type CreateImageParams struct {
 }
 
 type CreateReviewWithImagesParams struct {
-	*sqlc.CreateReviewParams
+	sqlc.CreateReviewParams
 	Images []*CreateImageParams
 }
 
@@ -102,7 +102,7 @@ func (eq *ExtendedQueries) CreateReviewWithImages(ctx context.Context, reviewPar
 
 	qtx := eq.WithTx(tx)
 
-	review, err := qtx.CreateReview(ctx, reviewParams.CreateReviewParams)
+	review, err := qtx.CreateReview(ctx, &reviewParams.CreateReviewParams)
 	if err != nil {
 		return nil, err
 	}
