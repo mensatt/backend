@@ -80,12 +80,20 @@ func (r *reviewDataDishResolver) Reviews(ctx context.Context, obj *models.Review
 	return r.Database.GetReviewsByDish(ctx, obj.DishID)
 }
 
+func (r *reviewDataDishResolver) Images(ctx context.Context, obj *models.ReviewDataDish) ([]*sqlc.Image, error) {
+	return r.Database.GetImagesByDish(ctx, obj.DishID)
+}
+
 func (r *reviewDataDishResolver) Metadata(ctx context.Context, obj *models.ReviewDataDish) (*sqlc.GetDishReviewMetadataRow, error) {
 	return r.Database.GetDishReviewMetadata(ctx, obj.DishID)
 }
 
 func (r *reviewDataOccurrenceResolver) Reviews(ctx context.Context, obj *models.ReviewDataOccurrence) ([]*sqlc.Review, error) {
 	return r.Database.GetReviewsForOccurrence(ctx, obj.OccurrenceID)
+}
+
+func (r *reviewDataOccurrenceResolver) Images(ctx context.Context, obj *models.ReviewDataOccurrence) ([]*sqlc.Image, error) {
+	return r.Database.GetImagesByOccurrence(ctx, obj.OccurrenceID)
 }
 
 func (r *reviewDataOccurrenceResolver) Metadata(ctx context.Context, obj *models.ReviewDataOccurrence) (*sqlc.GetOccurrenceReviewMetadataRow, error) {
