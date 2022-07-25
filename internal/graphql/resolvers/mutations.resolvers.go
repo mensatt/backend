@@ -80,6 +80,9 @@ func (r *mutationResolver) RemoveSideDishFromOccurrence(ctx context.Context, inp
 }
 
 func (r *mutationResolver) CreateReview(ctx context.Context, input db.CreateReviewWithImagesParams) (*sqlc.Review, error) {
+	if len(input.Images) == 0 {
+		return r.Database.CreateReview(ctx, &input.CreateReviewParams)
+	}
 	return r.Database.CreateReviewWithImages(ctx, &input)
 }
 
