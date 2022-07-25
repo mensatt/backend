@@ -77,7 +77,7 @@ func (r *reviewResolver) Images(ctx context.Context, obj *sqlc.Review) ([]*sqlc.
 }
 
 func (r *reviewDataDishResolver) Reviews(ctx context.Context, obj *models.ReviewDataDish) ([]*sqlc.Review, error) {
-	return r.Database.GetReviewsForOccurrence(ctx, obj.DishID)
+	return r.Database.GetReviewsByDish(ctx, obj.DishID)
 }
 
 func (r *reviewDataDishResolver) Metadata(ctx context.Context, obj *models.ReviewDataDish) (*sqlc.GetDishReviewMetadataRow, error) {
