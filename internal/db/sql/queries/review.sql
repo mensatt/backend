@@ -35,15 +35,54 @@ DELETE FROM review
 WHERE id = $1
 RETURNING *;
 
--- name: GetReviewsByDish :many
-SELECT review.*
-FROM review
-JOIN occurrence ON (review.occurrence = occurrence.id)
-JOIN dish ON (occurrence.dish = dish.id)
-WHERE dish.id = $1;
 
 -- name: GetReviewByImage :one
 SELECT review.*
 FROM review
 JOIN image ON (image.review = review.id)
 WHERE image.id = $1;
+
+
+-- name: GetDishReviews :many
+SELECT review.*
+FROM review
+JOIN occurrence ON (review.occurrence = occurrence.id)
+JOIN dish ON (occurrence.dish = dish.id)
+WHERE dish.id = $1
+    AND (CASE 
+            WHEN sqlc.narg('approved')::bool = TRUE THEN review.accepted_at IS NOT NULL
+            WHEN sqlc.narg('approved')::bool = FALSE THEN review.accepted_at IS NULL
+            ELSE TRUE 
+        END);
+
+-- name: GetDishReviewMetadata :one
+SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
+FROM review
+JOIN occurrence ON (review.occurrence = occurrence.id)
+JOIN dish ON (occurrence.dish = dish.id)
+WHERE dish.id = $1
+    AND (CASE 
+            WHEN sqlc.narg('approved')::bool = TRUE THEN review.accepted_at IS NOT NULL
+            WHEN sqlc.narg('approved')::bool = FALSE THEN review.accepted_at IS NULL
+            ELSE TRUE 
+        END);
+
+-- name: GetOccurrenceReviews :many
+SELECT review.*
+FROM occurrence JOIN review ON occurrence.id = review.occurrence
+WHERE occurrence.id = $1
+    AND (CASE 
+            WHEN sqlc.narg('approved')::bool = TRUE THEN review.accepted_at IS NOT NULL
+            WHEN sqlc.narg('approved')::bool = FALSE THEN review.accepted_at IS NULL
+            ELSE TRUE 
+        END);
+
+-- name: GetOccurrenceReviewMetadata :one
+SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
+FROM review
+WHERE review.occurrence = $1
+    AND (CASE 
+            WHEN sqlc.narg('approved')::bool = TRUE THEN review.accepted_at IS NOT NULL
+            WHEN sqlc.narg('approved')::bool = FALSE THEN review.accepted_at IS NULL
+            ELSE TRUE 
+        END);

@@ -31,17 +31,15 @@ func (r *queryResolver) Dishes(ctx context.Context) ([]*sqlc.Dish, error) {
 
 // Occurrences is the resolver for the occurrences field.
 func (r *queryResolver) Occurrences(ctx context.Context, filter *sqlc.GetFilteredOccurrencesParams) ([]*sqlc.Occurrence, error) {
+	if filter == nil {
+		filter = &sqlc.GetFilteredOccurrencesParams{}
+	}
 	return r.Database.GetFilteredOccurrences(ctx, filter)
 }
 
 // Reviews is the resolver for the reviews field.
 func (r *queryResolver) Reviews(ctx context.Context) ([]*sqlc.Review, error) {
 	return r.Database.GetAllReviews(ctx)
-}
-
-// Images is the resolver for the images field.
-func (r *queryResolver) Images(ctx context.Context) ([]*sqlc.Image, error) {
-	return r.Database.GetAllImages(ctx)
 }
 
 // Locations is the resolver for the locations field.

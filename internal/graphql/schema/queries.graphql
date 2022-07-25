@@ -14,9 +14,6 @@ type Query {
     # Review
     reviews: [Review!]!
 
-    # Image
-    images: [Image!]!
-
     # Location
     locations: [Location!]!
     locationById(id: UUID!): Location!

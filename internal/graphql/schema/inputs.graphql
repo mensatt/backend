@@ -153,6 +153,10 @@ input SetReviewApprovalInput {
     approved: Boolean!
 }
 
+input ReviewFilter {
+    approved: Boolean
+}
+
 
 # Image
 
