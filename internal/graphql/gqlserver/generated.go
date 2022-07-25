@@ -1323,6 +1323,7 @@ input OccurrenceFilter {
     status: OccurrenceStatus
     startDate: Date
     endDate: Date
+    location: UUID
 }
 
 
@@ -10021,7 +10022,7 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"status", "startDate", "endDate"}
+	fieldsInOrder := [...]string{"status", "startDate", "endDate", "location"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10049,6 +10050,14 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endDate"))
 			it.EndDate, err = ec.unmarshalODate2databaseᚋsqlᚐNullTime(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "location":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("location"))
+			it.Location, err = ec.unmarshalOUUID2githubᚗcomᚋgoogleᚋuuidᚐNullUUID(ctx, v)
 			if err != nil {
 				return it, err
 			}

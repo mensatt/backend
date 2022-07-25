@@ -160,17 +160,24 @@ FROM occurrence
 WHERE
     (date >= $1 OR $1 IS NULL)
     AND (date <= $2 OR $2 IS NULL)
-    AND (status = $3 OR $3 IS NULL)
+    AND (location = $3 OR $3 IS NULL)
+    AND (status = $4 OR $4 IS NULL)
 `
 
 type GetFilteredOccurrencesParams struct {
 	StartDate sql.NullTime         `json:"startDate"`
 	EndDate   sql.NullTime         `json:"endDate"`
+	Location  uuid.NullUUID        `json:"location"`
 	Status    NullOccurrenceStatus `json:"status"`
 }
 
 func (q *Queries) GetFilteredOccurrences(ctx context.Context, arg *GetFilteredOccurrencesParams) ([]*Occurrence, error) {
-	rows, err := q.db.Query(ctx, getFilteredOccurrences, arg.StartDate, arg.EndDate, arg.Status)
+	rows, err := q.db.Query(ctx, getFilteredOccurrences,
+		arg.StartDate,
+		arg.EndDate,
+		arg.Location,
+		arg.Status,
+	)
 	if err != nil {
 		return nil, err
 	}

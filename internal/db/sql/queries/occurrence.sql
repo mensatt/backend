@@ -8,6 +8,7 @@ FROM occurrence
 WHERE
     (date >= sqlc.narg('startDate') OR sqlc.narg('startDate') IS NULL)
     AND (date <= sqlc.narg('endDate') OR sqlc.narg('endDate') IS NULL)
+    AND (location = sqlc.narg('location') OR sqlc.narg('location') IS NULL)
     AND (status = sqlc.narg('status') OR sqlc.narg('status') IS NULL);
 
 -- name: GetOccurrenceByID :one
