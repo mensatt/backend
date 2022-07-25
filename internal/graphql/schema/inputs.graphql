@@ -122,6 +122,7 @@ input OccurrenceFilter {
     status: OccurrenceStatus
     startDate: Date
     endDate: Date
+    location: UUID
 }
 
 
