@@ -13,6 +13,10 @@ import (
 )
 
 func (r *createReviewInputResolver) Images(ctx context.Context, obj *db.CreateReviewWithImagesParams, data []*models.ImageInput) error {
+	if len(data) == 0 {
+		return nil
+	}
+
 	imagesParams := make([]*db.CreateImageParams, len(data))
 	for i, image := range data {
 		imageStoreID, err := r.transcodeAndStoreImage(ctx, image)

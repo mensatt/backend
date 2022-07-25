@@ -124,7 +124,7 @@ input RemoveSideDishFromOccurrenceInput {
 input CreateReviewInput {
     occurrence: UUID!
     displayName: String
-    images: [ImageInput!]!
+    images: [ImageInput!]
     stars: Int!
     text: String
 }
