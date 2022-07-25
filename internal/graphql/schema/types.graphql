@@ -27,7 +27,7 @@ type Dish {
     nameDe: String!
     nameEn: String
     aliases: [String!]!
-    reviewData: ReviewDataDish!
+    reviewData(filter: ReviewFilter): ReviewDataDish!
 }
 
 type ReviewDataDish {
@@ -74,7 +74,7 @@ type Occurrence {
     priceStaff: Int
     priceGuest: Int
     tags: [Tag!]!
-    reviewData: ReviewDataOccurrence!
+    reviewData(filter: ReviewFilter): ReviewDataOccurrence!
 }
 
 type ReviewDataOccurrence {

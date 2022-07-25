@@ -10,7 +10,6 @@ import (
 	"database/sql"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
 )
 
 const createDish = `-- name: CreateDish :one
@@ -66,26 +65,6 @@ func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) 
 	row := q.db.QueryRow(ctx, getDishByID, id)
 	var i Dish
 	err := row.Scan(&i.ID, &i.NameDe, &i.NameEn)
-	return &i, err
-}
-
-const getDishReviewMetadata = `-- name: GetDishReviewMetadata :one
-SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
-FROM review
-JOIN occurrence ON (review.occurrence = occurrence.id)
-JOIN dish ON (occurrence.dish = dish.id)
-WHERE dish.id = $1
-`
-
-type GetDishReviewMetadataRow struct {
-	AverageStars pgtype.Numeric `json:"average_stars"`
-	ReviewCount  int64          `json:"review_count"`
-}
-
-func (q *Queries) GetDishReviewMetadata(ctx context.Context, id uuid.UUID) (*GetDishReviewMetadataRow, error) {
-	row := q.db.QueryRow(ctx, getDishReviewMetadata, id)
-	var i GetDishReviewMetadataRow
-	err := row.Scan(&i.AverageStars, &i.ReviewCount)
 	return &i, err
 }
 

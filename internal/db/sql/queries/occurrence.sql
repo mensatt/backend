@@ -35,20 +35,10 @@ SELECT tag.*
 FROM occurrence_tag JOIN tag ON occurrence_tag.tag = tag.key
 WHERE occurrence_tag.occurrence = $1;
 
--- name: GetReviewsForOccurrence :many
-SELECT review.*
-FROM occurrence JOIN review ON occurrence.id = review.occurrence
-WHERE occurrence.id = $1;
-
 -- name: GetImagesForOccurrence :many
 SELECT image.*
 FROM occurrence JOIN review ON occurrence.id = review.occurrence JOIN image on review.id = image.review
 WHERE occurrence.id = $1;
-
--- name: GetOccurrenceReviewMetadata :one
-SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
-FROM review
-WHERE review.occurrence = $1;
 
 -- name: CreateOccurrence :one
 INSERT INTO occurrence (location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest)

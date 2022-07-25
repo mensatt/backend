@@ -18,9 +18,10 @@ func (r *dishResolver) Aliases(ctx context.Context, obj *sqlc.Dish) ([]string, e
 }
 
 // ReviewData is the resolver for the reviewData field.
-func (r *dishResolver) ReviewData(ctx context.Context, obj *sqlc.Dish) (*models.ReviewDataDish, error) {
+func (r *dishResolver) ReviewData(ctx context.Context, obj *sqlc.Dish, filter *models.ReviewFilter) (*models.ReviewDataDish, error) {
 	return &models.ReviewDataDish{
 		DishID: obj.ID,
+		Filter: filter,
 	}, nil
 }
 
@@ -55,9 +56,10 @@ func (r *occurrenceResolver) Tags(ctx context.Context, obj *sqlc.Occurrence) ([]
 }
 
 // ReviewData is the resolver for the reviewData field.
-func (r *occurrenceResolver) ReviewData(ctx context.Context, obj *sqlc.Occurrence) (*models.ReviewDataOccurrence, error) {
+func (r *occurrenceResolver) ReviewData(ctx context.Context, obj *sqlc.Occurrence, filter *models.ReviewFilter) (*models.ReviewDataOccurrence, error) {
 	return &models.ReviewDataOccurrence{
 		OccurrenceID: obj.ID,
+		Filter:       filter,
 	}, nil
 }
 
@@ -93,7 +95,13 @@ func (r *reviewResolver) Images(ctx context.Context, obj *sqlc.Review) ([]*sqlc.
 
 // Reviews is the resolver for the reviews field.
 func (r *reviewDataDishResolver) Reviews(ctx context.Context, obj *models.ReviewDataDish) ([]*sqlc.Review, error) {
-	return r.Database.GetReviewsByDish(ctx, obj.DishID)
+	param := sqlc.GetDishReviewsParams{
+		ID: obj.DishID,
+	}
+	if obj.Filter != nil {
+		param.Approved = boolPointerToNullBool(obj.Filter.Approved)
+	}
+	return r.Database.GetDishReviews(ctx, &param)
 }
 
 // Images is the resolver for the images field.
@@ -103,12 +111,24 @@ func (r *reviewDataDishResolver) Images(ctx context.Context, obj *models.ReviewD
 
 // Metadata is the resolver for the metadata field.
 func (r *reviewDataDishResolver) Metadata(ctx context.Context, obj *models.ReviewDataDish) (*sqlc.GetDishReviewMetadataRow, error) {
-	return r.Database.GetDishReviewMetadata(ctx, obj.DishID)
+	param := sqlc.GetDishReviewMetadataParams{
+		ID: obj.DishID,
+	}
+	if obj.Filter != nil {
+		param.Approved = boolPointerToNullBool(obj.Filter.Approved)
+	}
+	return r.Database.GetDishReviewMetadata(ctx, &param)
 }
 
 // Reviews is the resolver for the reviews field.
 func (r *reviewDataOccurrenceResolver) Reviews(ctx context.Context, obj *models.ReviewDataOccurrence) ([]*sqlc.Review, error) {
-	return r.Database.GetReviewsForOccurrence(ctx, obj.OccurrenceID)
+	param := sqlc.GetOccurrenceReviewsParams{
+		ID: obj.OccurrenceID,
+	}
+	if obj.Filter != nil {
+		param.Approved = boolPointerToNullBool(obj.Filter.Approved)
+	}
+	return r.Database.GetOccurrenceReviews(ctx, &param)
 }
 
 // Images is the resolver for the images field.
@@ -118,7 +138,13 @@ func (r *reviewDataOccurrenceResolver) Images(ctx context.Context, obj *models.R
 
 // Metadata is the resolver for the metadata field.
 func (r *reviewDataOccurrenceResolver) Metadata(ctx context.Context, obj *models.ReviewDataOccurrence) (*sqlc.GetOccurrenceReviewMetadataRow, error) {
-	return r.Database.GetOccurrenceReviewMetadata(ctx, obj.OccurrenceID)
+	param := sqlc.GetOccurrenceReviewMetadataParams{
+		Occurrence: obj.OccurrenceID,
+	}
+	if obj.Filter != nil {
+		param.Approved = boolPointerToNullBool(obj.Filter.Approved)
+	}
+	return r.Database.GetOccurrenceReviewMetadata(ctx, &param)
 }
 
 // AverageStars is the resolver for the averageStars field.

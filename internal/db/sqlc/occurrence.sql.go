@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
 )
 
 const createOccurrence = `-- name: CreateOccurrence :one
@@ -265,24 +264,6 @@ func (q *Queries) GetOccurrenceByID(ctx context.Context, id uuid.UUID) (*Occurre
 	return &i, err
 }
 
-const getOccurrenceReviewMetadata = `-- name: GetOccurrenceReviewMetadata :one
-SELECT AVG(review.stars) AS average_stars, COUNT(*) AS review_count
-FROM review
-WHERE review.occurrence = $1
-`
-
-type GetOccurrenceReviewMetadataRow struct {
-	AverageStars pgtype.Numeric `json:"average_stars"`
-	ReviewCount  int64          `json:"review_count"`
-}
-
-func (q *Queries) GetOccurrenceReviewMetadata(ctx context.Context, occurrence uuid.UUID) (*GetOccurrenceReviewMetadataRow, error) {
-	row := q.db.QueryRow(ctx, getOccurrenceReviewMetadata, occurrence)
-	var i GetOccurrenceReviewMetadataRow
-	err := row.Scan(&i.AverageStars, &i.ReviewCount)
-	return &i, err
-}
-
 const getOccurrencesAfterInclusiveDate = `-- name: GetOccurrencesAfterInclusiveDate :many
 SELECT id, location, dish, date, status, kj, kcal, fat, saturated_fat, carbohydrates, sugar, fiber, protein, salt, price_student, price_staff, price_guest
 FROM occurrence
@@ -360,43 +341,6 @@ func (q *Queries) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*
 			&i.PriceStudent,
 			&i.PriceStaff,
 			&i.PriceGuest,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
-const getReviewsForOccurrence = `-- name: GetReviewsForOccurrence :many
-SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.up_votes, review.down_votes, review.created_at, review.updated_at, review.accepted_at
-FROM occurrence JOIN review ON occurrence.id = review.occurrence
-WHERE occurrence.id = $1
-`
-
-func (q *Queries) GetReviewsForOccurrence(ctx context.Context, id uuid.UUID) ([]*Review, error) {
-	rows, err := q.db.Query(ctx, getReviewsForOccurrence, id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Review
-	for rows.Next() {
-		var i Review
-		if err := rows.Scan(
-			&i.ID,
-			&i.Occurrence,
-			&i.DisplayName,
-			&i.Stars,
-			&i.Text,
-			&i.UpVotes,
-			&i.DownVotes,
-			&i.CreatedAt,
-			&i.UpdatedAt,
-			&i.AcceptedAt,
 		); err != nil {
 			return nil, err
 		}

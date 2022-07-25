@@ -12,9 +12,11 @@ type CreateOccurrenceInputHelper struct {
 }
 
 type ReviewDataDish struct {
-	DishID uuid.UUID `json:"-"`
+	DishID uuid.UUID     `json:"-"`
+	Filter *ReviewFilter `json:"-"`
 }
 
 type ReviewDataOccurrence struct {
-	OccurrenceID uuid.UUID `json:"-"`
+	OccurrenceID uuid.UUID     `json:"-"`
+	Filter       *ReviewFilter `json:"-"`
 }

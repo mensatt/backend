@@ -39,3 +39,10 @@ func pgtypeNumericToFloat(numeric pgtype.Numeric) (*float64, error) {
 	err := numeric.AssignTo(&f)
 	return &f, err
 }
+
+func boolPointerToNullBool(b *bool) sql.NullBool {
+	if b == nil {
+		return sql.NullBool{Valid: false}
+	}
+	return sql.NullBool{Valid: true, Bool: *b}
+}
