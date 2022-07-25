@@ -35,6 +35,11 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 
 	app := gin.Default()
 
+	err = app.SetTrustedProxies(nil)
+	if err != nil {
+		return err
+	}
+
 	app.Use(cors)
 
 	app.Use(sentrygin.New(sentrygin.Options{}))
