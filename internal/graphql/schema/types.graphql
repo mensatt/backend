@@ -32,6 +32,8 @@ type Dish {
 
 type ReviewDataDish {
     reviews: [Review!]!
+    # also present in reviews, but easier to access here
+    images: [Image!]!
     metadata: ReviewMetadataDish!
 }
 
@@ -77,6 +79,8 @@ type Occurrence {
 
 type ReviewDataOccurrence {
     reviews: [Review!]!
+    # also present in reviews, but easier to access here
+    images: [Image!]!
     metadata: ReviewMetadataOccurrence!
 }
 
