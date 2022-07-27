@@ -14,8 +14,10 @@ type ImageParams struct {
 }
 
 func Run(g *gin.RouterGroup, params *ImageParams) error {
-	g.GET("/:imageStoreID", imageHandler(params.ImageProcessor))
-
+	relativePath := "/images/:imageStoreID"
+	handler := imageHandler(params.ImageProcessor)
+	g.GET(relativePath, handler)
+	g.HEAD(relativePath, handler)
 	return nil
 }
 
@@ -59,6 +61,5 @@ func imageHandler(ip *imageprocessor.ImageProcessor) gin.HandlerFunc {
 			}
 		}
 		c.File(path)
-		c.Status(http.StatusOK)
 	}
 }
