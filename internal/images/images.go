@@ -14,7 +14,7 @@ type ImageParams struct {
 }
 
 func Run(g *gin.RouterGroup, params *ImageParams) error {
-	relativePath := "/images/:imageStoreID"
+	relativePath := "/:imageStoreID"
 	handler := imageHandler(params.ImageProcessor)
 	g.GET(relativePath, handler)
 	g.HEAD(relativePath, handler)
