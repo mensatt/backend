@@ -28,17 +28,21 @@ WHERE date >= $1;
 
 -- name: GetSideDishesForOccurrence :many
 SELECT dish.*
-FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish = dish.id
+FROM occurrence_side_dishes
+JOIN dish ON occurrence_side_dishes.dish = dish.id
 WHERE occurrence_side_dishes.occurrence = $1;
 
 -- name: GetTagsForOccurrence :many
 SELECT tag.*
-FROM occurrence_tag JOIN tag ON occurrence_tag.tag = tag.key
+FROM occurrence_tag
+JOIN tag ON occurrence_tag.tag = tag.key
 WHERE occurrence_tag.occurrence = $1;
 
 -- name: GetImagesForOccurrence :many
 SELECT image.*
-FROM occurrence JOIN review ON occurrence.id = review.occurrence JOIN image on review.id = image.review
+FROM occurrence
+JOIN review ON occurrence.id = review.occurrence
+JOIN image on review.id = image.review
 WHERE occurrence.id = $1;
 
 -- name: CreateOccurrence :one

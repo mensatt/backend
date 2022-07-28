@@ -159,13 +159,11 @@ type ComplexityRoot struct {
 		AcceptedAt  func(childComplexity int) int
 		CreatedAt   func(childComplexity int) int
 		DisplayName func(childComplexity int) int
-		DownVotes   func(childComplexity int) int
 		ID          func(childComplexity int) int
 		Images      func(childComplexity int) int
 		Occurrence  func(childComplexity int) int
 		Stars       func(childComplexity int) int
 		Text        func(childComplexity int) int
-		UpVotes     func(childComplexity int) int
 		UpdatedAt   func(childComplexity int) int
 	}
 
@@ -889,13 +887,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Review.DisplayName(childComplexity), true
 
-	case "Review.downVotes":
-		if e.complexity.Review.DownVotes == nil {
-			break
-		}
-
-		return e.complexity.Review.DownVotes(childComplexity), true
-
 	case "Review.id":
 		if e.complexity.Review.ID == nil {
 			break
@@ -930,13 +921,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Review.Text(childComplexity), true
-
-	case "Review.upVotes":
-		if e.complexity.Review.UpVotes == nil {
-			break
-		}
-
-		return e.complexity.Review.UpVotes(childComplexity), true
 
 	case "Review.updatedAt":
 		if e.complexity.Review.UpdatedAt == nil {
@@ -1558,8 +1542,6 @@ type Review {
     images: [Image!]!
     stars: Int!
     text: String
-    upVotes: Int!
-    downVotes: Int!
     createdAt: Timestamp!
     updatedAt: Timestamp!
     acceptedAt: Timestamp
@@ -2434,10 +2416,6 @@ func (ec *executionContext) fieldContext_Image_review(ctx context.Context, field
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -3920,10 +3898,6 @@ func (ec *executionContext) fieldContext_Mutation_createReview(ctx context.Conte
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -4019,10 +3993,6 @@ func (ec *executionContext) fieldContext_Mutation_updateReview(ctx context.Conte
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -4118,10 +4088,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteReview(ctx context.Conte
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -4217,10 +4183,6 @@ func (ec *executionContext) fieldContext_Mutation_setReviewApproval(ctx context.
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -5749,10 +5711,6 @@ func (ec *executionContext) fieldContext_Query_reviews(ctx context.Context, fiel
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -6367,94 +6325,6 @@ func (ec *executionContext) fieldContext_Review_text(ctx context.Context, field 
 	return fc, nil
 }
 
-func (ec *executionContext) _Review_upVotes(ctx context.Context, field graphql.CollectedField, obj *sqlc.Review) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Review_upVotes(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.UpVotes, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int32)
-	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Review_upVotes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Review",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Review_downVotes(ctx context.Context, field graphql.CollectedField, obj *sqlc.Review) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Review_downVotes(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.DownVotes, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(int32)
-	fc.Result = res
-	return ec.marshalNInt2int32(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Review_downVotes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Review",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Review_createdAt(ctx context.Context, field graphql.CollectedField, obj *sqlc.Review) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Review_createdAt(ctx, field)
 	if err != nil {
@@ -6635,10 +6505,6 @@ func (ec *executionContext) fieldContext_ReviewDataDish_reviews(ctx context.Cont
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -6805,10 +6671,6 @@ func (ec *executionContext) fieldContext_ReviewDataOccurrence_reviews(ctx contex
 				return ec.fieldContext_Review_stars(ctx, field)
 			case "text":
 				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
 			case "createdAt":
 				return ec.fieldContext_Review_createdAt(ctx, field)
 			case "updatedAt":
@@ -11553,20 +11415,6 @@ func (ec *executionContext) _Review(ctx context.Context, sel ast.SelectionSet, o
 
 			out.Values[i] = ec._Review_text(ctx, field, obj)
 
-		case "upVotes":
-
-			out.Values[i] = ec._Review_upVotes(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
-		case "downVotes":
-
-			out.Values[i] = ec._Review_downVotes(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
-			}
 		case "createdAt":
 
 			out.Values[i] = ec._Review_createdAt(ctx, field, obj)

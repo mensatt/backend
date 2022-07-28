@@ -28,18 +28,18 @@ FROM image
 JOIN review ON (image.review = review.id)
 WHERE review.id = $1;
 
--- name: GetImageStoreIDByID :one
-SELECT image_store_id
+-- name: GetImageHashByID :one
+SELECT image_hash
 FROM image
 WHERE id = $1;
 
 -- name: AddImageToReview :one
-INSERT INTO image (review, image_store_id)
+INSERT INTO image (review, image_hash)
 VALUES ($1, $2)
 RETURNING *;
 
 -- name: AddMultipleImagesToReview :copyfrom
-INSERT INTO image (review, image_store_id)
+INSERT INTO image (review, image_hash)
 VALUES ($1, $2);
 
 -- name: DeleteImage :one

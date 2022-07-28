@@ -215,8 +215,10 @@ func (q *Queries) GetFilteredOccurrences(ctx context.Context, arg *GetFilteredOc
 }
 
 const getImagesForOccurrence = `-- name: GetImagesForOccurrence :many
-SELECT image.id, image.image_store_id, image.review
-FROM occurrence JOIN review ON occurrence.id = review.occurrence JOIN image on review.id = image.review
+SELECT image.id, image.image_hash, image.review
+FROM occurrence
+JOIN review ON occurrence.id = review.occurrence
+JOIN image on review.id = image.review
 WHERE occurrence.id = $1
 `
 
@@ -229,7 +231,7 @@ func (q *Queries) GetImagesForOccurrence(ctx context.Context, id uuid.UUID) ([]*
 	var items []*Image
 	for rows.Next() {
 		var i Image
-		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
+		if err := rows.Scan(&i.ID, &i.ImageHash, &i.Review); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -361,7 +363,8 @@ func (q *Queries) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*
 
 const getSideDishesForOccurrence = `-- name: GetSideDishesForOccurrence :many
 SELECT dish.id, dish.name_de, dish.name_en
-FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish = dish.id
+FROM occurrence_side_dishes
+JOIN dish ON occurrence_side_dishes.dish = dish.id
 WHERE occurrence_side_dishes.occurrence = $1
 `
 
@@ -387,7 +390,8 @@ func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrence uui
 
 const getTagsForOccurrence = `-- name: GetTagsForOccurrence :many
 SELECT tag.key, tag.name, tag.description, tag.short_name, tag.priority, tag.is_allergy
-FROM occurrence_tag JOIN tag ON occurrence_tag.tag = tag.key
+FROM occurrence_tag
+JOIN tag ON occurrence_tag.tag = tag.key
 WHERE occurrence_tag.occurrence = $1
 `
 

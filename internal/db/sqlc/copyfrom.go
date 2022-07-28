@@ -30,7 +30,7 @@ func (r *iteratorForAddMultipleImagesToReview) Next() bool {
 func (r iteratorForAddMultipleImagesToReview) Values() ([]interface{}, error) {
 	return []interface{}{
 		r.rows[0].Review,
-		r.rows[0].ImageStoreID,
+		r.rows[0].ImageHash,
 	}, nil
 }
 
@@ -39,7 +39,7 @@ func (r iteratorForAddMultipleImagesToReview) Err() error {
 }
 
 func (q *Queries) AddMultipleImagesToReview(ctx context.Context, arg []*AddMultipleImagesToReviewParams) (int64, error) {
-	return q.db.CopyFrom(ctx, []string{"image"}, []string{"review", "image_store_id"}, &iteratorForAddMultipleImagesToReview{rows: arg})
+	return q.db.CopyFrom(ctx, []string{"image"}, []string{"review", "image_hash"}, &iteratorForAddMultipleImagesToReview{rows: arg})
 }
 
 // iteratorForAddMultipleOccurrenceSideDishes implements pgx.CopyFromSource.

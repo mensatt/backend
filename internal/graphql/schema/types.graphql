@@ -106,8 +106,6 @@ type Review {
     images: [Image!]!
     stars: Int!
     text: String
-    upVotes: Int!
-    downVotes: Int!
     createdAt: Timestamp!
     updatedAt: Timestamp!
     acceptedAt: Timestamp

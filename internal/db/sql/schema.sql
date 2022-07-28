@@ -79,8 +79,6 @@ CREATE TABLE review (
     display_name varchar(32),
     stars integer NOT NULL,
     text text,
-    up_votes integer DEFAULT 0 NOT NULL,
-    down_votes integer DEFAULT 0 NOT NULL,
     created_at timestamptz DEFAULT NOW() NOT NULL,
     updated_at timestamptz DEFAULT NOW() NOT NULL,
     accepted_at timestamptz,
@@ -91,7 +89,7 @@ CREATE TABLE review (
 
 CREATE TABLE image (
     id uuid DEFAULT uuid_generate_v4(),
-    image_store_id varchar NOT NULL,
+    image_hash varchar NOT NULL,
     review uuid NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY(review) REFERENCES review(id)

@@ -12,43 +12,43 @@ import (
 )
 
 const addImageToReview = `-- name: AddImageToReview :one
-INSERT INTO image (review, image_store_id)
+INSERT INTO image (review, image_hash)
 VALUES ($1, $2)
-RETURNING id, image_store_id, review
+RETURNING id, image_hash, review
 `
 
 type AddImageToReviewParams struct {
-	Review       uuid.UUID `json:"review"`
-	ImageStoreID string    `json:"image_store_id"`
+	Review    uuid.UUID `json:"review"`
+	ImageHash string    `json:"image_hash"`
 }
 
 func (q *Queries) AddImageToReview(ctx context.Context, arg *AddImageToReviewParams) (*Image, error) {
-	row := q.db.QueryRow(ctx, addImageToReview, arg.Review, arg.ImageStoreID)
+	row := q.db.QueryRow(ctx, addImageToReview, arg.Review, arg.ImageHash)
 	var i Image
-	err := row.Scan(&i.ID, &i.ImageStoreID, &i.Review)
+	err := row.Scan(&i.ID, &i.ImageHash, &i.Review)
 	return &i, err
 }
 
 type AddMultipleImagesToReviewParams struct {
-	Review       uuid.UUID `json:"review"`
-	ImageStoreID string    `json:"image_store_id"`
+	Review    uuid.UUID `json:"review"`
+	ImageHash string    `json:"image_hash"`
 }
 
 const deleteImage = `-- name: DeleteImage :one
 DELETE FROM image
 WHERE id = $1
-RETURNING id, image_store_id, review
+RETURNING id, image_hash, review
 `
 
 func (q *Queries) DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error) {
 	row := q.db.QueryRow(ctx, deleteImage, id)
 	var i Image
-	err := row.Scan(&i.ID, &i.ImageStoreID, &i.Review)
+	err := row.Scan(&i.ID, &i.ImageHash, &i.Review)
 	return &i, err
 }
 
 const getAllImages = `-- name: GetAllImages :many
-SELECT id, image_store_id, review
+SELECT id, image_hash, review
 FROM image
 `
 
@@ -61,7 +61,7 @@ func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
 	var items []*Image
 	for rows.Next() {
 		var i Image
-		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
+		if err := rows.Scan(&i.ID, &i.ImageHash, &i.Review); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -73,7 +73,7 @@ func (q *Queries) GetAllImages(ctx context.Context) ([]*Image, error) {
 }
 
 const getImageByID = `-- name: GetImageByID :one
-SELECT id, image_store_id, review
+SELECT id, image_hash, review
 FROM image
 WHERE id = $1
 `
@@ -81,25 +81,25 @@ WHERE id = $1
 func (q *Queries) GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error) {
 	row := q.db.QueryRow(ctx, getImageByID, id)
 	var i Image
-	err := row.Scan(&i.ID, &i.ImageStoreID, &i.Review)
+	err := row.Scan(&i.ID, &i.ImageHash, &i.Review)
 	return &i, err
 }
 
-const getImageStoreIDByID = `-- name: GetImageStoreIDByID :one
-SELECT image_store_id
+const getImageHashByID = `-- name: GetImageHashByID :one
+SELECT image_hash
 FROM image
 WHERE id = $1
 `
 
-func (q *Queries) GetImageStoreIDByID(ctx context.Context, id uuid.UUID) (string, error) {
-	row := q.db.QueryRow(ctx, getImageStoreIDByID, id)
-	var image_store_id string
-	err := row.Scan(&image_store_id)
-	return image_store_id, err
+func (q *Queries) GetImageHashByID(ctx context.Context, id uuid.UUID) (string, error) {
+	row := q.db.QueryRow(ctx, getImageHashByID, id)
+	var image_hash string
+	err := row.Scan(&image_hash)
+	return image_hash, err
 }
 
 const getImagesByDish = `-- name: GetImagesByDish :many
-SELECT image.id, image.image_store_id, image.review
+SELECT image.id, image.image_hash, image.review
 FROM image
 JOIN review ON (image.review = review.id)
 JOIN occurrence ON (review.occurrence = occurrence.id)
@@ -116,7 +116,7 @@ func (q *Queries) GetImagesByDish(ctx context.Context, id uuid.UUID) ([]*Image, 
 	var items []*Image
 	for rows.Next() {
 		var i Image
-		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
+		if err := rows.Scan(&i.ID, &i.ImageHash, &i.Review); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -128,7 +128,7 @@ func (q *Queries) GetImagesByDish(ctx context.Context, id uuid.UUID) ([]*Image, 
 }
 
 const getImagesByOccurrence = `-- name: GetImagesByOccurrence :many
-SELECT image.id, image.image_store_id, image.review
+SELECT image.id, image.image_hash, image.review
 FROM image
 JOIN review ON (image.review = review.id)
 JOIN occurrence ON (review.occurrence = occurrence.id)
@@ -144,7 +144,7 @@ func (q *Queries) GetImagesByOccurrence(ctx context.Context, id uuid.UUID) ([]*I
 	var items []*Image
 	for rows.Next() {
 		var i Image
-		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
+		if err := rows.Scan(&i.ID, &i.ImageHash, &i.Review); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)
@@ -156,7 +156,7 @@ func (q *Queries) GetImagesByOccurrence(ctx context.Context, id uuid.UUID) ([]*I
 }
 
 const getImagesByReview = `-- name: GetImagesByReview :many
-SELECT image.id, image.image_store_id, image.review
+SELECT image.id, image.image_hash, image.review
 FROM image
 JOIN review ON (image.review = review.id)
 WHERE review.id = $1
@@ -171,7 +171,7 @@ func (q *Queries) GetImagesByReview(ctx context.Context, id uuid.UUID) ([]*Image
 	var items []*Image
 	for rows.Next() {
 		var i Image
-		if err := rows.Scan(&i.ID, &i.ImageStoreID, &i.Review); err != nil {
+		if err := rows.Scan(&i.ID, &i.ImageHash, &i.Review); err != nil {
 			return nil, err
 		}
 		items = append(items, &i)

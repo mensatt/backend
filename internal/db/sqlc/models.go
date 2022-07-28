@@ -115,9 +115,9 @@ type DishAlias struct {
 }
 
 type Image struct {
-	ID           uuid.UUID `json:"id"`
-	ImageStoreID string    `json:"image_store_id"`
-	Review       uuid.UUID `json:"review"`
+	ID        uuid.UUID `json:"id"`
+	ImageHash string    `json:"image_hash"`
+	Review    uuid.UUID `json:"review"`
 }
 
 type Location struct {
@@ -162,8 +162,6 @@ type Review struct {
 	DisplayName sql.NullString `json:"display_name"`
 	Stars       int32          `json:"stars"`
 	Text        sql.NullString `json:"text"`
-	UpVotes     int32          `json:"up_votes"`
-	DownVotes   int32          `json:"down_votes"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	AcceptedAt  sql.NullTime   `json:"accepted_at"`

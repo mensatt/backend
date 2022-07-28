@@ -40,7 +40,7 @@ type Querier interface {
 	GetDishReviews(ctx context.Context, arg *GetDishReviewsParams) ([]*Review, error)
 	GetFilteredOccurrences(ctx context.Context, arg *GetFilteredOccurrencesParams) ([]*Occurrence, error)
 	GetImageByID(ctx context.Context, id uuid.UUID) (*Image, error)
-	GetImageStoreIDByID(ctx context.Context, id uuid.UUID) (string, error)
+	GetImageHashByID(ctx context.Context, id uuid.UUID) (string, error)
 	GetImagesByDish(ctx context.Context, id uuid.UUID) ([]*Image, error)
 	GetImagesByOccurrence(ctx context.Context, id uuid.UUID) ([]*Image, error)
 	GetImagesByReview(ctx context.Context, id uuid.UUID) ([]*Image, error)

@@ -32,7 +32,7 @@ func (r *imageResolver) Review(ctx context.Context, obj *sqlc.Image) (*sqlc.Revi
 
 // ImageURL is the resolver for the imageUrl field.
 func (r *imageResolver) ImageURL(ctx context.Context, obj *sqlc.Image) (string, error) {
-	return fmt.Sprintf("%s/%s", r.ImageBaseURL, obj.ImageStoreID), nil
+	return fmt.Sprintf("%s/%s", r.ImageBaseURL, obj.ImageHash), nil
 }
 
 // Location is the resolver for the location field.

@@ -16,7 +16,7 @@ import (
 const createReview = `-- name: CreateReview :one
 INSERT INTO review (occurrence, display_name, stars, text)
 VALUES ($1, $2, $3, $4)
-RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+RETURNING id, occurrence, display_name, stars, text, created_at, updated_at, accepted_at
 `
 
 type CreateReviewParams struct {
@@ -40,8 +40,6 @@ func (q *Queries) CreateReview(ctx context.Context, arg *CreateReviewParams) (*R
 		&i.DisplayName,
 		&i.Stars,
 		&i.Text,
-		&i.UpVotes,
-		&i.DownVotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.AcceptedAt,
@@ -52,7 +50,7 @@ func (q *Queries) CreateReview(ctx context.Context, arg *CreateReviewParams) (*R
 const deleteReview = `-- name: DeleteReview :one
 DELETE FROM review
 WHERE id = $1
-RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+RETURNING id, occurrence, display_name, stars, text, created_at, updated_at, accepted_at
 `
 
 func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) (*Review, error) {
@@ -64,8 +62,6 @@ func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) (*Review, erro
 		&i.DisplayName,
 		&i.Stars,
 		&i.Text,
-		&i.UpVotes,
-		&i.DownVotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.AcceptedAt,
@@ -74,7 +70,7 @@ func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) (*Review, erro
 }
 
 const getAllReviews = `-- name: GetAllReviews :many
-SELECT id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+SELECT id, occurrence, display_name, stars, text, created_at, updated_at, accepted_at
 FROM review
 `
 
@@ -93,8 +89,6 @@ func (q *Queries) GetAllReviews(ctx context.Context) ([]*Review, error) {
 			&i.DisplayName,
 			&i.Stars,
 			&i.Text,
-			&i.UpVotes,
-			&i.DownVotes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.AcceptedAt,
@@ -140,7 +134,7 @@ func (q *Queries) GetDishReviewMetadata(ctx context.Context, arg *GetDishReviewM
 }
 
 const getDishReviews = `-- name: GetDishReviews :many
-SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.up_votes, review.down_votes, review.created_at, review.updated_at, review.accepted_at
+SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.created_at, review.updated_at, review.accepted_at
 FROM review
 JOIN occurrence ON (review.occurrence = occurrence.id)
 JOIN dish ON (occurrence.dish = dish.id)
@@ -172,8 +166,6 @@ func (q *Queries) GetDishReviews(ctx context.Context, arg *GetDishReviewsParams)
 			&i.DisplayName,
 			&i.Stars,
 			&i.Text,
-			&i.UpVotes,
-			&i.DownVotes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.AcceptedAt,
@@ -217,7 +209,7 @@ func (q *Queries) GetOccurrenceReviewMetadata(ctx context.Context, arg *GetOccur
 }
 
 const getOccurrenceReviews = `-- name: GetOccurrenceReviews :many
-SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.up_votes, review.down_votes, review.created_at, review.updated_at, review.accepted_at
+SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.created_at, review.updated_at, review.accepted_at
 FROM occurrence JOIN review ON occurrence.id = review.occurrence
 WHERE occurrence.id = $1
     AND (CASE 
@@ -247,8 +239,6 @@ func (q *Queries) GetOccurrenceReviews(ctx context.Context, arg *GetOccurrenceRe
 			&i.DisplayName,
 			&i.Stars,
 			&i.Text,
-			&i.UpVotes,
-			&i.DownVotes,
 			&i.CreatedAt,
 			&i.UpdatedAt,
 			&i.AcceptedAt,
@@ -264,7 +254,7 @@ func (q *Queries) GetOccurrenceReviews(ctx context.Context, arg *GetOccurrenceRe
 }
 
 const getReviewByID = `-- name: GetReviewByID :one
-SELECT id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+SELECT id, occurrence, display_name, stars, text, created_at, updated_at, accepted_at
 FROM review
 WHERE id = $1
 `
@@ -278,8 +268,6 @@ func (q *Queries) GetReviewByID(ctx context.Context, id uuid.UUID) (*Review, err
 		&i.DisplayName,
 		&i.Stars,
 		&i.Text,
-		&i.UpVotes,
-		&i.DownVotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.AcceptedAt,
@@ -288,7 +276,7 @@ func (q *Queries) GetReviewByID(ctx context.Context, id uuid.UUID) (*Review, err
 }
 
 const getReviewByImage = `-- name: GetReviewByImage :one
-SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.up_votes, review.down_votes, review.created_at, review.updated_at, review.accepted_at
+SELECT review.id, review.occurrence, review.display_name, review.stars, review.text, review.created_at, review.updated_at, review.accepted_at
 FROM review
 JOIN image ON (image.review = review.id)
 WHERE image.id = $1
@@ -303,8 +291,6 @@ func (q *Queries) GetReviewByImage(ctx context.Context, id uuid.UUID) (*Review, 
 		&i.DisplayName,
 		&i.Stars,
 		&i.Text,
-		&i.UpVotes,
-		&i.DownVotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.AcceptedAt,
@@ -316,7 +302,7 @@ const setReviewApproval = `-- name: SetReviewApproval :one
 UPDATE review
 SET accepted_at = $1
 WHERE id = $2
-RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+RETURNING id, occurrence, display_name, stars, text, created_at, updated_at, accepted_at
 `
 
 type SetReviewApprovalParams struct {
@@ -333,8 +319,6 @@ func (q *Queries) SetReviewApproval(ctx context.Context, arg *SetReviewApprovalP
 		&i.DisplayName,
 		&i.Stars,
 		&i.Text,
-		&i.UpVotes,
-		&i.DownVotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.AcceptedAt,
@@ -352,7 +336,7 @@ SET
     updated_at = NOW(),
     accepted_at = COALESCE($6, accepted_at)
 WHERE id = $1
-RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
+RETURNING id, occurrence, display_name, stars, text, created_at, updated_at, accepted_at
 `
 
 type UpdateReviewParams struct {
@@ -380,8 +364,6 @@ func (q *Queries) UpdateReview(ctx context.Context, arg *UpdateReviewParams) (*R
 		&i.DisplayName,
 		&i.Stars,
 		&i.Text,
-		&i.UpVotes,
-		&i.DownVotes,
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.AcceptedAt,
