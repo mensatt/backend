@@ -79,8 +79,6 @@ CREATE TABLE review (
     display_name varchar(32),
     stars integer NOT NULL,
     text text,
-    up_votes integer DEFAULT 0 NOT NULL,
-    down_votes integer DEFAULT 0 NOT NULL,
     created_at timestamptz DEFAULT NOW() NOT NULL,
     updated_at timestamptz DEFAULT NOW() NOT NULL,
     accepted_at timestamptz,

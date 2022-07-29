@@ -157,8 +157,7 @@ func (q *Queries) GetImagesByOccurrence(ctx context.Context, id uuid.UUID) ([]*I
 
 const getImagesByReview = `-- name: GetImagesByReview :many
 SELECT image.id, image.image_store_id, image.review
-FROM image
-JOIN review ON (image.review = review.id)
+FROM image JOIN review ON (image.review = review.id)
 WHERE review.id = $1
 `
 

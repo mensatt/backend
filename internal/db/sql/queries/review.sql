@@ -73,7 +73,7 @@ WHERE dish.id = $1
 
 -- name: GetOccurrenceReviews :many
 SELECT review.*
-FROM occurrence JOIN review ON occurrence.id = review.occurrence
+FROM occurrence JOIN review ON (occurrence.id = review.occurrence)
 WHERE occurrence.id = $1
     AND (CASE 
             WHEN sqlc.narg('approved')::bool = TRUE THEN review.accepted_at IS NOT NULL
