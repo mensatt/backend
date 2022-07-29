@@ -216,7 +216,9 @@ func (q *Queries) GetFilteredOccurrences(ctx context.Context, arg *GetFilteredOc
 
 const getImagesForOccurrence = `-- name: GetImagesForOccurrence :many
 SELECT image.id, image.image_store_id, image.review
-FROM occurrence JOIN review ON occurrence.id = review.occurrence JOIN image on review.id = image.review
+FROM occurrence
+JOIN review ON (occurrence.id = review.occurrence)
+JOIN image ON (review.id = image.review)
 WHERE occurrence.id = $1
 `
 
@@ -359,35 +361,9 @@ func (q *Queries) GetOccurrencesByDate(ctx context.Context, date time.Time) ([]*
 	return items, nil
 }
 
-const getSideDishesForOccurrence = `-- name: GetSideDishesForOccurrence :many
-SELECT dish.id, dish.name_de, dish.name_en
-FROM occurrence_side_dishes JOIN dish ON occurrence_side_dishes.dish = dish.id
-WHERE occurrence_side_dishes.occurrence = $1
-`
-
-func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Dish, error) {
-	rows, err := q.db.Query(ctx, getSideDishesForOccurrence, occurrence)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []*Dish
-	for rows.Next() {
-		var i Dish
-		if err := rows.Scan(&i.ID, &i.NameDe, &i.NameEn); err != nil {
-			return nil, err
-		}
-		items = append(items, &i)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
-}
-
 const getTagsForOccurrence = `-- name: GetTagsForOccurrence :many
 SELECT tag.key, tag.name, tag.description, tag.short_name, tag.priority, tag.is_allergy
-FROM occurrence_tag JOIN tag ON occurrence_tag.tag = tag.key
+FROM occurrence_tag JOIN tag ON (occurrence_tag.tag = tag.key)
 WHERE occurrence_tag.occurrence = $1
 `
 

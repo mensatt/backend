@@ -24,8 +24,7 @@ WHERE occurrence.id = $1;
 
 -- name: GetImagesByReview :many
 SELECT image.*
-FROM image
-JOIN review ON (image.review = review.id)
+FROM image JOIN review ON (image.review = review.id)
 WHERE review.id = $1;
 
 -- name: GetImageStoreIDByID :one

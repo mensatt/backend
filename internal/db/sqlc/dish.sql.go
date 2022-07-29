@@ -68,6 +68,32 @@ func (q *Queries) GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error) 
 	return &i, err
 }
 
+const getSideDishesForOccurrence = `-- name: GetSideDishesForOccurrence :many
+SELECT dish.id, dish.name_de, dish.name_en
+FROM occurrence_side_dishes JOIN dish ON (occurrence_side_dishes.dish = dish.id)
+WHERE occurrence_side_dishes.occurrence = $1
+`
+
+func (q *Queries) GetSideDishesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Dish, error) {
+	rows, err := q.db.Query(ctx, getSideDishesForOccurrence, occurrence)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []*Dish
+	for rows.Next() {
+		var i Dish
+		if err := rows.Scan(&i.ID, &i.NameDe, &i.NameEn); err != nil {
+			return nil, err
+		}
+		items = append(items, &i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateDish = `-- name: UpdateDish :one
 UPDATE dish
 SET

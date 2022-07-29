@@ -7,6 +7,11 @@ SELECT *
 FROM dish
 WHERE id = $1;
 
+-- name: GetSideDishesForOccurrence :many
+SELECT dish.*
+FROM occurrence_side_dishes JOIN dish ON (occurrence_side_dishes.dish = dish.id)
+WHERE occurrence_side_dishes.occurrence = $1;
+
 -- name: CreateDish :one
 INSERT INTO dish (name_de, name_en)
 VALUES ($1, $2)
