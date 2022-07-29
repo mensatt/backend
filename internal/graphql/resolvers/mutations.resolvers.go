@@ -111,14 +111,6 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 	return r.Database.DeleteReview(ctx, input.ID)
 }
 
-// SetReviewApproval is the resolver for the setReviewApproval field.
-func (r *mutationResolver) SetReviewApproval(ctx context.Context, input models.SetReviewApprovalInput) (*sqlc.Review, error) {
-	return r.Database.SetReviewApproval(ctx, &sqlc.SetReviewApprovalParams{
-		ID:         input.ID,
-		AcceptedAt: approvedBoolToNullTime(input.Approved),
-	})
-}
-
 // Mutation returns gqlserver.MutationResolver implementation.
 func (r *Resolver) Mutation() gqlserver.MutationResolver { return &mutationResolver{r} }
 

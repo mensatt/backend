@@ -56,7 +56,6 @@ type ResolverRoot interface {
 	ReviewMetadataDish() ReviewMetadataDishResolver
 	ReviewMetadataOccurrence() ReviewMetadataOccurrenceResolver
 	CreateReviewInput() CreateReviewInputResolver
-	UpdateReviewInput() UpdateReviewInputResolver
 }
 
 type DirectiveRoot struct {
@@ -104,7 +103,6 @@ type ComplexityRoot struct {
 		LoginUser                    func(childComplexity int, input models.LoginUserInput) int
 		RemoveSideDishFromOccurrence func(childComplexity int, input sqlc.RemoveOccurrenceSideDishParams) int
 		RemoveTagFromOccurrence      func(childComplexity int, input sqlc.RemoveOccurrenceTagParams) int
-		SetReviewApproval            func(childComplexity int, input models.SetReviewApprovalInput) int
 		UpdateDish                   func(childComplexity int, input sqlc.UpdateDishParams) int
 		UpdateDishAlias              func(childComplexity int, input sqlc.UpdateDishAliasParams) int
 		UpdateOccurrence             func(childComplexity int, input sqlc.UpdateOccurrenceParams) int
@@ -238,7 +236,6 @@ type MutationResolver interface {
 	CreateReview(ctx context.Context, input db.CreateReviewWithImagesParams) (*sqlc.Review, error)
 	UpdateReview(ctx context.Context, input sqlc.UpdateReviewParams) (*sqlc.Review, error)
 	DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*sqlc.Review, error)
-	SetReviewApproval(ctx context.Context, input models.SetReviewApprovalInput) (*sqlc.Review, error)
 }
 type OccurrenceResolver interface {
 	Location(ctx context.Context, obj *sqlc.Occurrence) (*sqlc.Location, error)
@@ -290,9 +287,6 @@ type ReviewMetadataOccurrenceResolver interface {
 
 type CreateReviewInputResolver interface {
 	Images(ctx context.Context, obj *db.CreateReviewWithImagesParams, data []*models.ImageInput) error
-}
-type UpdateReviewInputResolver interface {
-	Approved(ctx context.Context, obj *sqlc.UpdateReviewParams, data *bool) error
 }
 
 type executableSchema struct {
@@ -568,18 +562,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RemoveTagFromOccurrence(childComplexity, args["input"].(sqlc.RemoveOccurrenceTagParams)), true
-
-	case "Mutation.setReviewApproval":
-		if e.complexity.Mutation.SetReviewApproval == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_setReviewApproval_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.SetReviewApproval(childComplexity, args["input"].(models.SetReviewApprovalInput)), true
 
 	case "Mutation.updateDish":
 		if e.complexity.Mutation.UpdateDish == nil {
@@ -1118,7 +1100,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputRemoveSideDishFromOccurrenceInput,
 		ec.unmarshalInputRemoveTagFromOccurrenceInput,
 		ec.unmarshalInputReviewFilter,
-		ec.unmarshalInputSetReviewApprovalInput,
 		ec.unmarshalInputUpdateDishAliasInput,
 		ec.unmarshalInputUpdateDishInput,
 		ec.unmarshalInputUpdateOccurrenceInput,
@@ -1350,11 +1331,6 @@ input DeleteReviewInput {
     id: UUID!
 }
 
-input SetReviewApprovalInput {
-    id: UUID!
-    approved: Boolean!
-}
-
 input ReviewFilter {
     approved: Boolean
 }
@@ -1406,7 +1382,6 @@ input DeleteImageToReviewInput {
     createReview(input: CreateReviewInput!): Review!
     updateReview(input: UpdateReviewInput!): Review! @authenticated
     deleteReview(input: DeleteReviewInput!): Review! @authenticated
-    setReviewApproval(input: SetReviewApprovalInput!): Review! @authenticated
 
     # Image
     # addImagesToReview(input: AddImagesToReviewInput!): Review!
@@ -1790,21 +1765,6 @@ func (ec *executionContext) field_Mutation_removeTagFromOccurrence_args(ctx cont
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNRemoveTagFromOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐRemoveOccurrenceTagParams(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_setReviewApproval_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.SetReviewApprovalInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNSetReviewApprovalInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐSetReviewApprovalInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4140,105 +4100,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteReview(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteReview_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_setReviewApproval(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_setReviewApproval(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		directive0 := func(rctx context.Context) (interface{}, error) {
-			ctx = rctx // use context from middleware stack in children
-			return ec.resolvers.Mutation().SetReviewApproval(rctx, fc.Args["input"].(models.SetReviewApprovalInput))
-		}
-		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
-			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
-		}
-
-		tmp, err := directive1(rctx)
-		if err != nil {
-			return nil, graphql.ErrorOnPath(ctx, err)
-		}
-		if tmp == nil {
-			return nil, nil
-		}
-		if data, ok := tmp.(*sqlc.Review); ok {
-			return data, nil
-		}
-		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Review`, tmp)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*sqlc.Review)
-	fc.Result = res
-	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐReview(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_setReviewApproval(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Review_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Review_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Review_displayName(ctx, field)
-			case "images":
-				return ec.fieldContext_Review_images(ctx, field)
-			case "stars":
-				return ec.fieldContext_Review_stars(ctx, field)
-			case "text":
-				return ec.fieldContext_Review_text(ctx, field)
-			case "upVotes":
-				return ec.fieldContext_Review_upVotes(ctx, field)
-			case "downVotes":
-				return ec.fieldContext_Review_downVotes(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Review_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Review_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Review_acceptedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_setReviewApproval_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -10167,42 +10028,6 @@ func (ec *executionContext) unmarshalInputReviewFilter(ctx context.Context, obj 
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputSetReviewApprovalInput(ctx context.Context, obj interface{}) (models.SetReviewApprovalInput, error) {
-	var it models.SetReviewApprovalInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"id", "approved"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			it.ID, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		case "approved":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("approved"))
-			it.Approved, err = ec.unmarshalNBoolean2bool(ctx, v)
-			if err != nil {
-				return it, err
-			}
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputUpdateDishAliasInput(ctx context.Context, obj interface{}) (sqlc.UpdateDishAliasParams, error) {
 	var it sqlc.UpdateDishAliasParams
 	asMap := map[string]interface{}{}
@@ -10505,11 +10330,8 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("approved"))
-			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			it.Approved, err = ec.unmarshalOBoolean2databaseᚋsqlᚐNullBool(ctx, v)
 			if err != nil {
-				return it, err
-			}
-			if err = ec.resolvers.UpdateReviewInput().Approved(ctx, &it, data); err != nil {
 				return it, err
 			}
 		}
@@ -10924,15 +10746,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteReview(ctx, field)
-			})
-
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
-		case "setReviewApproval":
-
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_setReviewApproval(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -12864,11 +12677,6 @@ func (ec *executionContext) marshalNReviewMetadataOccurrence2ᚖgithubᚗcomᚋm
 	return ec._ReviewMetadataOccurrence(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNSetReviewApprovalInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐSetReviewApprovalInput(ctx context.Context, v interface{}) (models.SetReviewApprovalInput, error) {
-	res, err := ec.unmarshalInputSetReviewApprovalInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13299,6 +13107,16 @@ func (ec *executionContext) unmarshalOBoolean2bool(ctx context.Context, v interf
 
 func (ec *executionContext) marshalOBoolean2bool(ctx context.Context, sel ast.SelectionSet, v bool) graphql.Marshaler {
 	res := graphql.MarshalBoolean(v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOBoolean2databaseᚋsqlᚐNullBool(ctx context.Context, v interface{}) (sql.NullBool, error) {
+	res, err := scalars.UnmarshalNullBool(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOBoolean2databaseᚋsqlᚐNullBool(ctx context.Context, sel ast.SelectionSet, v sql.NullBool) graphql.Marshaler {
+	res := scalars.MarshalNullBool(v)
 	return res
 }
 

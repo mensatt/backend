@@ -20,7 +20,11 @@ SET
     stars = COALESCE(sqlc.narg('stars'), stars),
     text = COALESCE(sqlc.narg('text'), text),
     updated_at = NOW(),
-    accepted_at = COALESCE(sqlc.narg('accepted_at'), accepted_at)
+    accepted_at = CASE 
+        WHEN sqlc.narg('approved')::bool = TRUE THEN  NOW()
+        WHEN sqlc.narg('approved')::bool = FALSE THEN NULL
+        ELSE accepted_at
+    END
 WHERE id = $1
 RETURNING *;
 

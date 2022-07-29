@@ -350,7 +350,11 @@ SET
     stars = COALESCE($4, stars),
     text = COALESCE($5, text),
     updated_at = NOW(),
-    accepted_at = COALESCE($6, accepted_at)
+    accepted_at = CASE 
+        WHEN $6::bool = TRUE THEN  NOW()
+        WHEN $6::bool = FALSE THEN NULL
+        ELSE accepted_at
+    END
 WHERE id = $1
 RETURNING id, occurrence, display_name, stars, text, up_votes, down_votes, created_at, updated_at, accepted_at
 `
@@ -361,7 +365,7 @@ type UpdateReviewParams struct {
 	DisplayName sql.NullString `json:"display_name"`
 	Stars       sql.NullInt32  `json:"stars"`
 	Text        sql.NullString `json:"text"`
-	AcceptedAt  sql.NullTime   `json:"accepted_at"`
+	Approved    sql.NullBool   `json:"approved"`
 }
 
 func (q *Queries) UpdateReview(ctx context.Context, arg *UpdateReviewParams) (*Review, error) {
@@ -371,7 +375,7 @@ func (q *Queries) UpdateReview(ctx context.Context, arg *UpdateReviewParams) (*R
 		arg.DisplayName,
 		arg.Stars,
 		arg.Text,
-		arg.AcceptedAt,
+		arg.Approved,
 	)
 	var i Review
 	err := row.Scan(
