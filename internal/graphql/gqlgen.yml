@@ -69,6 +69,10 @@ models:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.UUID
       - github.com/mensatt/backend/internal/graphql/scalars.NullUUID
+  Boolean:
+    model:
+      - github.com/99designs/gqlgen/graphql.Boolean
+      - github.com/mensatt/backend/internal/graphql/scalars.NullBool
 
   # Enums
   Priority:

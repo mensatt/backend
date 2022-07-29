@@ -7,7 +7,6 @@ import (
 	"context"
 
 	"github.com/mensatt/backend/internal/db"
-	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/models"
 )
@@ -34,21 +33,9 @@ func (r *createReviewInputResolver) Images(ctx context.Context, obj *db.CreateRe
 	return nil
 }
 
-// Approved is the resolver for the approved field.
-func (r *updateReviewInputResolver) Approved(ctx context.Context, obj *sqlc.UpdateReviewParams, data *bool) error {
-	obj.AcceptedAt = approvedBoolToNullTime(data == nil && *data)
-	return nil
-}
-
 // CreateReviewInput returns gqlserver.CreateReviewInputResolver implementation.
 func (r *Resolver) CreateReviewInput() gqlserver.CreateReviewInputResolver {
 	return &createReviewInputResolver{r}
 }
 
-// UpdateReviewInput returns gqlserver.UpdateReviewInputResolver implementation.
-func (r *Resolver) UpdateReviewInput() gqlserver.UpdateReviewInputResolver {
-	return &updateReviewInputResolver{r}
-}
-
 type createReviewInputResolver struct{ *Resolver }
-type updateReviewInputResolver struct{ *Resolver }

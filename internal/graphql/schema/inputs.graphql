@@ -149,11 +149,6 @@ input DeleteReviewInput {
     id: UUID!
 }
 
-input SetReviewApprovalInput {
-    id: UUID!
-    approved: Boolean!
-}
-
 input ReviewFilter {
     approved: Boolean
 }
