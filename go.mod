@@ -10,9 +10,9 @@ require (
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/uuid v1.3.0
-	github.com/jackc/pgconn v1.12.1
-	github.com/jackc/pgtype v1.11.0
-	github.com/jackc/pgx/v4 v4.16.1
+	github.com/jackc/pgconn v1.13.0
+	github.com/jackc/pgtype v1.12.0
+	github.com/jackc/pgx/v4 v4.17.0
 	github.com/kyleconroy/sqlc v1.14.1-0.20220719050513-0ae16d272c71
 	github.com/lib/pq v1.10.6
 	github.com/vektah/gqlparser/v2 v2.4.7
@@ -39,7 +39,7 @@ require (
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
-	github.com/jackc/pgproto3/v2 v2.3.0 // indirect
+	github.com/jackc/pgproto3/v2 v2.3.1 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
 	github.com/jackc/puddle v1.2.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
@@ -72,5 +72,5 @@ require (
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
