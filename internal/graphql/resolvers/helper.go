@@ -3,24 +3,20 @@ package resolvers
 import (
 	"context"
 	"database/sql"
-	"errors"
-	"io/ioutil"
+	"io"
 	"time"
 
 	"github.com/jackc/pgtype"
 	"github.com/mensatt/backend/internal/graphql/models"
 )
 
-func (r *Resolver) transcodeAndStoreImage(ctx context.Context, image *models.ImageInput) (string, error) {
-	if image.Image.Size > r.ImageProcessor.GetMaxImageSize() {
-		return "", errors.New("image size is too big")
-	}
-
-	imageBytes, err := ioutil.ReadAll(image.Image.File)
+func (r *Resolver) storeImage(ctx context.Context, image *models.ImageInput) (string, error) {
+	imageBytes, err := io.ReadAll(image.Image.File)
 	if err != nil {
 		return "", err
 	}
-	return r.ImageProcessor.StoreImage(imageBytes)
+
+	return r.ImageUploader.ValidateAndStoreImage(imageBytes)
 }
 
 func approvedBoolToNullTime(approved bool) sql.NullTime {

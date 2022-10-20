@@ -1,65 +1,45 @@
 package images
 
 import (
-	"fmt"
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/backend/pkg/imageprocessor"
+	"github.com/mensatt/backend/pkg/imageuploader"
+	"net/http"
+	"os"
 )
 
 type ImageParams struct {
-	ImageProcessor *imageprocessor.ImageProcessor
+	ImageUploader *imageuploader.ImageUploader
 }
 
 func Run(g *gin.RouterGroup, params *ImageParams) error {
-	relativePath := "/:imageStoreID"
-	handler := imageHandler(params.ImageProcessor)
+	relativePath := "/:imageHash"
+	handler := imageHandler(params.ImageUploader)
 	g.GET(relativePath, handler)
 	g.HEAD(relativePath, handler)
 	return nil
 }
 
-func imageHandler(ip *imageprocessor.ImageProcessor) gin.HandlerFunc {
+func imageHandler(ip *imageuploader.ImageUploader) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		imageStoreID := c.Param("imageStoreID")
-		if !imageprocessor.IsImageStoreIDValid(imageStoreID) {
-			c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid imageStoreID: %s", imageStoreID))
+		imageHash := c.Param("imageHash")
+		print(imageHash)
+		if !imageuploader.IsImageHashValid(imageHash) {
+			// return 400 error if image hash format is invalid
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid image hash"})
+			return
 		}
 
-		widthStr := c.Query("width")
-		heightStr := c.Query("height")
+		path := ip.GetImagePath(imageHash)
+		print(path)
 
-		var path string
-		var err error
-		if widthStr == "" && heightStr == "" {
-			path, err = ip.GetOriginal(imageStoreID)
-			if err != nil {
-				c.AbortWithError(http.StatusBadRequest, err)
-				return
-			}
-		} else {
-			width, err := strconv.Atoi(widthStr)
-			if err != nil {
-				c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid width: %s", widthStr))
-				return
-			}
-			height, err := strconv.Atoi(heightStr)
-			if err != nil {
-				c.AbortWithError(http.StatusBadRequest, fmt.Errorf("invalid height: %s", heightStr))
-				return
-			}
-
-			path, err = ip.GetResized(imageStoreID, width, height)
-			if err == imageprocessor.ErrOriginalImageNotFound {
-				c.AbortWithError(http.StatusNotFound, err)
-				return
-			} else if err != nil {
-				c.AbortWithError(http.StatusInternalServerError, err)
-				return
-			}
+		// check if file exists and send it if it does
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			c.File(path)
+			return
+		} else if err != nil {
+			// return 404 error if file does not exist
+			c.JSON(http.StatusNotFound, gin.H{"error": "image not found"})
+			return
 		}
-		c.File(path)
 	}
 }

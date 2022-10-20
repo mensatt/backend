@@ -1,4 +1,4 @@
-FROM golang:1.18 as base
+FROM golang:1.19 as base
 
 # Create another stage called "dev" that is based off of our "base" stage (so we have golang available to us)
 FROM base as dev
@@ -17,10 +17,11 @@ FROM base as built
 WORKDIR /go/app/mensatt
 COPY . .
 
-ENV CGO_ENABLED=1
+#ENV CGO_ENABLED=1
 
 RUN go mod download
-RUN go build -tags netgo -ldflags="-extldflags=-static" -o /tmp/mensatt ./cmd/mensatt/main.go
+#RUN go build -tags netgo -ldflags="-extldflags=-static" -o /tmp/mensatt ./cmd/mensatt/main.go
+RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
 FROM busybox:glibc as prod
 

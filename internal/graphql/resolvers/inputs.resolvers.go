@@ -19,13 +19,13 @@ func (r *createReviewInputResolver) Images(ctx context.Context, obj *db.CreateRe
 
 	imagesParams := make([]*db.CreateImageParams, len(data))
 	for i, image := range data {
-		imageStoreID, err := r.transcodeAndStoreImage(ctx, image)
+		imageHash, err := r.storeImage(ctx, image)
 		if err != nil {
 			// TODO: delete previous images
 			return err
 		}
 		imagesParams[i] = &db.CreateImageParams{
-			ImageStoreID: imageStoreID,
+			ImageHash: imageHash,
 		}
 	}
 	obj.Images = imagesParams

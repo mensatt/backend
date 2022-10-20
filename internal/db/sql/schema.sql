@@ -89,7 +89,7 @@ CREATE TABLE review (
 
 CREATE TABLE image (
     id uuid DEFAULT uuid_generate_v4(),
-    image_store_id varchar NOT NULL,
+    image_hash varchar NOT NULL,
     review uuid NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY(review) REFERENCES review(id)

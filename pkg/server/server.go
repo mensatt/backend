@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/mensatt/backend/internal/images"
 	"log"
 
 	sentrygin "github.com/getsentry/sentry-go/gin"
@@ -9,20 +10,19 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/graphql"
-	"github.com/mensatt/backend/internal/images"
 	"github.com/mensatt/backend/internal/middleware"
 	"github.com/mensatt/backend/internal/misc"
-	"github.com/mensatt/backend/pkg/imageprocessor"
+	"github.com/mensatt/backend/pkg/imageuploader"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
-func Run(config *ServerConfig, pool *pgxpool.Pool) error {
+func Run(config *Config, pool *pgxpool.Pool) error {
 	jwtKeyStore, err := utils.InitJWTKeyStore(&config.JWT)
 	if err != nil {
 		return err
 	}
 
-	imageProcessor, err := imageprocessor.NewImageProcessor(config.ImageProcessor)
+	imageUploader, err := imageuploader.NewImageUploader(config.ImageUploader)
 	if err != nil {
 		return err
 	}
@@ -51,7 +51,7 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 	assetsRouterGroup := app.Group(config.VersionedPath("/assets"))
 	imagesRouterGroup := assetsRouterGroup.Group("/images")
 	err = images.Run(imagesRouterGroup, &images.ImageParams{
-		ImageProcessor: imageProcessor,
+		ImageUploader: imageUploader,
 	})
 	if err != nil {
 		return err
@@ -65,11 +65,11 @@ func Run(config *ServerConfig, pool *pgxpool.Pool) error {
 
 	gqlRouterGroup := app.Group(config.VersionedPath("/graphql"))
 	gqlServerParams := graphql.GraphQLParams{
-		DebugEnabled:   config.DebugEnabled,
-		Database:       database,
-		JWTKeyStore:    jwtKeyStore,
-		ImageProcessor: imageProcessor,
-		ImageBaseURL:   imagesRouterGroup.BasePath(),
+		DebugEnabled:  config.DebugEnabled,
+		Database:      database,
+		JWTKeyStore:   jwtKeyStore,
+		ImageUploader: imageUploader,
+		ImageBaseURL:  imagesRouterGroup.BasePath(),
 	}
 	err = graphql.Run(gqlRouterGroup, &gqlServerParams)
 	if err != nil {
