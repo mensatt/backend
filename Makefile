@@ -1,4 +1,4 @@
-.PHONY: gen generate tidy log logs up down start stop sqlc gqlgen jwt jwt-keys
+.PHONY: gen generate tidy log logs up down start stop sqlc gqlgen fmt format jwt jwt-keys
 
 DC = docker compose -f docker-compose.yml
 
@@ -17,7 +17,7 @@ log: logs
 logs:
 	$(DC) logs -f mensatt
 
-#go code generation
+# go code generation
 gen: generate
 generate:
 	go generate ./...
@@ -25,6 +25,11 @@ sqlc:
 	go generate ./internal/db/...
 gqlgen:
 	go generate ./internal/graphql/...
+
+# go format
+fmt: format
+format:
+	go fmt ./...
 
 # go
 tidy:

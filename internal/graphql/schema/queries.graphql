@@ -12,7 +12,7 @@ type Query {
     occurrences(filter: OccurrenceFilter): [Occurrence!]!
 
     # Review
-    reviews: [Review!]!
+    reviews(filter: ReviewFilter): [Review!]!
 
     # Location
     locations: [Location!]!

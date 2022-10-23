@@ -6,6 +6,7 @@ package sqlc
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
 	"github.com/google/uuid"
@@ -33,7 +34,7 @@ type Querier interface {
 	GetAllImages(ctx context.Context) ([]*Image, error)
 	GetAllLocations(ctx context.Context) ([]*Location, error)
 	GetAllOccurrences(ctx context.Context) ([]*Occurrence, error)
-	GetAllReviews(ctx context.Context) ([]*Review, error)
+	GetAllReviews(ctx context.Context, approved sql.NullBool) ([]*Review, error)
 	GetAllTags(ctx context.Context) ([]*Tag, error)
 	GetDishByID(ctx context.Context, id uuid.UUID) (*Dish, error)
 	GetDishReviewMetadata(ctx context.Context, arg *GetDishReviewMetadataParams) (*GetDishReviewMetadataRow, error)

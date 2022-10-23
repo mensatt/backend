@@ -1,6 +1,11 @@
 -- name: GetAllReviews :many
 SELECT *
-FROM review;
+FROM review
+WHERE (CASE
+           WHEN sqlc.narg('approved')::bool = TRUE THEN review.accepted_at IS NOT NULL
+           WHEN sqlc.narg('approved')::bool = FALSE THEN review.accepted_at IS NULL
+           ELSE TRUE
+    END);
 
 -- name: GetReviewByID :one
 SELECT *
@@ -21,7 +26,7 @@ SET
     text = COALESCE(sqlc.narg('text'), text),
     updated_at = NOW(),
     accepted_at = CASE 
-        WHEN sqlc.narg('approved')::bool = TRUE THEN  NOW()
+        WHEN sqlc.narg('approved')::bool = TRUE THEN NOW()
         WHEN sqlc.narg('approved')::bool = FALSE THEN NULL
         ELSE accepted_at
     END

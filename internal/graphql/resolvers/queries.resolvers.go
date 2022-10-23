@@ -10,6 +10,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
+	"github.com/mensatt/backend/internal/graphql/models"
 	"github.com/mensatt/backend/internal/middleware"
 	"github.com/mensatt/backend/pkg/utils"
 )
@@ -38,8 +39,12 @@ func (r *queryResolver) Occurrences(ctx context.Context, filter *sqlc.GetFiltere
 }
 
 // Reviews is the resolver for the reviews field.
-func (r *queryResolver) Reviews(ctx context.Context) ([]*sqlc.Review, error) {
-	return r.Database.GetAllReviews(ctx)
+func (r *queryResolver) Reviews(ctx context.Context, filter *models.ReviewFilter) ([]*sqlc.Review, error) {
+	var approvedFilter *bool
+	if filter != nil {
+		approvedFilter = filter.Approved
+	}
+	return r.Database.GetAllReviews(ctx, boolPointerToNullBool(approvedFilter))
 }
 
 // Locations is the resolver for the locations field.
