@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-//JWTKeyStoreConfig defines the options for JWTKeyStore
+// JWTKeyStoreConfig defines the options for JWTKeyStore
 type JWTKeyStoreConfig struct {
 	PrivateKeyPath string
 	PublicKeyPath  string
