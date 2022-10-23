@@ -78,7 +78,7 @@ func (eq *ExtendedQueries) CreateOccurrenceWithSideDishesAndTags(ctx context.Con
 }
 
 type CreateImageParams struct {
-	ImageStoreID string `json:"image_store_id"`
+	ImageHash string `json:"image_hash"`
 }
 
 type CreateReviewWithImagesParams struct {
@@ -111,8 +111,8 @@ func (eq *ExtendedQueries) CreateReviewWithImages(ctx context.Context, reviewPar
 
 	for i, imageParam := range reviewParams.Images {
 		addImagesToReviewParams[i] = &sqlc.AddMultipleImagesToReviewParams{
-			Review:       review.ID,
-			ImageStoreID: imageParam.ImageStoreID,
+			Review:    review.ID,
+			ImageHash: imageParam.ImageHash,
 		}
 	}
 

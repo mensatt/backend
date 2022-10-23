@@ -12,16 +12,16 @@ import (
 	"github.com/mensatt/backend/internal/graphql/directives"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/resolvers"
-	"github.com/mensatt/backend/pkg/imageprocessor"
+	"github.com/mensatt/backend/pkg/imageuploader"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
 type GraphQLParams struct {
-	DebugEnabled   bool
-	Database       db.ExtendedQuerier
-	JWTKeyStore    *utils.JWTKeyStore
-	ImageProcessor *imageprocessor.ImageProcessor
-	ImageBaseURL   string
+	DebugEnabled  bool
+	Database      db.ExtendedQuerier
+	JWTKeyStore   *utils.JWTKeyStore
+	ImageUploader *imageuploader.ImageUploader
+	ImageBaseURL  string
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) error {
@@ -49,11 +49,11 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
 				Resolvers: &resolvers.Resolver{
-					Database:       params.Database,
-					JWTKeyStore:    params.JWTKeyStore,
-					VCSBuildInfo:   vscBuildInfo,
-					ImageProcessor: params.ImageProcessor,
-					ImageBaseURL:   params.ImageBaseURL,
+					Database:      params.Database,
+					JWTKeyStore:   params.JWTKeyStore,
+					VCSBuildInfo:  vscBuildInfo,
+					ImageUploader: params.ImageUploader,
+					ImageBaseURL:  params.ImageBaseURL,
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,

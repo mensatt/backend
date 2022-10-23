@@ -11,7 +11,7 @@ import (
 	"github.com/mensatt/backend/internal/db"
 
 	"github.com/jackc/pgx/v4/pgxpool"
-	"github.com/mensatt/backend/pkg/imageprocessor"
+	"github.com/mensatt/backend/pkg/imageuploader"
 	"github.com/mensatt/backend/pkg/server"
 	"github.com/mensatt/backend/pkg/utils"
 )
@@ -24,7 +24,7 @@ func main() {
 		log.Fatalf("failed to create image dir(%s): %s\n", imageDir, err)
 	}
 
-	config := server.ServerConfig{
+	config := server.Config{
 		Host:           utils.MustGet("HOST"),
 		Port:           utils.MustGetInt32("PORT"),
 		ServiceVersion: utils.MustGet("SERVER_PATH_VERSION"),
@@ -36,7 +36,7 @@ func main() {
 			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
 		},
 		AssetsDir: assetDir,
-		ImageProcessor: imageprocessor.ImageProcessorConfig{
+		ImageUploader: imageuploader.Config{
 			ImageDirectory: imageDir,
 			MaxImageSizeMB: utils.MustGetInt32("IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB"),
 			MaxResolution:  utils.MustGetInt32("IMAGE_PROCESSOR_MAX_RESOLUTION"),
