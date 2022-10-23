@@ -72,10 +72,15 @@ func (q *Queries) DeleteReview(ctx context.Context, id uuid.UUID) (*Review, erro
 const getAllReviews = `-- name: GetAllReviews :many
 SELECT id, occurrence, display_name, stars, text, created_at, updated_at, accepted_at
 FROM review
+WHERE (CASE
+           WHEN $1::bool = TRUE THEN review.accepted_at IS NOT NULL
+           WHEN $1::bool = FALSE THEN review.accepted_at IS NULL
+           ELSE TRUE
+    END)
 `
 
-func (q *Queries) GetAllReviews(ctx context.Context) ([]*Review, error) {
-	rows, err := q.db.Query(ctx, getAllReviews)
+func (q *Queries) GetAllReviews(ctx context.Context, approved sql.NullBool) ([]*Review, error) {
+	rows, err := q.db.Query(ctx, getAllReviews, approved)
 	if err != nil {
 		return nil, err
 	}
@@ -335,7 +340,7 @@ SET
     text = COALESCE($5, text),
     updated_at = NOW(),
     accepted_at = CASE 
-        WHEN $6::bool = TRUE THEN  NOW()
+        WHEN $6::bool = TRUE THEN NOW()
         WHEN $6::bool = FALSE THEN NULL
         ELSE accepted_at
     END

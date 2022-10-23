@@ -8,7 +8,7 @@ The backend repository for Mensatt written in go.
 ## Requirements
 - Docker & Docker Compose
 - GCC (build-essentials)
-- Go 1.18
+- Go 1.19
 
 ## Building
 

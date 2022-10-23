@@ -148,7 +148,7 @@ type ComplexityRoot struct {
 		LocationByID func(childComplexity int, id uuid.UUID) int
 		Locations    func(childComplexity int) int
 		Occurrences  func(childComplexity int, filter *sqlc.GetFilteredOccurrencesParams) int
-		Reviews      func(childComplexity int) int
+		Reviews      func(childComplexity int, filter *models.ReviewFilter) int
 		Tags         func(childComplexity int) int
 		VcsBuildInfo func(childComplexity int) int
 	}
@@ -256,7 +256,7 @@ type QueryResolver interface {
 	Tags(ctx context.Context) ([]*sqlc.Tag, error)
 	Dishes(ctx context.Context) ([]*sqlc.Dish, error)
 	Occurrences(ctx context.Context, filter *sqlc.GetFilteredOccurrencesParams) ([]*sqlc.Occurrence, error)
-	Reviews(ctx context.Context) ([]*sqlc.Review, error)
+	Reviews(ctx context.Context, filter *models.ReviewFilter) ([]*sqlc.Review, error)
 	Locations(ctx context.Context) ([]*sqlc.Location, error)
 	LocationByID(ctx context.Context, id uuid.UUID) (*sqlc.Location, error)
 	VcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error)
@@ -832,7 +832,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Reviews(childComplexity), true
+		args, err := ec.field_Query_reviews_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Reviews(childComplexity, args["filter"].(*models.ReviewFilter)), true
 
 	case "Query.tags":
 		if e.complexity.Query.Tags == nil {
@@ -1386,7 +1391,7 @@ input DeleteImageToReviewInput {
     occurrences(filter: OccurrenceFilter): [Occurrence!]!
 
     # Review
-    reviews: [Review!]!
+    reviews(filter: ReviewFilter): [Review!]!
 
     # Location
     locations: [Location!]!
@@ -1867,6 +1872,21 @@ func (ec *executionContext) field_Query_occurrences_args(ctx context.Context, ra
 	if tmp, ok := rawArgs["filter"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
 		arg0, err = ec.unmarshalOOccurrenceFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐGetFilteredOccurrencesParams(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_reviews_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *models.ReviewFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalOReviewFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -5539,7 +5559,7 @@ func (ec *executionContext) _Query_reviews(ctx context.Context, field graphql.Co
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Reviews(rctx)
+		return ec.resolvers.Query().Reviews(rctx, fc.Args["filter"].(*models.ReviewFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5585,6 +5605,17 @@ func (ec *executionContext) fieldContext_Query_reviews(ctx context.Context, fiel
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_reviews_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
 	}
 	return fc, nil
 }
