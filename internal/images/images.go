@@ -30,13 +30,12 @@ func imageHandler(ip *imageuploader.ImageUploader) gin.HandlerFunc {
 		}
 
 		path := ip.GetImagePath(imageHash)
-		print(path)
 
 		// check if file exists and send it if it does
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			c.File(path)
 			return
-		} else if err != nil {
+		} else {
 			// return 404 error if file does not exist
 			c.JSON(http.StatusNotFound, gin.H{"error": "image not found"})
 			return

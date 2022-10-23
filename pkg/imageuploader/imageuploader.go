@@ -115,10 +115,6 @@ func IsImageHashValid(imageHash string) bool {
 
 func IsImageValid(image []byte) bool {
 	for _, magicNumber := range magicNumbers {
-		if len(image) < len(magicNumber) {
-			continue
-		}
-
 		if isMagicNumberValid(image, magicNumber) {
 			return true
 		}
@@ -127,6 +123,10 @@ func IsImageValid(image []byte) bool {
 }
 
 func isMagicNumberValid(image []byte, magicNumber []byte) bool {
+	if len(image) < len(magicNumber) {
+		return false
+	}
+
 	for i := range magicNumber {
 		if image[i] != magicNumber[i] {
 			return false
