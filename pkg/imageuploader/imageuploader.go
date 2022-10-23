@@ -32,7 +32,7 @@ type Config struct {
 
 type ImageUploader struct {
 	imageDirectory string
-	maxImageSize   int64
+	maxImageSize   int
 	maxResolution  int
 }
 
@@ -53,13 +53,13 @@ func NewImageUploader(params Config) (*ImageUploader, error) {
 
 	return &ImageUploader{
 		imageDirectory: params.ImageDirectory,
-		maxImageSize:   int64(params.MaxImageSizeMB) * 1024 * 1024,
+		maxImageSize:   int(params.MaxImageSizeMB) * 1024 * 1024,
 		maxResolution:  int(params.MaxResolution),
 	}, nil
 }
 
 func (iu *ImageUploader) ValidateAndStoreImage(image []byte) (string, error) {
-	if len(image) > int(iu.maxImageSize) {
+	if len(image) > iu.maxImageSize {
 		return "", fmt.Errorf("image is too large - max size: %d, actual size: %d", iu.maxImageSize, len(image))
 	}
 
@@ -105,7 +105,7 @@ func (iu *ImageUploader) GetImagePath(imageHash string) string {
 	return filepath.Join(iu.imageDirectory, imageHash)
 }
 
-func (iu *ImageUploader) GetMaxImageSize() int64 {
+func (iu *ImageUploader) GetMaxImageSize() int {
 	return iu.maxImageSize
 }
 
