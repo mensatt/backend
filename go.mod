@@ -15,7 +15,7 @@ require (
 	github.com/jackc/pgx/v4 v4.16.1
 	github.com/kyleconroy/sqlc v1.14.1-0.20220719050513-0ae16d272c71
 	github.com/lib/pq v1.10.6
-	github.com/vektah/gqlparser/v2 v2.4.7
+	github.com/vektah/gqlparser/v2 v2.5.1
 	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 )
 
