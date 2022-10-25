@@ -25,6 +25,11 @@ func (r *dishResolver) ReviewData(ctx context.Context, obj *sqlc.Dish, filter *m
 	}, nil
 }
 
+// Hash is the resolver for the hash field.
+func (r *imageResolver) Hash(ctx context.Context, obj *sqlc.Image) (string, error) {
+	return obj.ImageHash, nil
+}
+
 // Review is the resolver for the review field.
 func (r *imageResolver) Review(ctx context.Context, obj *sqlc.Image) (*sqlc.Review, error) {
 	return r.Database.GetReviewByImage(ctx, obj.ID)
