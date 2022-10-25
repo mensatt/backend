@@ -113,6 +113,7 @@ type Review {
 
 type Image {
     id: UUID!
+    hash: String!
     review: Review!
     imageUrl: String!
 }
