@@ -9,7 +9,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
-    target-branch: "develop"
+    target-branch: "main"
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-patch"]
