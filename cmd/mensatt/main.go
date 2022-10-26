@@ -49,9 +49,16 @@ func main() {
 	}
 
 	// Initialize sentry.io client for error reporting & logging
-	err = sentry.Init(sentry.ClientOptions{
-		Dsn: sentryDSN,
-	})
+	sentryOptions := sentry.ClientOptions{
+		Dsn:              sentryDSN,
+		AttachStacktrace: true,
+	}
+
+	if config.DebugEnabled {
+		sentryOptions.Debug = true
+	}
+
+	err = sentry.Init(sentryOptions)
 	if err != nil {
 		log.Fatalln("Sentry initialization failed:", err)
 	}
