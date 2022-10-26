@@ -3,11 +3,10 @@
 [![Build & Test](https://github.com/mensatt/backend/actions/workflows/go.yml/badge.svg)](https://github.com/mensatt/backend/actions/workflows/go.yml)
 [![Development Deployment](https://github.com/mensatt/backend/actions/workflows/deploy-main-in-dev-env.yml/badge.svg)](https://github.com/mensatt/backend/actions/workflows/deploy-main-in-dev-env.yml)
 
-The backend repository for Mensatt written in go.
+The backend repository for [Mensatt](https://www.mensatt.de) written in go.
 
 ## Requirements
 - Docker & Docker Compose
-- GCC (build-essentials)
 - Go 1.19
 
 ## Building
