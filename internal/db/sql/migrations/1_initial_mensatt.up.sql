@@ -34,6 +34,8 @@ CREATE TABLE location (
     id uuid DEFAULT uuid_generate_v4(),
     external_id integer NOT NULL UNIQUE,
     name varchar NOT NULL UNIQUE,
+    open_time time,
+    close_time time,
     PRIMARY KEY (id)
 );
 

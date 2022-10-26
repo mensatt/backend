@@ -121,9 +121,11 @@ type Image struct {
 }
 
 type Location struct {
-	ID         uuid.UUID `json:"id"`
-	ExternalID int32     `json:"external_id"`
-	Name       string    `json:"name"`
+	ID         uuid.UUID    `json:"id"`
+	ExternalID int32        `json:"external_id"`
+	Name       string       `json:"name"`
+	OpenTime   sql.NullTime `json:"open_time"`
+	CloseTime  sql.NullTime `json:"close_time"`
 }
 
 type Occurrence struct {

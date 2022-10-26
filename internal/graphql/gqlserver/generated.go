@@ -85,9 +85,11 @@ type ComplexityRoot struct {
 	}
 
 	Location struct {
+		CloseTime  func(childComplexity int) int
 		ExternalID func(childComplexity int) int
 		ID         func(childComplexity int) int
 		Name       func(childComplexity int) int
+		OpenTime   func(childComplexity int) int
 	}
 
 	Mutation struct {
@@ -393,6 +395,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Image.Review(childComplexity), true
 
+	case "Location.closeTime":
+		if e.complexity.Location.CloseTime == nil {
+			break
+		}
+
+		return e.complexity.Location.CloseTime(childComplexity), true
+
 	case "Location.externalId":
 		if e.complexity.Location.ExternalID == nil {
 			break
@@ -413,6 +422,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Location.Name(childComplexity), true
+
+	case "Location.openTime":
+		if e.complexity.Location.OpenTime == nil {
+			break
+		}
+
+		return e.complexity.Location.OpenTime(childComplexity), true
 
 	case "Mutation.addSideDishToOccurrence":
 		if e.complexity.Mutation.AddSideDishToOccurrence == nil {
@@ -1416,6 +1432,8 @@ scalar Timestamp
 # Date with Format: YYYY-MM-DD
 scalar Date
 
+scalar Time
+
 # A UUID is a 128 bit (16 byte) Universal Unique IDentifier as defined in RFC 4122.
 # Format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 scalar UUID
@@ -1477,6 +1495,8 @@ type Location {
     id: UUID!
     externalId: Int!
     name: String!
+    openTime: Time
+    closeTime: Time
 }
 
 type Occurrence {
@@ -2634,6 +2654,88 @@ func (ec *executionContext) fieldContext_Location_name(ctx context.Context, fiel
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Location_openTime(ctx context.Context, field graphql.CollectedField, obj *sqlc.Location) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Location_openTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.OpenTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(sql.NullTime)
+	fc.Result = res
+	return ec.marshalOTime2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Location_openTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Location",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Location_closeTime(ctx context.Context, field graphql.CollectedField, obj *sqlc.Location) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Location_closeTime(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.CloseTime, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(sql.NullTime)
+	fc.Result = res
+	return ec.marshalOTime2databaseᚋsqlᚐNullTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Location_closeTime(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Location",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Time does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4235,6 +4337,10 @@ func (ec *executionContext) fieldContext_Occurrence_location(ctx context.Context
 				return ec.fieldContext_Location_externalId(ctx, field)
 			case "name":
 				return ec.fieldContext_Location_name(ctx, field)
+			case "openTime":
+				return ec.fieldContext_Location_openTime(ctx, field)
+			case "closeTime":
+				return ec.fieldContext_Location_closeTime(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
 		},
@@ -5719,6 +5825,10 @@ func (ec *executionContext) fieldContext_Query_locations(ctx context.Context, fi
 				return ec.fieldContext_Location_externalId(ctx, field)
 			case "name":
 				return ec.fieldContext_Location_name(ctx, field)
+			case "openTime":
+				return ec.fieldContext_Location_openTime(ctx, field)
+			case "closeTime":
+				return ec.fieldContext_Location_closeTime(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
 		},
@@ -5771,6 +5881,10 @@ func (ec *executionContext) fieldContext_Query_locationById(ctx context.Context,
 				return ec.fieldContext_Location_externalId(ctx, field)
 			case "name":
 				return ec.fieldContext_Location_name(ctx, field)
+			case "openTime":
+				return ec.fieldContext_Location_openTime(ctx, field)
+			case "closeTime":
+				return ec.fieldContext_Location_closeTime(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
 		},
@@ -10545,6 +10659,14 @@ func (ec *executionContext) _Location(ctx context.Context, sel ast.SelectionSet,
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
+		case "openTime":
+
+			out.Values[i] = ec._Location_openTime(ctx, field, obj)
+
+		case "closeTime":
+
+			out.Values[i] = ec._Location_closeTime(ctx, field, obj)
+
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13252,6 +13374,16 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 		return graphql.Null
 	}
 	res := graphql.MarshalString(*v)
+	return res
+}
+
+func (ec *executionContext) unmarshalOTime2databaseᚋsqlᚐNullTime(ctx context.Context, v interface{}) (sql.NullTime, error) {
+	res, err := scalars.UnmarshalNullTime(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTime2databaseᚋsqlᚐNullTime(ctx context.Context, sel ast.SelectionSet, v sql.NullTime) graphql.Marshaler {
+	res := scalars.MarshalNullTime(v)
 	return res
 }
 
