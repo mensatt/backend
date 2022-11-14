@@ -93,5 +93,5 @@ CREATE TABLE image (
     image_hash varchar NOT NULL,
     review uuid NOT NULL,
     PRIMARY KEY (id),
-    FOREIGN KEY(review) REFERENCES review(id)
+    FOREIGN KEY(review) REFERENCES review(id) ON DELETE CASCADE
 );
