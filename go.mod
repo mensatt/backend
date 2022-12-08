@@ -15,7 +15,7 @@ require (
 	github.com/kyleconroy/sqlc v1.15.0
 	github.com/lib/pq v1.10.6
 	github.com/vektah/gqlparser/v2 v2.5.1
-	golang.org/x/crypto v0.1.0
+	golang.org/x/crypto v0.4.0
 )
 
 require (
@@ -67,9 +67,9 @@ require (
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/exp v0.0.0-20221019170559-20944726eadf // indirect
 	golang.org/x/mod v0.6.0 // indirect
-	golang.org/x/net v0.1.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
+	golang.org/x/net v0.3.0 // indirect
+	golang.org/x/sys v0.3.0 // indirect
+	golang.org/x/text v0.5.0 // indirect
 	golang.org/x/tools v0.1.12 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
