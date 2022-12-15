@@ -12,7 +12,7 @@ require (
 	github.com/jackc/pgconn v1.13.0
 	github.com/jackc/pgtype v1.13.0
 	github.com/jackc/pgx/v4 v4.17.2
-	github.com/kyleconroy/sqlc v1.15.0
+	github.com/kyleconroy/sqlc v1.16.0
 	github.com/lib/pq v1.10.7
 	github.com/vektah/gqlparser/v2 v2.5.1
 	golang.org/x/crypto v0.4.0
