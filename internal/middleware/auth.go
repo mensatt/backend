@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"context"
+	"github.com/getsentry/sentry-go"
 	"log"
 	"strings"
 
@@ -44,6 +45,13 @@ func Auth(params AuthParams) gin.HandlerFunc {
 			log.Printf("[Auth Middleware]: Failed to find user with id: %s - %v\n", userID, err)
 			return
 		}
+
+		sentry.ConfigureScope(func(scope *sentry.Scope) {
+			scope.SetUser(sentry.User{
+				ID:    currentUser.ID.String(),
+				Email: currentUser.Email,
+			})
+		})
 
 		ctx := context.WithValue(c.Request.Context(), userCtxKey, currentUser)
 		c.Request = c.Request.WithContext(ctx)
