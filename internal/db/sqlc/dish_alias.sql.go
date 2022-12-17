@@ -95,6 +95,22 @@ func (q *Queries) GetAllAliases(ctx context.Context) ([]*DishAlias, error) {
 	return items, nil
 }
 
+const mergeAliases = `-- name: MergeAliases :exec
+UPDATE dish_alias
+SET dish = $1
+WHERE dish = $2
+`
+
+type MergeAliasesParams struct {
+	Keep  uuid.UUID `json:"keep"`
+	Merge uuid.UUID `json:"merge"`
+}
+
+func (q *Queries) MergeAliases(ctx context.Context, arg *MergeAliasesParams) error {
+	_, err := q.db.Exec(ctx, mergeAliases, arg.Keep, arg.Merge)
+	return err
+}
+
 const updateDishAlias = `-- name: UpdateDishAlias :one
 UPDATE dish_alias
 SET 

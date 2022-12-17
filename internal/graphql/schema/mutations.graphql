@@ -8,6 +8,7 @@ type Mutation {
     # Dish
     createDish(input: CreateDishInput!): Dish! @authenticated
     updateDish(input: UpdateDishInput!): Dish! @authenticated
+    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
 
     # DishAlias
     createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated

@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/db/sqlc"
@@ -42,6 +43,23 @@ func (r *mutationResolver) CreateDish(ctx context.Context, input sqlc.CreateDish
 // UpdateDish is the resolver for the updateDish field.
 func (r *mutationResolver) UpdateDish(ctx context.Context, input sqlc.UpdateDishParams) (*sqlc.Dish, error) {
 	return r.Database.UpdateDish(ctx, &input)
+}
+
+// MergeDishes is the resolver for the mergeDishes field.
+func (r *mutationResolver) MergeDishes(ctx context.Context, input models.MergeDishesInput) (*sqlc.Dish, error) {
+	// get dish of id input.Keep
+	KeepDish, err := r.Database.GetDishByID(ctx, input.Keep)
+	if err != nil {
+		return nil, fmt.Errorf("could not get dish with id %s: %w", input.Keep, err)
+	}
+
+	// get dish of id input.Merge
+	MergeDish, err := r.Database.GetDishByID(ctx, input.Merge)
+	if err != nil {
+		return nil, fmt.Errorf("could not get dish with id %s: %w", input.Merge, err)
+	}
+
+	return r.Database.MergeDishes(ctx, KeepDish, MergeDish)
 }
 
 // CreateDishAlias is the resolver for the createDishAlias field.

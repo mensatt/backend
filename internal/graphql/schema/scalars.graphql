@@ -9,4 +9,4 @@ scalar Date
 scalar UUID
 
 # File Upload
-scalar Upload 
+scalar Upload

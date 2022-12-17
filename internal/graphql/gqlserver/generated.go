@@ -102,6 +102,7 @@ type ComplexityRoot struct {
 		DeleteOccurrence             func(childComplexity int, input models.DeleteOccurrenceInput) int
 		DeleteReview                 func(childComplexity int, input models.DeleteReviewInput) int
 		LoginUser                    func(childComplexity int, input models.LoginUserInput) int
+		MergeDishes                  func(childComplexity int, input models.MergeDishesInput) int
 		RemoveSideDishFromOccurrence func(childComplexity int, input sqlc.RemoveOccurrenceSideDishParams) int
 		RemoveTagFromOccurrence      func(childComplexity int, input sqlc.RemoveOccurrenceTagParams) int
 		UpdateDish                   func(childComplexity int, input sqlc.UpdateDishParams) int
@@ -223,6 +224,7 @@ type MutationResolver interface {
 	CreateTag(ctx context.Context, input sqlc.CreateTagParams) (*sqlc.Tag, error)
 	CreateDish(ctx context.Context, input sqlc.CreateDishParams) (*sqlc.Dish, error)
 	UpdateDish(ctx context.Context, input sqlc.UpdateDishParams) (*sqlc.Dish, error)
+	MergeDishes(ctx context.Context, input models.MergeDishesInput) (*sqlc.Dish, error)
 	CreateDishAlias(ctx context.Context, input sqlc.CreateDishAliasParams) (*sqlc.DishAlias, error)
 	UpdateDishAlias(ctx context.Context, input sqlc.UpdateDishAliasParams) (*sqlc.DishAlias, error)
 	DeleteDishAlias(ctx context.Context, input models.DeleteDishAliasInput) (*sqlc.DishAlias, error)
@@ -545,6 +547,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.LoginUser(childComplexity, args["input"].(models.LoginUserInput)), true
+
+	case "Mutation.mergeDishes":
+		if e.complexity.Mutation.MergeDishes == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_mergeDishes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.MergeDishes(childComplexity, args["input"].(models.MergeDishesInput)), true
 
 	case "Mutation.removeSideDishFromOccurrence":
 		if e.complexity.Mutation.RemoveSideDishFromOccurrence == nil {
@@ -1094,6 +1108,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDeleteReviewInput,
 		ec.unmarshalInputImageInput,
 		ec.unmarshalInputLoginUserInput,
+		ec.unmarshalInputMergeDishesInput,
 		ec.unmarshalInputOccurrenceFilter,
 		ec.unmarshalInputRemoveSideDishFromOccurrenceInput,
 		ec.unmarshalInputRemoveTagFromOccurrenceInput,
@@ -1211,6 +1226,10 @@ input UpdateDishInput {
     nameEn: String
 }
 
+input MergeDishesInput {
+    keep: UUID!
+    merge: UUID!
+}
 
 # DishAlias
 
@@ -1360,6 +1379,7 @@ input DeleteImageToReviewInput {
     # Dish
     createDish(input: CreateDishInput!): Dish! @authenticated
     updateDish(input: UpdateDishInput!): Dish! @authenticated
+    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
 
     # DishAlias
     createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated
@@ -1421,8 +1441,7 @@ scalar Date
 scalar UUID
 
 # File Upload
-scalar Upload 
-`, BuiltIn: false},
+scalar Upload`, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `enum Priority {
     HIDE
     LOW
@@ -1732,6 +1751,21 @@ func (ec *executionContext) field_Mutation_loginUser_args(ctx context.Context, r
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNLoginUserInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐLoginUserInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_mergeDishes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.MergeDishesInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNMergeDishesInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐMergeDishesInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2951,6 +2985,93 @@ func (ec *executionContext) fieldContext_Mutation_updateDish(ctx context.Context
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_updateDish_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_mergeDishes(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_mergeDishes(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().MergeDishes(rctx, fc.Args["input"].(models.MergeDishesInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*sqlc.Dish); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/db/sqlc.Dish`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*sqlc.Dish)
+	fc.Result = res
+	return ec.marshalNDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdbᚋsqlcᚐDish(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_mergeDishes(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Dish_id(ctx, field)
+			case "nameDe":
+				return ec.fieldContext_Dish_nameDe(ctx, field)
+			case "nameEn":
+				return ec.fieldContext_Dish_nameEn(ctx, field)
+			case "aliases":
+				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_mergeDishes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return
 	}
@@ -9833,6 +9954,42 @@ func (ec *executionContext) unmarshalInputLoginUserInput(ctx context.Context, ob
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputMergeDishesInput(ctx context.Context, obj interface{}) (models.MergeDishesInput, error) {
+	var it models.MergeDishesInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"keep", "merge"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "keep":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("keep"))
+			it.Keep, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		case "merge":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("merge"))
+			it.Merge, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, obj interface{}) (sqlc.GetFilteredOccurrencesParams, error) {
 	var it sqlc.GetFilteredOccurrencesParams
 	asMap := map[string]interface{}{}
@@ -10606,6 +10763,15 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_updateDish(ctx, field)
+			})
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "mergeDishes":
+
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_mergeDishes(ctx, field)
 			})
 
 			if out.Values[i] == graphql.Null {
@@ -12397,6 +12563,11 @@ func (ec *executionContext) marshalNLocation2ᚖgithubᚗcomᚋmensattᚋbackend
 
 func (ec *executionContext) unmarshalNLoginUserInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐLoginUserInput(ctx context.Context, v interface{}) (models.LoginUserInput, error) {
 	res, err := ec.unmarshalInputLoginUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) unmarshalNMergeDishesInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐMergeDishesInput(ctx context.Context, v interface{}) (models.MergeDishesInput, error) {
+	res, err := ec.unmarshalInputMergeDishesInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
