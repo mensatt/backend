@@ -95,3 +95,15 @@ WHERE review.occurrence = $1
             WHEN sqlc.narg('approved')::bool = FALSE THEN review.accepted_at IS NULL
             ELSE TRUE 
         END);
+
+-- name: MergeReviews :exec
+UPDATE review
+SET occurrence = o1id
+FROM (
+    SELECT o1.id as o1id, o2.id as o2id
+    FROM occurrence o1
+    JOIN occurrence o2 ON o1.date = o2.date
+    WHERE o1.dish = sqlc.arg('keep')
+    AND o2.dish = sqlc.arg('merge')
+) AS "o1o2"
+WHERE review.occurrence = o2id;

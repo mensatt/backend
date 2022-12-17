@@ -34,6 +34,22 @@ func (q *Queries) AddOccurrenceSideDish(ctx context.Context, arg *AddOccurrenceS
 	return &i, err
 }
 
+const mergeSideDishes = `-- name: MergeSideDishes :exec
+UPDATE occurrence_side_dishes
+SET dish = $1
+WHERE dish = $2
+`
+
+type MergeSideDishesParams struct {
+	Keep  uuid.UUID `json:"keep"`
+	Merge uuid.UUID `json:"merge"`
+}
+
+func (q *Queries) MergeSideDishes(ctx context.Context, arg *MergeSideDishesParams) error {
+	_, err := q.db.Exec(ctx, mergeSideDishes, arg.Keep, arg.Merge)
+	return err
+}
+
 const removeOccurrenceSideDish = `-- name: RemoveOccurrenceSideDish :one
 DELETE FROM occurrence_side_dishes
 WHERE occurrence = $1 AND dish = $2

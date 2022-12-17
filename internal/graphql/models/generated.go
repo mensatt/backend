@@ -38,6 +38,11 @@ type LoginUserInput struct {
 	Password string `json:"password"`
 }
 
+type MergeDishesInput struct {
+	Keep  uuid.UUID `json:"keep"`
+	Merge uuid.UUID `json:"merge"`
+}
+
 type ReviewFilter struct {
 	Approved *bool `json:"approved"`
 }

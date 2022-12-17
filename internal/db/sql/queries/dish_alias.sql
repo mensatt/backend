@@ -25,3 +25,8 @@ RETURNING *;
 DELETE FROM dish_alias
 WHERE alias_name = $1
 RETURNING *;
+
+-- name: MergeAliases :exec
+UPDATE dish_alias
+SET dish = sqlc.arg('keep')
+WHERE dish = sqlc.arg('merge');

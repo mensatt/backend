@@ -24,3 +24,8 @@ SET
     name_en = COALESCE(sqlc.narg('name_en'), name_en)
 WHERE id = $1
 RETURNING *;
+
+-- name: DeleteDish :one
+DELETE FROM dish
+WHERE id = $1
+RETURNING *;

@@ -394,6 +394,44 @@ func (q *Queries) GetTagsForOccurrence(ctx context.Context, occurrence uuid.UUID
 	return items, nil
 }
 
+const mergeOccurrences = `-- name: MergeOccurrences :exec
+UPDATE occurrence
+SET dish = $1
+WHERE dish = $2
+`
+
+type MergeOccurrencesParams struct {
+	Keep  uuid.UUID `json:"keep"`
+	Merge uuid.UUID `json:"merge"`
+}
+
+func (q *Queries) MergeOccurrences(ctx context.Context, arg *MergeOccurrencesParams) error {
+	_, err := q.db.Exec(ctx, mergeOccurrences, arg.Keep, arg.Merge)
+	return err
+}
+
+const mergeSameDayOccurrences = `-- name: MergeSameDayOccurrences :exec
+DELETE
+FROM occurrence
+WHERE id IN (
+    SELECT o2.id
+    FROM occurrence o1
+    JOIN occurrence o2 ON o1.date = o2.date
+    WHERE o1.dish = $1
+    AND o2.dish = $2
+)
+`
+
+type MergeSameDayOccurrencesParams struct {
+	Keep  uuid.UUID `json:"keep"`
+	Merge uuid.UUID `json:"merge"`
+}
+
+func (q *Queries) MergeSameDayOccurrences(ctx context.Context, arg *MergeSameDayOccurrencesParams) error {
+	_, err := q.db.Exec(ctx, mergeSameDayOccurrences, arg.Keep, arg.Merge)
+	return err
+}
+
 const updateOccurrence = `-- name: UpdateOccurrence :one
 UPDATE occurrence
 SET 

@@ -30,6 +30,19 @@ func (q *Queries) CreateDish(ctx context.Context, arg *CreateDishParams) (*Dish,
 	return &i, err
 }
 
+const deleteDish = `-- name: DeleteDish :one
+DELETE FROM dish
+WHERE id = $1
+RETURNING id, name_de, name_en
+`
+
+func (q *Queries) DeleteDish(ctx context.Context, id uuid.UUID) (*Dish, error) {
+	row := q.db.QueryRow(ctx, deleteDish, id)
+	var i Dish
+	err := row.Scan(&i.ID, &i.NameDe, &i.NameEn)
+	return &i, err
+}
+
 const getAllDishes = `-- name: GetAllDishes :many
 SELECT id, name_de, name_en
 FROM dish

@@ -24,6 +24,7 @@ type Querier interface {
 	CreateOccurrence(ctx context.Context, arg *CreateOccurrenceParams) (*Occurrence, error)
 	CreateReview(ctx context.Context, arg *CreateReviewParams) (*Review, error)
 	CreateTag(ctx context.Context, arg *CreateTagParams) (*Tag, error)
+	DeleteDish(ctx context.Context, id uuid.UUID) (*Dish, error)
 	DeleteDishAlias(ctx context.Context, aliasName string) (*DishAlias, error)
 	DeleteImage(ctx context.Context, id uuid.UUID) (*Image, error)
 	DeleteOccurrence(ctx context.Context, id uuid.UUID) (*Occurrence, error)
@@ -59,6 +60,11 @@ type Querier interface {
 	GetTagsForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Tag, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
+	MergeAliases(ctx context.Context, arg *MergeAliasesParams) error
+	MergeOccurrences(ctx context.Context, arg *MergeOccurrencesParams) error
+	MergeReviews(ctx context.Context, arg *MergeReviewsParams) error
+	MergeSameDayOccurrences(ctx context.Context, arg *MergeSameDayOccurrencesParams) error
+	MergeSideDishes(ctx context.Context, arg *MergeSideDishesParams) error
 	RemoveOccurrenceSideDish(ctx context.Context, arg *RemoveOccurrenceSideDishParams) (*OccurrenceSideDish, error)
 	RemoveOccurrenceTag(ctx context.Context, arg *RemoveOccurrenceTagParams) (*OccurrenceTag, error)
 	SetReviewApproval(ctx context.Context, arg *SetReviewApprovalParams) (*Review, error)

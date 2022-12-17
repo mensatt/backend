@@ -68,3 +68,19 @@ RETURNING *;
 DELETE FROM occurrence
 WHERE id = $1
 RETURNING *;
+
+-- name: MergeOccurrences :exec
+UPDATE occurrence
+SET dish = sqlc.arg('keep')
+WHERE dish = sqlc.arg('merge');
+
+-- name: MergeSameDayOccurrences :exec
+DELETE
+FROM occurrence
+WHERE id IN (
+    SELECT o2.id
+    FROM occurrence o1
+    JOIN occurrence o2 ON o1.date = o2.date
+    WHERE o1.dish = sqlc.arg('keep')
+    AND o2.dish = sqlc.arg('merge')
+);

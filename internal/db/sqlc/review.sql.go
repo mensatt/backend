@@ -303,6 +303,29 @@ func (q *Queries) GetReviewByImage(ctx context.Context, id uuid.UUID) (*Review, 
 	return &i, err
 }
 
+const mergeReviews = `-- name: MergeReviews :exec
+UPDATE review
+SET occurrence = o1id
+FROM (
+    SELECT o1.id as o1id, o2.id as o2id
+    FROM occurrence o1
+    JOIN occurrence o2 ON o1.date = o2.date
+    WHERE o1.dish = $1
+    AND o2.dish = $2
+) AS "o1o2"
+WHERE review.occurrence = o2id
+`
+
+type MergeReviewsParams struct {
+	Keep  uuid.UUID `json:"keep"`
+	Merge uuid.UUID `json:"merge"`
+}
+
+func (q *Queries) MergeReviews(ctx context.Context, arg *MergeReviewsParams) error {
+	_, err := q.db.Exec(ctx, mergeReviews, arg.Keep, arg.Merge)
+	return err
+}
+
 const setReviewApproval = `-- name: SetReviewApproval :one
 UPDATE review
 SET accepted_at = $1
