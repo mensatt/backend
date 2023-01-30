@@ -6,4 +6,4 @@ WHERE id = $1;
 -- name: GetUserByEmail :one
 SELECT *
 FROM users
-WHERE email = $1;
+WHERE LOWER(email) = LOWER($1);

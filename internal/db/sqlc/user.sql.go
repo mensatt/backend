@@ -14,11 +14,11 @@ import (
 const getUserByEmail = `-- name: GetUserByEmail :one
 SELECT id, email, password_hash, created_at, updated_at
 FROM users
-WHERE email = $1
+WHERE LOWER(email) = LOWER($1)
 `
 
-func (q *Queries) GetUserByEmail(ctx context.Context, email string) (*User, error) {
-	row := q.db.QueryRow(ctx, getUserByEmail, email)
+func (q *Queries) GetUserByEmail(ctx context.Context, lower string) (*User, error) {
+	row := q.db.QueryRow(ctx, getUserByEmail, lower)
 	var i User
 	err := row.Scan(
 		&i.ID,
