@@ -58,7 +58,7 @@ type Querier interface {
 	GetSideDishesForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Dish, error)
 	GetTagByKey(ctx context.Context, key string) (*Tag, error)
 	GetTagsForOccurrence(ctx context.Context, occurrence uuid.UUID) ([]*Tag, error)
-	GetUserByEmail(ctx context.Context, email string) (*User, error)
+	GetUserByEmail(ctx context.Context, lower string) (*User, error)
 	GetUserByID(ctx context.Context, id uuid.UUID) (*User, error)
 	MergeAliases(ctx context.Context, arg *MergeAliasesParams) error
 	MergeOccurrences(ctx context.Context, arg *MergeOccurrencesParams) error
