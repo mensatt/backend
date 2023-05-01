@@ -8,7 +8,7 @@ type Mutation {
     # Dish
     createDish(input: CreateDishInput!): Dish! @authenticated
     updateDish(input: UpdateDishInput!): Dish! @authenticated
-    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
+#    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
 
     # DishAlias
     createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated
@@ -19,7 +19,7 @@ type Mutation {
     createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
     updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @authenticated
     deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @authenticated
-    
+
     addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @authenticated
     removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @authenticated
     addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @authenticated
@@ -31,6 +31,6 @@ type Mutation {
     deleteReview(input: DeleteReviewInput!): Review! @authenticated
 
     # Image
-    # addImagesToReview(input: AddImagesToReviewInput!): Review!
-    # deleteImageFromReview(input: DeleteImageToReviewInput!): Image! 
+#    addImagesToReview(input: AddImagesToReviewInput!): Review!
+#    deleteImageFromReview(input: DeleteImageToReviewInput!): Image!
 }

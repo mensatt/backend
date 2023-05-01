@@ -1,4 +1,4 @@
-enum Priority {
+enum TagPriority {
     HIDE
     LOW
     MEDIUM
@@ -18,7 +18,7 @@ type Tag {
     name: String!
     description: String!
     shortName: String
-    priority: Priority!
+    priority: TagPriority!
     isAllergy: Boolean!
 }
 
@@ -26,14 +26,13 @@ type Dish {
     id: UUID!
     nameDe: String!
     nameEn: String
-    aliases: [String!]!
-    reviewData(filter: ReviewFilter): ReviewDataDish!
+    aliases: [DishAlias!]!
+    #    reviewData(filter: ReviewFilter): ReviewDataDish!
 }
 
 type ReviewDataDish {
     reviews: [Review!]!
-    # also present in reviews, but easier to access here
-    images: [Image!]!
+    images: [Image!]!  # also present in reviews, but easier to access here
     metadata: ReviewMetadataDish!
 }
 
@@ -43,7 +42,7 @@ type ReviewMetadataDish {
 }
 
 type DishAlias {
-    dish: UUID!
+    dish: Dish!
     aliasName: String!
     normalizedAliasName: String!
 }
@@ -74,29 +73,29 @@ type Occurrence {
     priceStaff: Int
     priceGuest: Int
     tags: [Tag!]!
-    reviewData(filter: ReviewFilter): ReviewDataOccurrence!
+    #    reviewData(filter: ReviewFilter): ReviewDataOccurrence!
 }
 
-type ReviewDataOccurrence {
-    reviews: [Review!]!
-    # also present in reviews, but easier to access here
-    images: [Image!]!
-    metadata: ReviewMetadataOccurrence!
-}
+#type ReviewDataOccurrence {
+#    reviews: [Review!]!
+#    # also present in reviews, but easier to access here
+#    images: [Image!]!
+#    metadata: ReviewMetadataOccurrence!
+#}
 
-type ReviewMetadataOccurrence {
-    averageStars: Float
-    reviewCount: Int!
+#type ReviewMetadataOccurrence {
+#    averageStars: Float
+#    reviewCount: Int!
+#}
+
+type OccurrenceTag {
+    occurrence: Occurrence!
+    tag: Tag!
 }
 
 type OccurrenceSideDish {
     occurrence: Occurrence!
-    dish: Dish!  
-}
-
-type OccurrenceTag {
-    occurrence: Occurrence!
-    tag: Tag!  
+    dish: Dish!
 }
 
 type Review {

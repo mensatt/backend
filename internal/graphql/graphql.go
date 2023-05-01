@@ -3,12 +3,12 @@
 package graphql
 
 import (
+	ent "github.com/mensatt/backend/internal/database/ent"
 	"log"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/graphql/directives"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/resolvers"
@@ -18,7 +18,7 @@ import (
 
 type GraphQLParams struct {
 	DebugEnabled  bool
-	Database      db.ExtendedQuerier
+	Database      *ent.Client
 	JWTKeyStore   *utils.JWTKeyStore
 	ImageUploader *imageuploader.ImageUploader
 	ImageBaseURL  string
@@ -53,7 +53,7 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 					JWTKeyStore:   params.JWTKeyStore,
 					VCSBuildInfo:  vscBuildInfo,
 					ImageUploader: params.ImageUploader,
-					ImageBaseURL:  params.ImageBaseURL,
+					//ImageBaseURL:  params.ImageBaseURL,
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,

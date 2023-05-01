@@ -3,12 +3,12 @@ package middleware
 import (
 	"context"
 	"github.com/getsentry/sentry-go"
+	ent "github.com/mensatt/backend/internal/database/ent"
+	"github.com/mensatt/backend/internal/database/ent/user"
 	"log"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/backend/internal/db"
-	"github.com/mensatt/backend/internal/db/sqlc"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
@@ -22,7 +22,7 @@ type contextKey struct {
 
 type AuthParams struct {
 	JWTKeyStore *utils.JWTKeyStore
-	Database    db.ExtendedQuerier
+	Database    *ent.Client
 }
 
 // Auth wraps the request with auth middleware
@@ -40,7 +40,10 @@ func Auth(params AuthParams) gin.HandlerFunc {
 			return
 		}
 
-		currentUser, err := params.Database.GetUserByID(c, userID)
+		currentUser, err := params.Database.User.Query().Where(user.ID(userID)).Only(c)
+		//print(currentUser.ID)
+
+		//currentUser, err := params.Database.GetUserByID(c, userID)
 		if err != nil {
 			log.Printf("[Auth Middleware]: Failed to find user with id: %s - %v\n", userID, err)
 			return
@@ -59,11 +62,11 @@ func Auth(params AuthParams) gin.HandlerFunc {
 	}
 }
 
-func GetUserIDFromCtx(ctx context.Context) *sqlc.User {
+func GetUserIDFromCtx(ctx context.Context) *ent.User {
 	user := ctx.Value(userCtxKey)
 	if user == nil {
 		return nil
 	}
 
-	return user.(*sqlc.User)
+	return user.(*ent.User)
 }

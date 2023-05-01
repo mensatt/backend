@@ -5,7 +5,7 @@ type Query {
     # Tag
     tags: [Tag!]!
 
-    #Dish
+    # Dish
     dishes: [Dish!]!
 
     # Occurrence

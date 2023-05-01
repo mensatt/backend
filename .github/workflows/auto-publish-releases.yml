@@ -2,8 +2,8 @@ name: Docker Publish
 
 on:
   release:
-    types: [published]
-    branches: [main]
+    types: [ published ]
+    branches: [ main ]
 
 jobs:
   build:

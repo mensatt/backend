@@ -16,6 +16,9 @@ services:
   mensatt:
     build:
       target: dev
+      args:
+        USER_ID: 1000
+        GROUP_ID: 1000
     volumes:
       - .:/opt/app/mensatt
       - asset-data:/opt/app/mensatt/assets
@@ -46,15 +49,6 @@ services:
       - "4000:4000"
     links:
       - postgres
-
-  imaginary:
-    image: ghcr.io/italypaleale/imaginary:1.5.1
-    volumes:
-      - asset-data:/opt/app/imaginary/assets
-    command: -mount /opt/app/imaginary/assets/images
-    ports:
-      - "9000:9000"
-    restart: always
 
   postgres:
     image: postgres:14.2-alpine

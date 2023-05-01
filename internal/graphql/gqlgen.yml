@@ -37,8 +37,8 @@ resolver:
 
 # gqlgen will search for any type names in the schema in these go packages
 # if they match it will use them, otherwise it will generate them.
-# autobind:
-#   - "github.com/your/app/graph/model"
+autobind:
+  - github.com/mensatt/backend/internal/database/ent
 
 # This section declares type mapping between the GraphQL and go type systems
 #
@@ -47,144 +47,36 @@ resolver:
 # your liking
 models:
   # Scalars
-  String:
-    model:
-      - github.com/99designs/gqlgen/graphql.String
-      - github.com/mensatt/backend/internal/graphql/scalars.NullString
-  Int:
-    model:
-      - github.com/99designs/gqlgen/graphql.Int
-      - github.com/99designs/gqlgen/graphql.Int32
-      - github.com/99designs/gqlgen/graphql.Int64
-      - github.com/mensatt/backend/internal/graphql/scalars.NullInt
   Timestamp:
     model:
       - github.com/99designs/gqlgen/graphql.Time
       - github.com/mensatt/backend/internal/graphql/scalars.NullTime
+
   Date:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.Date
       - github.com/mensatt/backend/internal/graphql/scalars.NullDate
+
   UUID:
     model:
       - github.com/mensatt/backend/internal/graphql/scalars.UUID
       - github.com/mensatt/backend/internal/graphql/scalars.NullUUID
-  Boolean:
-    model:
-      - github.com/99designs/gqlgen/graphql.Boolean
-      - github.com/mensatt/backend/internal/graphql/scalars.NullBool
 
-  # Enums
-  Priority:
+  # Enum remaps (can hopefully be removed in the future)
+  TagPriority:
     model:
-      - github.com/mensatt/backend/internal/graphql/scalars.Priority
+      - github.com/mensatt/backend/internal/database/schema.TagPriority
+
   OccurrenceStatus:
     model:
-      - github.com/mensatt/backend/internal/graphql/scalars.OccurrenceStatus
-      - github.com/mensatt/backend/internal/graphql/scalars.NullOccurrenceStatus
-  
-  # SQLC models
-  Tag:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Tag
-  Dish:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Dish
-  DishAlias:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.DishAlias
-  Occurrence:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Occurrence
-  OccurrenceTag:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.OccurrenceTag
-  OccurrenceSideDish:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.OccurrenceSideDish
-  Review:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Review
-  ReviewMetadata:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.GetOccurrenceReviewMetadataRow
-  Image:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Image
-  User:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.User
-  Location:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.Location
-  
-  # SQLC Params
-  # Tag
-  CreateTagInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.CreateTagParams
-  # Dish
-  CreateDishInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.CreateDishParams
-  UpdateDishInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.UpdateDishParams
-  # DishAlias
-  CreateDishAliasInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.CreateDishAliasParams
-  UpdateDishAliasInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.UpdateDishAliasParams
-  # Occurrence
-  UpdateOccurrenceInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.UpdateOccurrenceParams
-  AddTagToOccurrenceInput:
-      model:
-      - github.com/mensatt/backend/internal/db/sqlc.AddOccurrenceTagParams
-  RemoveTagFromOccurrenceInput:
-      model:
-      - github.com/mensatt/backend/internal/db/sqlc.RemoveOccurrenceTagParams
-  AddSideDishToOccurrenceInput:
-      model:
-      - github.com/mensatt/backend/internal/db/sqlc.AddOccurrenceSideDishParams
-  RemoveSideDishFromOccurrenceInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.RemoveOccurrenceSideDishParams
-  OccurrenceFilter:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.GetFilteredOccurrencesParams
-  # Review
-  CreateReviewInput:
-    model:
-      - github.com/mensatt/backend/internal/db.CreateReviewWithImagesParams
-  UpdateReviewInput:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.UpdateReviewParams
-  ReviewDataDish:
-    model:
-      - github.com/mensatt/backend/internal/graphql/models.ReviewDataDish
-  ReviewDataOccurrence:
-    model:
-      - github.com/mensatt/backend/internal/graphql/models.ReviewDataOccurrence
-  ReviewMetadataDish:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.GetDishReviewMetadataRow
-  ReviewMetadataOccurrence:
-    model:
-      - github.com/mensatt/backend/internal/db/sqlc.GetOccurrenceReviewMetadataRow
+      - github.com/mensatt/backend/internal/database/schema.OccurrenceStatus
 
-  # Input helper types      
-  CreateOccurrenceInput:
-    model:
-      - github.com/mensatt/backend/internal/graphql/models.CreateOccurrenceInputHelper
-  CreateImageInput:
-    model:
-      - github.com/mensatt/backend/internal/graphql/models.CreateImageInputHelper
-  
   # Other
   VcsBuildInfo:
     model:
       - github.com/mensatt/backend/pkg/utils.VCSBuildInfo
+
+  # Testing / Fixing
+#  ReviewDataDish:
+#    model:
+#      - github.com/mensatt/backend/internal/graphql/models.ReviewDataDish
