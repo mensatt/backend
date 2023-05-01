@@ -2,24 +2,29 @@ package main
 
 import (
 	"context"
+	"entgo.io/ent/dialect"
 	"fmt"
-	"log"
-	"path/filepath"
-	"time"
-
 	"github.com/getsentry/sentry-go"
-	"github.com/mensatt/backend/internal/db"
-
-	"github.com/jackc/pgx/v4/pgxpool"
+	_ "github.com/lib/pq"
+	"github.com/mensatt/backend/internal/database/ent"
+	"github.com/mensatt/backend/internal/database/seeds"
 	"github.com/mensatt/backend/pkg/imageuploader"
 	"github.com/mensatt/backend/pkg/server"
 	"github.com/mensatt/backend/pkg/utils"
+	"log"
+	"path/filepath"
+	"time"
 )
 
 func main() {
 	assetDir := utils.MustGet("ASSETS_DIR")
+	err := utils.CreateDirIfNotExists(assetDir)
+	if err != nil {
+		log.Fatalf("failed to create asset dir(%s): %s\n", assetDir, err)
+	}
+
 	imageDir := filepath.Join(assetDir, "images")
-	err := utils.CreateDirIfNotExists(imageDir)
+	err = utils.CreateDirIfNotExists(imageDir)
 	if err != nil {
 		log.Fatalf("failed to create image dir(%s): %s\n", imageDir, err)
 	}
@@ -65,6 +70,7 @@ func main() {
 	// Flush buffered events before the program terminates
 	defer sentry.Flush(2 * time.Second)
 
+	// Details for database connection
 	username, err := utils.GetOrFile("DATABASE_USERNAME")
 	if err != nil {
 		log.Fatalln("Database username secret could not be retrieved:", err)
@@ -76,17 +82,29 @@ func main() {
 	}
 	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", username, password, utils.MustGet("DATABASE_HOST"), utils.MustGet("DATABASE_NAME"))
 
-	pool, err := pgxpool.Connect(context.Background(), databaseUrl)
+	// Connect to database
+	client, err := ent.Open(dialect.Postgres, databaseUrl)
 	if err != nil {
-		log.Fatalln("Error connecting to database:", err)
+		log.Fatalln("Error opening database connection:", err)
 	}
-	defer pool.Close()
+	defer func(client *ent.Client) {
+		err := client.Close()
+		if err != nil {
+			log.Fatalln("Error closing database connection:", err)
+		}
+	}(client)
 
-	// Run migrations to keep the database up to date
-	err = db.UpgradeDatabase(databaseUrl)
-	if err != nil {
-		log.Fatalln("Error upgrading database:", err)
+	ctx := context.Background()
+
+	// todo: run migration tool here in the future
+	if err := client.Schema.Create(ctx); err != nil {
+		log.Fatalln("Error creating schema:", err)
 	}
 
-	log.Fatal(server.Run(&config, pool))
+	if err := seeds.Seed(ctx, client); err != nil {
+		log.Fatalln("Error seeding database:", err)
+	}
+
+	// Run the server
+	log.Fatal(server.Run(&config, client))
 }

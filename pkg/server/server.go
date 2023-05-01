@@ -1,14 +1,12 @@
 package server
 
 import (
+	ent "github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/images"
 	"log"
 
 	sentrygin "github.com/getsentry/sentry-go/gin"
-	"github.com/jackc/pgx/v4/pgxpool"
-
 	"github.com/gin-gonic/gin"
-	"github.com/mensatt/backend/internal/db"
 	"github.com/mensatt/backend/internal/graphql"
 	"github.com/mensatt/backend/internal/middleware"
 	"github.com/mensatt/backend/internal/misc"
@@ -16,7 +14,7 @@ import (
 	"github.com/mensatt/backend/pkg/utils"
 )
 
-func Run(config *Config, pool *pgxpool.Pool) error {
+func Run(config *Config, client *ent.Client) error {
 	jwtKeyStore, err := utils.InitJWTKeyStore(&config.JWT)
 	if err != nil {
 		return err
@@ -27,7 +25,7 @@ func Run(config *Config, pool *pgxpool.Pool) error {
 		return err
 	}
 
-	database := db.NewExtended(pool)
+	//database := db.NewExtended(pool)
 
 	if !config.DebugEnabled {
 		gin.SetMode(gin.ReleaseMode)
@@ -45,7 +43,7 @@ func Run(config *Config, pool *pgxpool.Pool) error {
 	app.Use(sentrygin.New(sentrygin.Options{}))
 	app.Use(middleware.Auth(middleware.AuthParams{
 		JWTKeyStore: jwtKeyStore,
-		Database:    database,
+		Database:    client,
 	}))
 
 	assetsRouterGroup := app.Group(config.VersionedPath("/assets"))
@@ -66,7 +64,7 @@ func Run(config *Config, pool *pgxpool.Pool) error {
 	gqlRouterGroup := app.Group(config.VersionedPath("/graphql"))
 	gqlServerParams := graphql.GraphQLParams{
 		DebugEnabled:  config.DebugEnabled,
-		Database:      database,
+		Database:      client,
 		JWTKeyStore:   jwtKeyStore,
 		ImageUploader: imageUploader,
 		ImageBaseURL:  imagesRouterGroup.BasePath(),

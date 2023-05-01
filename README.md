@@ -6,16 +6,17 @@
 The backend repository for [Mensatt](https://www.mensatt.de) written in go.
 
 ## Requirements
+
 - Docker & Docker Compose
 - Go 1.19
 
 ## Building
 
-Generate all: ```make generate```  
-Run only gqlgen: ```make gqlgen```  
-Run only sqlc: ```make sqlc```  
+Generate all: ```make generate```
+Run only gqlgen: ```make gqlgen```
+Run only sqlc: ```make sqlc```
 
 ## Running
 
-Start dev server: ```make up```  
-Stop the server: ```make down```  
+Start dev server: ```make up```
+Stop the server: ```make down```

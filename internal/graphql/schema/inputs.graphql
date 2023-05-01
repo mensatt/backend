@@ -13,7 +13,7 @@ input CreateTagInput {
     name: String!
     description: String!
     shortName: String
-    priority: Priority
+    priority: TagPriority
     isAllergy: Boolean
 }
 
@@ -31,10 +31,10 @@ input UpdateDishInput {
     nameEn: String
 }
 
-input MergeDishesInput {
-    keep: UUID!
-    merge: UUID!
-}
+#input MergeDishesInput {
+#    keep: UUID!
+#    merge: UUID!
+#}
 
 # DishAlias
 
@@ -52,7 +52,7 @@ input UpdateDishAliasInput {
 }
 
 input DeleteDishAliasInput {
-    alias: String!
+    aliasName: String!
 }
 
 
@@ -160,16 +160,16 @@ input ReviewFilter {
 
 # Image
 
-input AddImagesToReviewInput {
-    review: UUID!
-    images: [ImageInput!]!
-}
+#input AddImagesToReviewInput {
+#    review: UUID!
+#    images: [ImageInput!]!
+#}
 
 input ImageInput {
     image: Upload!
 }
 
-input DeleteImageToReviewInput {
-    review: UUID!
-    id: UUID!
-}
+#input DeleteImageToReviewInput {
+#    review: UUID!
+#    id: UUID!
+#}
