@@ -11,6 +11,11 @@ import (
 	"github.com/mensatt/backend/internal/database/schema"
 )
 
+type AddImagesToReviewInput struct {
+	Review uuid.UUID     `json:"review"`
+	Images []*ImageInput `json:"images"`
+}
+
 type AddSideDishToOccurrenceInput struct {
 	Occurrence uuid.UUID `json:"occurrence"`
 	Dish       uuid.UUID `json:"dish"`
@@ -72,6 +77,11 @@ type CreateTagInput struct {
 
 type DeleteDishAliasInput struct {
 	AliasName string `json:"aliasName"`
+}
+
+type DeleteImageToReviewInput struct {
+	Review uuid.UUID `json:"review"`
+	ID     uuid.UUID `json:"id"`
 }
 
 type DeleteOccurrenceInput struct {

@@ -160,16 +160,16 @@ input ReviewFilter {
 
 # Image
 
-#input AddImagesToReviewInput {
-#    review: UUID!
-#    images: [ImageInput!]!
-#}
-
 input ImageInput {
     image: Upload!
 }
 
-#input DeleteImageToReviewInput {
-#    review: UUID!
-#    id: UUID!
-#}
+input AddImagesToReviewInput {
+    review: UUID!
+    images: [ImageInput!]!
+}
+
+input DeleteImageToReviewInput {
+    review: UUID!
+    id: UUID!
+}

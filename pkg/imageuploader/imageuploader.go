@@ -3,20 +3,16 @@ package imageuploader
 import (
 	"crypto/sha256"
 	"fmt"
-	"log"
+	"github.com/davidbyttow/govips/v2/vips"
+	"github.com/google/uuid"
+	"github.com/mensatt/backend/pkg/utils"
 	"os"
 	"path/filepath"
-	"regexp"
-
-	"github.com/mensatt/backend/pkg/utils"
 )
 
 var (
-	isValidImageHash = regexp.MustCompile(`^[0-9a-f]{64}$`)
-
 	// https://www.garykessler.net/library/file_sigs.html
 	magicNumbers = map[string][]byte{
-		"jpg":  {0xff, 0xd8, 0xff},
 		"jpeg": {0xff, 0xd8, 0xff},
 		"png":  {0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a},
 		"webp": {0x52, 0x49, 0x46, 0x46},
@@ -58,62 +54,67 @@ func NewImageUploader(params Config) (*ImageUploader, error) {
 	}, nil
 }
 
-func (iu *ImageUploader) ValidateAndStoreImage(image []byte) (string, error) {
+func (iu *ImageUploader) ValidateAndStoreImage(image []byte) (uuid.UUID, string, error) {
 	if len(image) > iu.maxImageSize {
-		return "", fmt.Errorf("image is too large - max size: %d, actual size: %d", iu.maxImageSize, len(image))
+		return uuid.Nil, "", fmt.Errorf("image is too large - max size: %d, actual size: %d", iu.maxImageSize, len(image))
 	}
 
-	if !IsImageValid(image) {
-		return "", fmt.Errorf("image is invalid or format not accepted")
+	if !isImageValid(image) {
+		return uuid.Nil, "", fmt.Errorf("image is invalid or format not accepted")
 	}
 
-	// todo: check if image dimensions are too large
+	// todo: check if this is the correct place and proper lifecycle for vips
+	vips.Startup(nil)
+	defer vips.Shutdown()
 
-	imageHash := fmt.Sprintf("%x", sha256.Sum256(image))
-
-	path := iu.GetImagePath(imageHash)
-
-	if _, err := os.Stat(path); err == nil {
-		// an image with the same hash has already been processed
-		// todo: check this behaviour
-		return imageHash, nil
+	vipsImage, err := vips.NewImageFromBuffer(image)
+	defer vipsImage.Close()
+	if err != nil {
+		return uuid.Nil, "", err
 	}
 
-	err := os.WriteFile(path, image, 0644)
-	return imageHash, err
+	webpImage, _, err := vipsImage.ExportWebp(nil)
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+
+	imageHash := fmt.Sprintf("%x", sha256.Sum256(webpImage))
+	imageUUID := uuid.New()
+
+	// generate new uuids until we find one that is not already in use
+	for {
+		path := iu.GetImagePath(imageUUID)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			break
+		}
+		imageUUID = uuid.New()
+	}
+
+	path := iu.GetImagePath(imageUUID)
+
+	// owner: read, write; group: read; others: read
+	err = os.WriteFile(path, webpImage, 0644)
+
+	return imageUUID, imageHash, err
 }
 
-func (iu *ImageUploader) RemoveImage(imageHash string) error {
-	err := os.Remove(iu.GetImagePath(imageHash))
+func (iu *ImageUploader) RemoveImage(uuid uuid.UUID) error {
+	err := os.Remove(iu.GetImagePath(uuid))
 	if err != nil {
 		return err
-	}
-
-	files, err := filepath.Glob(fmt.Sprintf("%s/%s_*", iu.imageDirectory, imageHash))
-	if err != nil {
-		return err
-	}
-	for _, f := range files {
-		if err := os.Remove(f); err != nil {
-			log.Printf("error removing image file: %s - %s\n", f, err)
-		}
 	}
 	return nil
 }
 
-func (iu *ImageUploader) GetImagePath(imageHash string) string {
-	return filepath.Join(iu.imageDirectory, imageHash)
+func (iu *ImageUploader) GetImagePath(uuid uuid.UUID) string {
+	return filepath.Join(iu.imageDirectory, uuid.String())
 }
 
 func (iu *ImageUploader) GetMaxImageSize() int {
 	return iu.maxImageSize
 }
 
-func IsImageHashValid(imageHash string) bool {
-	return isValidImageHash.MatchString(imageHash)
-}
-
-func IsImageValid(image []byte) bool {
+func isImageValid(image []byte) bool {
 	for _, magicNumber := range magicNumbers {
 		if isMagicNumberValid(image, magicNumber) {
 			return true
