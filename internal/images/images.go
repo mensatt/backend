@@ -2,6 +2,7 @@ package images
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/mensatt/backend/pkg/imageuploader"
 	"net/http"
 	"os"
@@ -12,7 +13,7 @@ type ImageParams struct {
 }
 
 func Run(g *gin.RouterGroup, params *ImageParams) error {
-	relativePath := "/:imageHash"
+	relativePath := "/:imageUUID"
 	handler := imageHandler(params.ImageUploader)
 	g.GET(relativePath, handler)
 	g.HEAD(relativePath, handler)
@@ -21,15 +22,15 @@ func Run(g *gin.RouterGroup, params *ImageParams) error {
 
 func imageHandler(ip *imageuploader.ImageUploader) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		imageHash := c.Param("imageHash")
-		print(imageHash)
-		if !imageuploader.IsImageHashValid(imageHash) {
-			// return 400 error if image hash format is invalid
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid image hash"})
+		uuidString := c.Param("imageUUID")
+		print(uuidString)
+		imageUUID, err := uuid.Parse(uuidString)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid uuid"}) // return 400 error if uuid is of an invalid format
 			return
 		}
 
-		path := ip.GetImagePath(imageHash)
+		path := ip.GetImagePath(imageUUID)
 
 		// check if file exists and send it if it does
 		if _, err := os.Stat(path); !os.IsNotExist(err) {

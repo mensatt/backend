@@ -388,11 +388,10 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 
 	// Process & store images
 	if err == nil && input.Images != nil {
-		images, err := r.storeImages(ctx, review, input.Images)
+		_, err := r.storeImages(ctx, review, input.Images) // only require error (if no error: images are stored)
 		if err != nil {
 			return nil, err
 		}
-		_ = images // todo: process images further
 	}
 
 	return review, err
@@ -437,12 +436,56 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 		return nil, err
 	}
 
+	images, err := review.QueryImages().All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	err = r.deleteImages(ctx, images)
+	if err != nil {
+		return nil, err
+	}
+
 	err = r.Database.Review.DeleteOne(review).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return review, nil
+}
+
+// AddImagesToReview is the resolver for the addImagesToReview field.
+func (r *mutationResolver) AddImagesToReview(ctx context.Context, input models.AddImagesToReviewInput) (*ent.Review, error) {
+	review, err := r.Database.Review.Get(ctx, input.Review)
+	if err != nil {
+		return nil, err
+	}
+
+	images, err := r.storeImages(ctx, review, input.Images)
+	if err != nil {
+		return nil, err
+	}
+
+	return review.Update().AddImages(images...).Save(ctx)
+}
+
+// DeleteImageFromReview is the resolver for the deleteImageFromReview field.
+func (r *mutationResolver) DeleteImageFromReview(ctx context.Context, input models.DeleteImageToReviewInput) (*ent.Image, error) {
+	review, err := r.Database.Review.Get(ctx, input.Review)
+	if err != nil {
+		return nil, err
+	}
+
+	image, err := r.Database.Image.Get(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	err = r.deleteImages(ctx, []*ent.Image{image})
+	if err != nil {
+		return nil, err
+	}
+
+	return image, review.Update().RemoveImages(image).Exec(ctx)
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.

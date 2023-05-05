@@ -6,19 +6,50 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/graphql/models"
+	"io"
 )
 
-//func (r *Resolver) storeImage(ctx context.Context, image *models.ImageInput) (string, error) {
-//	imageBytes, err := io.ReadAll(image.Image.File)
-//	if err != nil {
-//		return "", err
-//	}
-//
-//	return r.ImageUploader.ValidateAndStoreImage(imageBytes)
-//}
-
 func (r *mutationResolver) storeImages(ctx context.Context, review *ent.Review, images []*models.ImageInput) ([]*ent.Image, error) {
-	return nil, nil
+	var imageEntities []*ent.Image
+	for _, image := range images {
+		if image.Image.Size > int64(r.ImageUploader.GetMaxImageSize()) {
+			continue // todo: perhaps error?
+		}
+
+		imageBytes, err := io.ReadAll(image.Image.File)
+		if err != nil {
+			return nil, err
+		}
+
+		imageUUID, imageHash, err := r.ImageUploader.ValidateAndStoreImage(imageBytes)
+		if err != nil {
+			return nil, err
+		}
+
+		imageEntity, err := r.Database.Image.Create().
+			SetID(imageUUID).
+			SetImageHash(imageHash).
+			SetReview(review).
+			Save(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		imageEntities = append(imageEntities, imageEntity)
+	}
+
+	return imageEntities, nil
+}
+
+func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image) error {
+	for _, image := range images {
+		err := r.ImageUploader.RemoveImage(image.ID)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 //func approvedBoolToNullTime(approved bool) sql.NullTime {

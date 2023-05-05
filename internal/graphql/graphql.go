@@ -53,7 +53,7 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 					JWTKeyStore:   params.JWTKeyStore,
 					VCSBuildInfo:  vscBuildInfo,
 					ImageUploader: params.ImageUploader,
-					//ImageBaseURL:  params.ImageBaseURL,
+					ImageBaseURL:  params.ImageBaseURL,
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,

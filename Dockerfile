@@ -4,6 +4,9 @@ FROM golang:1.19-bullseye as base
 ARG USER_ID
 ARG GROUP_ID
 
+# Install libvips-dev for image processing
+RUN apt-get update && apt-get install -y libvips-dev
+
 # Create a group and user
 RUN addgroup --gid $GROUP_ID mensatt && \
     adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID mensatt
@@ -37,9 +40,12 @@ RUN go mod download
 #RUN go build -tags netgo -ldflags="-extldflags=-static" -o /tmp/mensatt ./cmd/mensatt/main.go
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
-FROM busybox:glibc as prod
+FROM alpine:3.17 as prod
 
 COPY --from=built /tmp/mensatt /usr/bin/mensatt
+
+# Install libvips-dev for image processing
+RUN apk add --no-cache vips
 
 EXPOSE 4000
 CMD ["mensatt"]
