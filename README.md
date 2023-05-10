@@ -9,14 +9,15 @@ The backend repository for [Mensatt](https://www.mensatt.de) written in go.
 
 - Docker & Docker Compose
 - Go 1.19
+- libvips-dev
 
 ## Building
 
-Generate all: ```make generate```
-Run only gqlgen: ```make gqlgen```
-Run only sqlc: ```make sqlc```
+- Generate all: ```make generate```
+- Run only gqlgen: ```make gqlgen```
+- Run only entc: ```make entc```
 
 ## Running
 
-Start dev server: ```make up```
-Stop the server: ```make down```
+- Start dev server: ```make up```
+- Stop the server: ```make down```
