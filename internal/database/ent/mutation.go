@@ -1409,16 +1409,19 @@ func (m *ImageMutation) ResetEdge(name string) error {
 // LocationMutation represents an operation that mutates the Location nodes in the graph.
 type LocationMutation struct {
 	config
-	op             Op
-	typ            string
-	id             *uuid.UUID
-	external_id    *int
-	addexternal_id *int
-	name           *string
-	clearedFields  map[string]struct{}
-	done           bool
-	oldValue       func(context.Context) (*Location, error)
-	predicates     []predicate.Location
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	external_id        *int
+	addexternal_id     *int
+	name               *string
+	clearedFields      map[string]struct{}
+	occurrences        map[uuid.UUID]struct{}
+	removedoccurrences map[uuid.UUID]struct{}
+	clearedoccurrences bool
+	done               bool
+	oldValue           func(context.Context) (*Location, error)
+	predicates         []predicate.Location
 }
 
 var _ ent.Mutation = (*LocationMutation)(nil)
@@ -1617,6 +1620,60 @@ func (m *LocationMutation) ResetName() {
 	m.name = nil
 }
 
+// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by ids.
+func (m *LocationMutation) AddOccurrenceIDs(ids ...uuid.UUID) {
+	if m.occurrences == nil {
+		m.occurrences = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.occurrences[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOccurrences clears the "occurrences" edge to the Occurrence entity.
+func (m *LocationMutation) ClearOccurrences() {
+	m.clearedoccurrences = true
+}
+
+// OccurrencesCleared reports if the "occurrences" edge to the Occurrence entity was cleared.
+func (m *LocationMutation) OccurrencesCleared() bool {
+	return m.clearedoccurrences
+}
+
+// RemoveOccurrenceIDs removes the "occurrences" edge to the Occurrence entity by IDs.
+func (m *LocationMutation) RemoveOccurrenceIDs(ids ...uuid.UUID) {
+	if m.removedoccurrences == nil {
+		m.removedoccurrences = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.occurrences, ids[i])
+		m.removedoccurrences[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOccurrences returns the removed IDs of the "occurrences" edge to the Occurrence entity.
+func (m *LocationMutation) RemovedOccurrencesIDs() (ids []uuid.UUID) {
+	for id := range m.removedoccurrences {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OccurrencesIDs returns the "occurrences" edge IDs in the mutation.
+func (m *LocationMutation) OccurrencesIDs() (ids []uuid.UUID) {
+	for id := range m.occurrences {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOccurrences resets all changes to the "occurrences" edge.
+func (m *LocationMutation) ResetOccurrences() {
+	m.occurrences = nil
+	m.clearedoccurrences = false
+	m.removedoccurrences = nil
+}
+
 // Where appends a list predicates to the LocationMutation builder.
 func (m *LocationMutation) Where(ps ...predicate.Location) {
 	m.predicates = append(m.predicates, ps...)
@@ -1767,49 +1824,85 @@ func (m *LocationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *LocationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.occurrences != nil {
+		edges = append(edges, location.EdgeOccurrences)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *LocationMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case location.EdgeOccurrences:
+		ids := make([]ent.Value, 0, len(m.occurrences))
+		for id := range m.occurrences {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *LocationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedoccurrences != nil {
+		edges = append(edges, location.EdgeOccurrences)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *LocationMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case location.EdgeOccurrences:
+		ids := make([]ent.Value, 0, len(m.removedoccurrences))
+		for id := range m.removedoccurrences {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *LocationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedoccurrences {
+		edges = append(edges, location.EdgeOccurrences)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *LocationMutation) EdgeCleared(name string) bool {
+	switch name {
+	case location.EdgeOccurrences:
+		return m.clearedoccurrences
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *LocationMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Location unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *LocationMutation) ResetEdge(name string) error {
+	switch name {
+	case location.EdgeOccurrences:
+		m.ResetOccurrences()
+		return nil
+	}
 	return fmt.Errorf("unknown Location edge %s", name)
 }
 
@@ -1853,9 +1946,12 @@ type OccurrenceMutation struct {
 	side_dishes        map[uuid.UUID]struct{}
 	removedside_dishes map[uuid.UUID]struct{}
 	clearedside_dishes bool
-	tags               map[int]struct{}
-	removedtags        map[int]struct{}
-	clearedtags        bool
+	tag                map[int]struct{}
+	removedtag         map[int]struct{}
+	clearedtag         bool
+	reviews            map[uuid.UUID]struct{}
+	removedreviews     map[uuid.UUID]struct{}
+	clearedreviews     bool
 	done               bool
 	oldValue           func(context.Context) (*Occurrence, error)
 	predicates         []predicate.Occurrence
@@ -2841,58 +2937,112 @@ func (m *OccurrenceMutation) ResetSideDishes() {
 	m.removedside_dishes = nil
 }
 
-// AddTagIDs adds the "tags" edge to the Tag entity by ids.
+// AddTagIDs adds the "tag" edge to the Tag entity by ids.
 func (m *OccurrenceMutation) AddTagIDs(ids ...int) {
-	if m.tags == nil {
-		m.tags = make(map[int]struct{})
+	if m.tag == nil {
+		m.tag = make(map[int]struct{})
 	}
 	for i := range ids {
-		m.tags[ids[i]] = struct{}{}
+		m.tag[ids[i]] = struct{}{}
 	}
 }
 
-// ClearTags clears the "tags" edge to the Tag entity.
-func (m *OccurrenceMutation) ClearTags() {
-	m.clearedtags = true
+// ClearTag clears the "tag" edge to the Tag entity.
+func (m *OccurrenceMutation) ClearTag() {
+	m.clearedtag = true
 }
 
-// TagsCleared reports if the "tags" edge to the Tag entity was cleared.
-func (m *OccurrenceMutation) TagsCleared() bool {
-	return m.clearedtags
+// TagCleared reports if the "tag" edge to the Tag entity was cleared.
+func (m *OccurrenceMutation) TagCleared() bool {
+	return m.clearedtag
 }
 
-// RemoveTagIDs removes the "tags" edge to the Tag entity by IDs.
+// RemoveTagIDs removes the "tag" edge to the Tag entity by IDs.
 func (m *OccurrenceMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtags == nil {
-		m.removedtags = make(map[int]struct{})
+	if m.removedtag == nil {
+		m.removedtag = make(map[int]struct{})
 	}
 	for i := range ids {
-		delete(m.tags, ids[i])
-		m.removedtags[ids[i]] = struct{}{}
+		delete(m.tag, ids[i])
+		m.removedtag[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedTags returns the removed IDs of the "tags" edge to the Tag entity.
-func (m *OccurrenceMutation) RemovedTagsIDs() (ids []int) {
-	for id := range m.removedtags {
+// RemovedTag returns the removed IDs of the "tag" edge to the Tag entity.
+func (m *OccurrenceMutation) RemovedTagIDs() (ids []int) {
+	for id := range m.removedtag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// TagsIDs returns the "tags" edge IDs in the mutation.
-func (m *OccurrenceMutation) TagsIDs() (ids []int) {
-	for id := range m.tags {
+// TagIDs returns the "tag" edge IDs in the mutation.
+func (m *OccurrenceMutation) TagIDs() (ids []int) {
+	for id := range m.tag {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetTags resets all changes to the "tags" edge.
-func (m *OccurrenceMutation) ResetTags() {
-	m.tags = nil
-	m.clearedtags = false
-	m.removedtags = nil
+// ResetTag resets all changes to the "tag" edge.
+func (m *OccurrenceMutation) ResetTag() {
+	m.tag = nil
+	m.clearedtag = false
+	m.removedtag = nil
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by ids.
+func (m *OccurrenceMutation) AddReviewIDs(ids ...uuid.UUID) {
+	if m.reviews == nil {
+		m.reviews = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.reviews[ids[i]] = struct{}{}
+	}
+}
+
+// ClearReviews clears the "reviews" edge to the Review entity.
+func (m *OccurrenceMutation) ClearReviews() {
+	m.clearedreviews = true
+}
+
+// ReviewsCleared reports if the "reviews" edge to the Review entity was cleared.
+func (m *OccurrenceMutation) ReviewsCleared() bool {
+	return m.clearedreviews
+}
+
+// RemoveReviewIDs removes the "reviews" edge to the Review entity by IDs.
+func (m *OccurrenceMutation) RemoveReviewIDs(ids ...uuid.UUID) {
+	if m.removedreviews == nil {
+		m.removedreviews = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.reviews, ids[i])
+		m.removedreviews[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedReviews returns the removed IDs of the "reviews" edge to the Review entity.
+func (m *OccurrenceMutation) RemovedReviewsIDs() (ids []uuid.UUID) {
+	for id := range m.removedreviews {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ReviewsIDs returns the "reviews" edge IDs in the mutation.
+func (m *OccurrenceMutation) ReviewsIDs() (ids []uuid.UUID) {
+	for id := range m.reviews {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetReviews resets all changes to the "reviews" edge.
+func (m *OccurrenceMutation) ResetReviews() {
+	m.reviews = nil
+	m.clearedreviews = false
+	m.removedreviews = nil
 }
 
 // Where appends a list predicates to the OccurrenceMutation builder.
@@ -3381,7 +3531,7 @@ func (m *OccurrenceMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OccurrenceMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.location != nil {
 		edges = append(edges, occurrence.EdgeLocation)
 	}
@@ -3391,8 +3541,11 @@ func (m *OccurrenceMutation) AddedEdges() []string {
 	if m.side_dishes != nil {
 		edges = append(edges, occurrence.EdgeSideDishes)
 	}
-	if m.tags != nil {
-		edges = append(edges, occurrence.EdgeTags)
+	if m.tag != nil {
+		edges = append(edges, occurrence.EdgeTag)
+	}
+	if m.reviews != nil {
+		edges = append(edges, occurrence.EdgeReviews)
 	}
 	return edges
 }
@@ -3415,9 +3568,15 @@ func (m *OccurrenceMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case occurrence.EdgeTags:
-		ids := make([]ent.Value, 0, len(m.tags))
-		for id := range m.tags {
+	case occurrence.EdgeTag:
+		ids := make([]ent.Value, 0, len(m.tag))
+		for id := range m.tag {
+			ids = append(ids, id)
+		}
+		return ids
+	case occurrence.EdgeReviews:
+		ids := make([]ent.Value, 0, len(m.reviews))
+		for id := range m.reviews {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3427,12 +3586,15 @@ func (m *OccurrenceMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OccurrenceMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.removedside_dishes != nil {
 		edges = append(edges, occurrence.EdgeSideDishes)
 	}
-	if m.removedtags != nil {
-		edges = append(edges, occurrence.EdgeTags)
+	if m.removedtag != nil {
+		edges = append(edges, occurrence.EdgeTag)
+	}
+	if m.removedreviews != nil {
+		edges = append(edges, occurrence.EdgeReviews)
 	}
 	return edges
 }
@@ -3447,9 +3609,15 @@ func (m *OccurrenceMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
-	case occurrence.EdgeTags:
-		ids := make([]ent.Value, 0, len(m.removedtags))
-		for id := range m.removedtags {
+	case occurrence.EdgeTag:
+		ids := make([]ent.Value, 0, len(m.removedtag))
+		for id := range m.removedtag {
+			ids = append(ids, id)
+		}
+		return ids
+	case occurrence.EdgeReviews:
+		ids := make([]ent.Value, 0, len(m.removedreviews))
+		for id := range m.removedreviews {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3459,7 +3627,7 @@ func (m *OccurrenceMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OccurrenceMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 5)
 	if m.clearedlocation {
 		edges = append(edges, occurrence.EdgeLocation)
 	}
@@ -3469,8 +3637,11 @@ func (m *OccurrenceMutation) ClearedEdges() []string {
 	if m.clearedside_dishes {
 		edges = append(edges, occurrence.EdgeSideDishes)
 	}
-	if m.clearedtags {
-		edges = append(edges, occurrence.EdgeTags)
+	if m.clearedtag {
+		edges = append(edges, occurrence.EdgeTag)
+	}
+	if m.clearedreviews {
+		edges = append(edges, occurrence.EdgeReviews)
 	}
 	return edges
 }
@@ -3485,8 +3656,10 @@ func (m *OccurrenceMutation) EdgeCleared(name string) bool {
 		return m.cleareddish
 	case occurrence.EdgeSideDishes:
 		return m.clearedside_dishes
-	case occurrence.EdgeTags:
-		return m.clearedtags
+	case occurrence.EdgeTag:
+		return m.clearedtag
+	case occurrence.EdgeReviews:
+		return m.clearedreviews
 	}
 	return false
 }
@@ -3518,8 +3691,11 @@ func (m *OccurrenceMutation) ResetEdge(name string) error {
 	case occurrence.EdgeSideDishes:
 		m.ResetSideDishes()
 		return nil
-	case occurrence.EdgeTags:
-		m.ResetTags()
+	case occurrence.EdgeTag:
+		m.ResetTag()
+		return nil
+	case occurrence.EdgeReviews:
+		m.ResetReviews()
 		return nil
 	}
 	return fmt.Errorf("unknown Occurrence edge %s", name)
@@ -3539,8 +3715,7 @@ type ReviewMutation struct {
 	updated_at        *time.Time
 	accepted_at       *time.Time
 	clearedFields     map[string]struct{}
-	occurrence        map[uuid.UUID]struct{}
-	removedoccurrence map[uuid.UUID]struct{}
+	occurrence        *uuid.UUID
 	clearedoccurrence bool
 	images            map[uuid.UUID]struct{}
 	removedimages     map[uuid.UUID]struct{}
@@ -3903,14 +4078,9 @@ func (m *ReviewMutation) ResetAcceptedAt() {
 	delete(m.clearedFields, review.FieldAcceptedAt)
 }
 
-// AddOccurrenceIDs adds the "occurrence" edge to the Occurrence entity by ids.
-func (m *ReviewMutation) AddOccurrenceIDs(ids ...uuid.UUID) {
-	if m.occurrence == nil {
-		m.occurrence = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.occurrence[ids[i]] = struct{}{}
-	}
+// SetOccurrenceID sets the "occurrence" edge to the Occurrence entity by id.
+func (m *ReviewMutation) SetOccurrenceID(id uuid.UUID) {
+	m.occurrence = &id
 }
 
 // ClearOccurrence clears the "occurrence" edge to the Occurrence entity.
@@ -3923,29 +4093,20 @@ func (m *ReviewMutation) OccurrenceCleared() bool {
 	return m.clearedoccurrence
 }
 
-// RemoveOccurrenceIDs removes the "occurrence" edge to the Occurrence entity by IDs.
-func (m *ReviewMutation) RemoveOccurrenceIDs(ids ...uuid.UUID) {
-	if m.removedoccurrence == nil {
-		m.removedoccurrence = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.occurrence, ids[i])
-		m.removedoccurrence[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedOccurrence returns the removed IDs of the "occurrence" edge to the Occurrence entity.
-func (m *ReviewMutation) RemovedOccurrenceIDs() (ids []uuid.UUID) {
-	for id := range m.removedoccurrence {
-		ids = append(ids, id)
+// OccurrenceID returns the "occurrence" edge ID in the mutation.
+func (m *ReviewMutation) OccurrenceID() (id uuid.UUID, exists bool) {
+	if m.occurrence != nil {
+		return *m.occurrence, true
 	}
 	return
 }
 
 // OccurrenceIDs returns the "occurrence" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// OccurrenceID instead. It exists only for internal usage by the builders.
 func (m *ReviewMutation) OccurrenceIDs() (ids []uuid.UUID) {
-	for id := range m.occurrence {
-		ids = append(ids, id)
+	if id := m.occurrence; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -3954,7 +4115,6 @@ func (m *ReviewMutation) OccurrenceIDs() (ids []uuid.UUID) {
 func (m *ReviewMutation) ResetOccurrence() {
 	m.occurrence = nil
 	m.clearedoccurrence = false
-	m.removedoccurrence = nil
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by ids.
@@ -4253,11 +4413,9 @@ func (m *ReviewMutation) AddedEdges() []string {
 func (m *ReviewMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case review.EdgeOccurrence:
-		ids := make([]ent.Value, 0, len(m.occurrence))
-		for id := range m.occurrence {
-			ids = append(ids, id)
+		if id := m.occurrence; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	case review.EdgeImages:
 		ids := make([]ent.Value, 0, len(m.images))
 		for id := range m.images {
@@ -4271,9 +4429,6 @@ func (m *ReviewMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *ReviewMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 2)
-	if m.removedoccurrence != nil {
-		edges = append(edges, review.EdgeOccurrence)
-	}
 	if m.removedimages != nil {
 		edges = append(edges, review.EdgeImages)
 	}
@@ -4284,12 +4439,6 @@ func (m *ReviewMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *ReviewMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case review.EdgeOccurrence:
-		ids := make([]ent.Value, 0, len(m.removedoccurrence))
-		for id := range m.removedoccurrence {
-			ids = append(ids, id)
-		}
-		return ids
 	case review.EdgeImages:
 		ids := make([]ent.Value, 0, len(m.removedimages))
 		for id := range m.removedimages {
@@ -4328,6 +4477,9 @@ func (m *ReviewMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *ReviewMutation) ClearEdge(name string) error {
 	switch name {
+	case review.EdgeOccurrence:
+		m.ClearOccurrence()
+		return nil
 	}
 	return fmt.Errorf("unknown Review unique edge %s", name)
 }
@@ -4349,19 +4501,22 @@ func (m *ReviewMutation) ResetEdge(name string) error {
 // TagMutation represents an operation that mutates the Tag nodes in the graph.
 type TagMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	key           *string
-	name          *string
-	description   *string
-	short_name    *string
-	priority      *schema.TagPriority
-	is_allergy    *bool
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Tag, error)
-	predicates    []predicate.Tag
+	op                 Op
+	typ                string
+	id                 *int
+	key                *string
+	name               *string
+	description        *string
+	short_name         *string
+	priority           *schema.TagPriority
+	is_allergy         *bool
+	clearedFields      map[string]struct{}
+	occurrences        map[uuid.UUID]struct{}
+	removedoccurrences map[uuid.UUID]struct{}
+	clearedoccurrences bool
+	done               bool
+	oldValue           func(context.Context) (*Tag, error)
+	predicates         []predicate.Tag
 }
 
 var _ ent.Mutation = (*TagMutation)(nil)
@@ -4691,6 +4846,60 @@ func (m *TagMutation) ResetIsAllergy() {
 	m.is_allergy = nil
 }
 
+// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by ids.
+func (m *TagMutation) AddOccurrenceIDs(ids ...uuid.UUID) {
+	if m.occurrences == nil {
+		m.occurrences = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.occurrences[ids[i]] = struct{}{}
+	}
+}
+
+// ClearOccurrences clears the "occurrences" edge to the Occurrence entity.
+func (m *TagMutation) ClearOccurrences() {
+	m.clearedoccurrences = true
+}
+
+// OccurrencesCleared reports if the "occurrences" edge to the Occurrence entity was cleared.
+func (m *TagMutation) OccurrencesCleared() bool {
+	return m.clearedoccurrences
+}
+
+// RemoveOccurrenceIDs removes the "occurrences" edge to the Occurrence entity by IDs.
+func (m *TagMutation) RemoveOccurrenceIDs(ids ...uuid.UUID) {
+	if m.removedoccurrences == nil {
+		m.removedoccurrences = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.occurrences, ids[i])
+		m.removedoccurrences[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedOccurrences returns the removed IDs of the "occurrences" edge to the Occurrence entity.
+func (m *TagMutation) RemovedOccurrencesIDs() (ids []uuid.UUID) {
+	for id := range m.removedoccurrences {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// OccurrencesIDs returns the "occurrences" edge IDs in the mutation.
+func (m *TagMutation) OccurrencesIDs() (ids []uuid.UUID) {
+	for id := range m.occurrences {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetOccurrences resets all changes to the "occurrences" edge.
+func (m *TagMutation) ResetOccurrences() {
+	m.occurrences = nil
+	m.clearedoccurrences = false
+	m.removedoccurrences = nil
+}
+
 // Where appends a list predicates to the TagMutation builder.
 func (m *TagMutation) Where(ps ...predicate.Tag) {
 	m.predicates = append(m.predicates, ps...)
@@ -4903,49 +5112,85 @@ func (m *TagMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TagMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.occurrences != nil {
+		edges = append(edges, tag.EdgeOccurrences)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TagMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case tag.EdgeOccurrences:
+		ids := make([]ent.Value, 0, len(m.occurrences))
+		for id := range m.occurrences {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TagMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.removedoccurrences != nil {
+		edges = append(edges, tag.EdgeOccurrences)
+	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TagMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case tag.EdgeOccurrences:
+		ids := make([]ent.Value, 0, len(m.removedoccurrences))
+		for id := range m.removedoccurrences {
+			ids = append(ids, id)
+		}
+		return ids
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TagMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedoccurrences {
+		edges = append(edges, tag.EdgeOccurrences)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TagMutation) EdgeCleared(name string) bool {
+	switch name {
+	case tag.EdgeOccurrences:
+		return m.clearedoccurrences
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TagMutation) ClearEdge(name string) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Tag unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TagMutation) ResetEdge(name string) error {
+	switch name {
+	case tag.EdgeOccurrences:
+		m.ResetOccurrences()
+		return nil
+	}
 	return fmt.Errorf("unknown Tag edge %s", name)
 }
 

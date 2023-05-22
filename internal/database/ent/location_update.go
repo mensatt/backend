@@ -10,7 +10,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/location"
+	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/predicate"
 )
 
@@ -46,9 +48,45 @@ func (lu *LocationUpdate) SetName(s string) *LocationUpdate {
 	return lu
 }
 
+// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
+func (lu *LocationUpdate) AddOccurrenceIDs(ids ...uuid.UUID) *LocationUpdate {
+	lu.mutation.AddOccurrenceIDs(ids...)
+	return lu
+}
+
+// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
+func (lu *LocationUpdate) AddOccurrences(o ...*Occurrence) *LocationUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return lu.AddOccurrenceIDs(ids...)
+}
+
 // Mutation returns the LocationMutation object of the builder.
 func (lu *LocationUpdate) Mutation() *LocationMutation {
 	return lu.mutation
+}
+
+// ClearOccurrences clears all "occurrences" edges to the Occurrence entity.
+func (lu *LocationUpdate) ClearOccurrences() *LocationUpdate {
+	lu.mutation.ClearOccurrences()
+	return lu
+}
+
+// RemoveOccurrenceIDs removes the "occurrences" edge to Occurrence entities by IDs.
+func (lu *LocationUpdate) RemoveOccurrenceIDs(ids ...uuid.UUID) *LocationUpdate {
+	lu.mutation.RemoveOccurrenceIDs(ids...)
+	return lu
+}
+
+// RemoveOccurrences removes "occurrences" edges to Occurrence entities.
+func (lu *LocationUpdate) RemoveOccurrences(o ...*Occurrence) *LocationUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return lu.RemoveOccurrenceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -148,6 +186,60 @@ func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lu.mutation.Name(); ok {
 		_spec.SetField(location.FieldName, field.TypeString, value)
 	}
+	if lu.mutation.OccurrencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.OccurrencesTable,
+			Columns: []string{location.OccurrencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lu.mutation.RemovedOccurrencesIDs(); len(nodes) > 0 && !lu.mutation.OccurrencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.OccurrencesTable,
+			Columns: []string{location.OccurrencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := lu.mutation.OccurrencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.OccurrencesTable,
+			Columns: []string{location.OccurrencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, lu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{location.Label}
@@ -186,9 +278,45 @@ func (luo *LocationUpdateOne) SetName(s string) *LocationUpdateOne {
 	return luo
 }
 
+// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
+func (luo *LocationUpdateOne) AddOccurrenceIDs(ids ...uuid.UUID) *LocationUpdateOne {
+	luo.mutation.AddOccurrenceIDs(ids...)
+	return luo
+}
+
+// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
+func (luo *LocationUpdateOne) AddOccurrences(o ...*Occurrence) *LocationUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return luo.AddOccurrenceIDs(ids...)
+}
+
 // Mutation returns the LocationMutation object of the builder.
 func (luo *LocationUpdateOne) Mutation() *LocationMutation {
 	return luo.mutation
+}
+
+// ClearOccurrences clears all "occurrences" edges to the Occurrence entity.
+func (luo *LocationUpdateOne) ClearOccurrences() *LocationUpdateOne {
+	luo.mutation.ClearOccurrences()
+	return luo
+}
+
+// RemoveOccurrenceIDs removes the "occurrences" edge to Occurrence entities by IDs.
+func (luo *LocationUpdateOne) RemoveOccurrenceIDs(ids ...uuid.UUID) *LocationUpdateOne {
+	luo.mutation.RemoveOccurrenceIDs(ids...)
+	return luo
+}
+
+// RemoveOccurrences removes "occurrences" edges to Occurrence entities.
+func (luo *LocationUpdateOne) RemoveOccurrences(o ...*Occurrence) *LocationUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return luo.RemoveOccurrenceIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -317,6 +445,60 @@ func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err
 	}
 	if value, ok := luo.mutation.Name(); ok {
 		_spec.SetField(location.FieldName, field.TypeString, value)
+	}
+	if luo.mutation.OccurrencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.OccurrencesTable,
+			Columns: []string{location.OccurrencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := luo.mutation.RemovedOccurrencesIDs(); len(nodes) > 0 && !luo.mutation.OccurrencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.OccurrencesTable,
+			Columns: []string{location.OccurrencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := luo.mutation.OccurrencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.OccurrencesTable,
+			Columns: []string{location.OccurrencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Location{config: luo.config}
 	_spec.Assign = _node.assignValues

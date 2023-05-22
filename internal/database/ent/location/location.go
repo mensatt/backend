@@ -15,8 +15,17 @@ const (
 	FieldExternalID = "external_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// EdgeOccurrences holds the string denoting the occurrences edge name in mutations.
+	EdgeOccurrences = "occurrences"
 	// Table holds the table name of the location in the database.
 	Table = "locations"
+	// OccurrencesTable is the table that holds the occurrences relation/edge.
+	OccurrencesTable = "occurrences"
+	// OccurrencesInverseTable is the table name for the Occurrence entity.
+	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
+	OccurrencesInverseTable = "occurrences"
+	// OccurrencesColumn is the table column denoting the occurrences relation/edge.
+	OccurrencesColumn = "location"
 )
 
 // Columns holds all SQL columns for location fields.

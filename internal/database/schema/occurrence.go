@@ -36,9 +36,10 @@ func (Occurrence) Fields() []ent.Field {
 // Edges of the Occurrence.
 func (Occurrence) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("location", Location.Type).Unique(),
-		edge.To("dish", Dish.Type).Unique(),
+		edge.From("location", Location.Type).Ref("occurrences").Unique().Required(),
+		edge.From("dish", Dish.Type).Ref("occurrences").Unique().Required(),
 		edge.To("side_dishes", Dish.Type),
-		edge.To("tags", Tag.Type),
+		edge.From("tag", Tag.Type).Ref("occurrences"),
+		edge.To("reviews", Review.Type).StorageKey(edge.Column("occurrence")),
 	}
 }

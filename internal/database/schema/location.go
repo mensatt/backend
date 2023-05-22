@@ -2,6 +2,7 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -22,5 +23,7 @@ func (Location) Fields() []ent.Field {
 
 // Edges of the Location.
 func (Location) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("occurrences", Occurrence.Type).StorageKey(edge.Column("location")),
+	}
 }

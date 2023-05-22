@@ -77,7 +77,7 @@ func (daq *DishAliasQuery) QueryDish() *DishQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dishalias.Table, dishalias.FieldID, selector),
 			sqlgraph.To(dish.Table, dish.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, dishalias.DishTable, dishalias.DishColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, dishalias.DishTable, dishalias.DishColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(daq.driver.Dialect(), step)
 		return fromU, nil
@@ -400,10 +400,10 @@ func (daq *DishAliasQuery) loadDish(ctx context.Context, query *DishQuery, nodes
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*DishAlias)
 	for i := range nodes {
-		if nodes[i].dish_alias_dish == nil {
+		if nodes[i].dish == nil {
 			continue
 		}
-		fk := *nodes[i].dish_alias_dish
+		fk := *nodes[i].dish
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -417,7 +417,7 @@ func (daq *DishAliasQuery) loadDish(ctx context.Context, query *DishQuery, nodes
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "dish_alias_dish" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "dish" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

@@ -24,8 +24,6 @@ func (Image) Fields() []ent.Field {
 // Edges of the Image.
 func (Image) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("review", Review.Type).
-			Ref("images").
-			Unique(),
+		edge.From("review", Review.Type).Ref("images").Unique().Required(),
 	}
 }

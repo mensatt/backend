@@ -20,6 +20,27 @@ type Location struct {
 	ExternalID int `json:"external_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the LocationQuery when eager-loading is set.
+	Edges LocationEdges `json:"edges"`
+}
+
+// LocationEdges holds the relations/edges for other nodes in the graph.
+type LocationEdges struct {
+	// Occurrences holds the value of the occurrences edge.
+	Occurrences []*Occurrence `json:"occurrences,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// OccurrencesOrErr returns the Occurrences value or an error if the edge
+// was not loaded in eager-loading.
+func (e LocationEdges) OccurrencesOrErr() ([]*Occurrence, error) {
+	if e.loadedTypes[0] {
+		return e.Occurrences, nil
+	}
+	return nil, &NotLoadedError{edge: "occurrences"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -69,6 +90,11 @@ func (l *Location) assignValues(columns []string, values []any) error {
 		}
 	}
 	return nil
+}
+
+// QueryOccurrences queries the "occurrences" edge of the Location entity.
+func (l *Location) QueryOccurrences() *OccurrenceQuery {
+	return (&LocationClient{config: l.config}).QueryOccurrences(l)
 }
 
 // Update returns a builder for updating this Location.

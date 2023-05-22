@@ -21,8 +21,8 @@ type Image struct {
 	ImageHash string `json:"image_hash,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
-	Edges         ImageEdges `json:"edges"`
-	review_images *uuid.UUID
+	Edges  ImageEdges `json:"edges"`
+	review *uuid.UUID
 }
 
 // ImageEdges holds the relations/edges for other nodes in the graph.
@@ -56,7 +56,7 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case image.FieldID:
 			values[i] = new(uuid.UUID)
-		case image.ForeignKeys[0]: // review_images
+		case image.ForeignKeys[0]: // review
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Image", columns[i])
@@ -87,10 +87,10 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			}
 		case image.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field review_images", values[j])
+				return fmt.Errorf("unexpected type %T for field review", values[j])
 			} else if value.Valid {
-				i.review_images = new(uuid.UUID)
-				*i.review_images = *value.S.(*uuid.UUID)
+				i.review = new(uuid.UUID)
+				*i.review = *value.S.(*uuid.UUID)
 			}
 		}
 	}

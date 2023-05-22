@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/location"
+	"github.com/mensatt/backend/internal/database/ent/occurrence"
 )
 
 // LocationCreate is the builder for creating a Location entity.
@@ -47,6 +48,21 @@ func (lc *LocationCreate) SetNillableID(u *uuid.UUID) *LocationCreate {
 		lc.SetID(*u)
 	}
 	return lc
+}
+
+// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
+func (lc *LocationCreate) AddOccurrenceIDs(ids ...uuid.UUID) *LocationCreate {
+	lc.mutation.AddOccurrenceIDs(ids...)
+	return lc
+}
+
+// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
+func (lc *LocationCreate) AddOccurrences(o ...*Occurrence) *LocationCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return lc.AddOccurrenceIDs(ids...)
 }
 
 // Mutation returns the LocationMutation object of the builder.
@@ -189,6 +205,25 @@ func (lc *LocationCreate) createSpec() (*Location, *sqlgraph.CreateSpec) {
 	if value, ok := lc.mutation.Name(); ok {
 		_spec.SetField(location.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if nodes := lc.mutation.OccurrencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   location.OccurrencesTable,
+			Columns: []string{location.OccurrencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

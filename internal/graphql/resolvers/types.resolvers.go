@@ -55,7 +55,7 @@ func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *ent.Occurrence
 
 // Tags is the resolver for the tags field.
 func (r *occurrenceResolver) Tags(ctx context.Context, obj *ent.Occurrence) ([]*ent.Tag, error) {
-	return r.Database.Occurrence.QueryTags(obj).All(ctx)
+	return r.Database.Occurrence.QueryTag(obj).All(ctx)
 }
 
 // Occurrence is the resolver for the occurrence field.

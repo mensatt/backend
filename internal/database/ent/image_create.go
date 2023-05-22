@@ -50,14 +50,6 @@ func (ic *ImageCreate) SetReviewID(id uuid.UUID) *ImageCreate {
 	return ic
 }
 
-// SetNillableReviewID sets the "review" edge to the Review entity by ID if the given value is not nil.
-func (ic *ImageCreate) SetNillableReviewID(id *uuid.UUID) *ImageCreate {
-	if id != nil {
-		ic = ic.SetReviewID(*id)
-	}
-	return ic
-}
-
 // SetReview sets the "review" edge to the Review entity.
 func (ic *ImageCreate) SetReview(r *Review) *ImageCreate {
 	return ic.SetReviewID(r.ID)
@@ -156,6 +148,9 @@ func (ic *ImageCreate) check() error {
 			return &ValidationError{Name: "image_hash", err: fmt.Errorf(`ent: validator failed for field "Image.image_hash": %w`, err)}
 		}
 	}
+	if _, ok := ic.mutation.ReviewID(); !ok {
+		return &ValidationError{Name: "review", err: errors.New(`ent: missing required edge "Image.review"`)}
+	}
 	return nil
 }
 
@@ -214,7 +209,7 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.review_images = &nodes[0]
+		_node.review = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

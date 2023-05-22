@@ -23,9 +23,8 @@ type DishAlias struct {
 	NormalizedAliasName string `json:"normalized_alias_name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DishAliasQuery when eager-loading is set.
-	Edges           DishAliasEdges `json:"edges"`
-	dish_aliases    *uuid.UUID
-	dish_alias_dish *uuid.UUID
+	Edges DishAliasEdges `json:"edges"`
+	dish  *uuid.UUID
 }
 
 // DishAliasEdges holds the relations/edges for other nodes in the graph.
@@ -59,9 +58,7 @@ func (*DishAlias) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case dishalias.FieldAliasName, dishalias.FieldNormalizedAliasName:
 			values[i] = new(sql.NullString)
-		case dishalias.ForeignKeys[0]: // dish_aliases
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case dishalias.ForeignKeys[1]: // dish_alias_dish
+		case dishalias.ForeignKeys[0]: // dish
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type DishAlias", columns[i])
@@ -98,17 +95,10 @@ func (da *DishAlias) assignValues(columns []string, values []any) error {
 			}
 		case dishalias.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field dish_aliases", values[i])
+				return fmt.Errorf("unexpected type %T for field dish", values[i])
 			} else if value.Valid {
-				da.dish_aliases = new(uuid.UUID)
-				*da.dish_aliases = *value.S.(*uuid.UUID)
-			}
-		case dishalias.ForeignKeys[1]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field dish_alias_dish", values[i])
-			} else if value.Valid {
-				da.dish_alias_dish = new(uuid.UUID)
-				*da.dish_alias_dish = *value.S.(*uuid.UUID)
+				da.dish = new(uuid.UUID)
+				*da.dish = *value.S.(*uuid.UUID)
 			}
 		}
 	}

@@ -41,14 +41,6 @@ func (iu *ImageUpdate) SetReviewID(id uuid.UUID) *ImageUpdate {
 	return iu
 }
 
-// SetNillableReviewID sets the "review" edge to the Review entity by ID if the given value is not nil.
-func (iu *ImageUpdate) SetNillableReviewID(id *uuid.UUID) *ImageUpdate {
-	if id != nil {
-		iu = iu.SetReviewID(*id)
-	}
-	return iu
-}
-
 // SetReview sets the "review" edge to the Review entity.
 func (iu *ImageUpdate) SetReview(r *Review) *ImageUpdate {
 	return iu.SetReviewID(r.ID)
@@ -131,6 +123,9 @@ func (iu *ImageUpdate) check() error {
 		if err := image.ImageHashValidator(v); err != nil {
 			return &ValidationError{Name: "image_hash", err: fmt.Errorf(`ent: validator failed for field "Image.image_hash": %w`, err)}
 		}
+	}
+	if _, ok := iu.mutation.ReviewID(); iu.mutation.ReviewCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Image.review"`)
 	}
 	return nil
 }
@@ -219,14 +214,6 @@ func (iuo *ImageUpdateOne) SetImageHash(s string) *ImageUpdateOne {
 // SetReviewID sets the "review" edge to the Review entity by ID.
 func (iuo *ImageUpdateOne) SetReviewID(id uuid.UUID) *ImageUpdateOne {
 	iuo.mutation.SetReviewID(id)
-	return iuo
-}
-
-// SetNillableReviewID sets the "review" edge to the Review entity by ID if the given value is not nil.
-func (iuo *ImageUpdateOne) SetNillableReviewID(id *uuid.UUID) *ImageUpdateOne {
-	if id != nil {
-		iuo = iuo.SetReviewID(*id)
-	}
 	return iuo
 }
 
@@ -325,6 +312,9 @@ func (iuo *ImageUpdateOne) check() error {
 		if err := image.ImageHashValidator(v); err != nil {
 			return &ValidationError{Name: "image_hash", err: fmt.Errorf(`ent: validator failed for field "Image.image_hash": %w`, err)}
 		}
+	}
+	if _, ok := iuo.mutation.ReviewID(); iuo.mutation.ReviewCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Image.review"`)
 	}
 	return nil
 }

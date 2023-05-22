@@ -48,8 +48,10 @@ const (
 	EdgeDish = "dish"
 	// EdgeSideDishes holds the string denoting the side_dishes edge name in mutations.
 	EdgeSideDishes = "side_dishes"
-	// EdgeTags holds the string denoting the tags edge name in mutations.
-	EdgeTags = "tags"
+	// EdgeTag holds the string denoting the tag edge name in mutations.
+	EdgeTag = "tag"
+	// EdgeReviews holds the string denoting the reviews edge name in mutations.
+	EdgeReviews = "reviews"
 	// Table holds the table name of the occurrence in the database.
 	Table = "occurrences"
 	// LocationTable is the table that holds the location relation/edge.
@@ -58,14 +60,14 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "location" package.
 	LocationInverseTable = "locations"
 	// LocationColumn is the table column denoting the location relation/edge.
-	LocationColumn = "occurrence_location"
+	LocationColumn = "location"
 	// DishTable is the table that holds the dish relation/edge.
 	DishTable = "occurrences"
 	// DishInverseTable is the table name for the Dish entity.
 	// It exists in this package in order to avoid circular dependency with the "dish" package.
 	DishInverseTable = "dishes"
 	// DishColumn is the table column denoting the dish relation/edge.
-	DishColumn = "occurrence_dish"
+	DishColumn = "dish"
 	// SideDishesTable is the table that holds the side_dishes relation/edge.
 	SideDishesTable = "dishes"
 	// SideDishesInverseTable is the table name for the Dish entity.
@@ -73,13 +75,18 @@ const (
 	SideDishesInverseTable = "dishes"
 	// SideDishesColumn is the table column denoting the side_dishes relation/edge.
 	SideDishesColumn = "occurrence_side_dishes"
-	// TagsTable is the table that holds the tags relation/edge.
-	TagsTable = "tags"
-	// TagsInverseTable is the table name for the Tag entity.
+	// TagTable is the table that holds the tag relation/edge. The primary key declared below.
+	TagTable = "tag_occurrences"
+	// TagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagsInverseTable = "tags"
-	// TagsColumn is the table column denoting the tags relation/edge.
-	TagsColumn = "occurrence_tags"
+	TagInverseTable = "tags"
+	// ReviewsTable is the table that holds the reviews relation/edge.
+	ReviewsTable = "reviews"
+	// ReviewsInverseTable is the table name for the Review entity.
+	// It exists in this package in order to avoid circular dependency with the "review" package.
+	ReviewsInverseTable = "reviews"
+	// ReviewsColumn is the table column denoting the reviews relation/edge.
+	ReviewsColumn = "occurrence"
 )
 
 // Columns holds all SQL columns for occurrence fields.
@@ -104,11 +111,15 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "occurrences"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"dish_occurrences",
-	"occurrence_location",
-	"occurrence_dish",
-	"review_occurrence",
+	"dish",
+	"location",
 }
+
+var (
+	// TagPrimaryKey and TagColumn2 are the table columns denoting the
+	// primary key for the tag relation (M2M).
+	TagPrimaryKey = []string{"tag_id", "occurrence_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {

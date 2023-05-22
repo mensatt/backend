@@ -10,6 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
+	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/schema"
 )
@@ -80,6 +82,21 @@ func (tc *TagCreate) SetNillableIsAllergy(b *bool) *TagCreate {
 		tc.SetIsAllergy(*b)
 	}
 	return tc
+}
+
+// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
+func (tc *TagCreate) AddOccurrenceIDs(ids ...uuid.UUID) *TagCreate {
+	tc.mutation.AddOccurrenceIDs(ids...)
+	return tc
+}
+
+// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
+func (tc *TagCreate) AddOccurrences(o ...*Occurrence) *TagCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return tc.AddOccurrenceIDs(ids...)
 }
 
 // Mutation returns the TagMutation object of the builder.
@@ -257,6 +274,25 @@ func (tc *TagCreate) createSpec() (*Tag, *sqlgraph.CreateSpec) {
 	if value, ok := tc.mutation.IsAllergy(); ok {
 		_spec.SetField(tag.FieldIsAllergy, field.TypeBool, value)
 		_node.IsAllergy = value
+	}
+	if nodes := tc.mutation.OccurrencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   tag.OccurrencesTable,
+			Columns: tag.OccurrencesPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

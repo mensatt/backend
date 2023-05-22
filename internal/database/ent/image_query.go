@@ -400,10 +400,10 @@ func (iq *ImageQuery) loadReview(ctx context.Context, query *ReviewQuery, nodes 
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Image)
 	for i := range nodes {
-		if nodes[i].review_images == nil {
+		if nodes[i].review == nil {
 			continue
 		}
-		fk := *nodes[i].review_images
+		fk := *nodes[i].review
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -417,7 +417,7 @@ func (iq *ImageQuery) loadReview(ctx context.Context, query *ReviewQuery, nodes 
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "review_images" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "review" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)

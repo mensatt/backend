@@ -598,7 +598,7 @@ func HasOccurrence() predicate.Review {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(OccurrenceTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, OccurrenceTable, OccurrenceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, OccurrenceTable, OccurrenceColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -610,7 +610,7 @@ func HasOccurrenceWith(preds ...predicate.Occurrence) predicate.Review {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(OccurrenceInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, OccurrenceTable, OccurrenceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, OccurrenceTable, OccurrenceColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

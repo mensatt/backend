@@ -27,14 +27,14 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
 	OccurrencesInverseTable = "occurrences"
 	// OccurrencesColumn is the table column denoting the occurrences relation/edge.
-	OccurrencesColumn = "dish_occurrences"
+	OccurrencesColumn = "dish"
 	// AliasesTable is the table that holds the aliases relation/edge.
 	AliasesTable = "dish_alias"
 	// AliasesInverseTable is the table name for the DishAlias entity.
 	// It exists in this package in order to avoid circular dependency with the "dishalias" package.
 	AliasesInverseTable = "dish_alias"
 	// AliasesColumn is the table column denoting the aliases relation/edge.
-	AliasesColumn = "dish_aliases"
+	AliasesColumn = "dish"
 )
 
 // Columns holds all SQL columns for dish fields.

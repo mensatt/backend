@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -12,18 +13,20 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/location"
+	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/predicate"
 )
 
 // LocationQuery is the builder for querying Location entities.
 type LocationQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
-	predicates []predicate.Location
+	limit           *int
+	offset          *int
+	unique          *bool
+	order           []OrderFunc
+	fields          []string
+	predicates      []predicate.Location
+	withOccurrences *OccurrenceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -58,6 +61,28 @@ func (lq *LocationQuery) Unique(unique bool) *LocationQuery {
 func (lq *LocationQuery) Order(o ...OrderFunc) *LocationQuery {
 	lq.order = append(lq.order, o...)
 	return lq
+}
+
+// QueryOccurrences chains the current query on the "occurrences" edge.
+func (lq *LocationQuery) QueryOccurrences() *OccurrenceQuery {
+	query := &OccurrenceQuery{config: lq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := lq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := lq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(location.Table, location.FieldID, selector),
+			sqlgraph.To(occurrence.Table, occurrence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, location.OccurrencesTable, location.OccurrencesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(lq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Location entity from the query.
@@ -236,16 +261,28 @@ func (lq *LocationQuery) Clone() *LocationQuery {
 		return nil
 	}
 	return &LocationQuery{
-		config:     lq.config,
-		limit:      lq.limit,
-		offset:     lq.offset,
-		order:      append([]OrderFunc{}, lq.order...),
-		predicates: append([]predicate.Location{}, lq.predicates...),
+		config:          lq.config,
+		limit:           lq.limit,
+		offset:          lq.offset,
+		order:           append([]OrderFunc{}, lq.order...),
+		predicates:      append([]predicate.Location{}, lq.predicates...),
+		withOccurrences: lq.withOccurrences.Clone(),
 		// clone intermediate query.
 		sql:    lq.sql.Clone(),
 		path:   lq.path,
 		unique: lq.unique,
 	}
+}
+
+// WithOccurrences tells the query-builder to eager-load the nodes that are connected to
+// the "occurrences" edge. The optional arguments are used to configure the query builder of the edge.
+func (lq *LocationQuery) WithOccurrences(opts ...func(*OccurrenceQuery)) *LocationQuery {
+	query := &OccurrenceQuery{config: lq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	lq.withOccurrences = query
+	return lq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -319,8 +356,11 @@ func (lq *LocationQuery) prepareQuery(ctx context.Context) error {
 
 func (lq *LocationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Location, error) {
 	var (
-		nodes = []*Location{}
-		_spec = lq.querySpec()
+		nodes       = []*Location{}
+		_spec       = lq.querySpec()
+		loadedTypes = [1]bool{
+			lq.withOccurrences != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Location).scanValues(nil, columns)
@@ -328,6 +368,7 @@ func (lq *LocationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Loc
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Location{config: lq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -339,7 +380,46 @@ func (lq *LocationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Loc
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := lq.withOccurrences; query != nil {
+		if err := lq.loadOccurrences(ctx, query, nodes,
+			func(n *Location) { n.Edges.Occurrences = []*Occurrence{} },
+			func(n *Location, e *Occurrence) { n.Edges.Occurrences = append(n.Edges.Occurrences, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (lq *LocationQuery) loadOccurrences(ctx context.Context, query *OccurrenceQuery, nodes []*Location, init func(*Location), assign func(*Location, *Occurrence)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Location)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	query.withFKs = true
+	query.Where(predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.InValues(location.OccurrencesColumn, fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.location
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "location" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "location" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (lq *LocationQuery) sqlCount(ctx context.Context) (int, error) {

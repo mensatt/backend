@@ -100,19 +100,15 @@ func (rc *ReviewCreate) SetNillableID(u *uuid.UUID) *ReviewCreate {
 	return rc
 }
 
-// AddOccurrenceIDs adds the "occurrence" edge to the Occurrence entity by IDs.
-func (rc *ReviewCreate) AddOccurrenceIDs(ids ...uuid.UUID) *ReviewCreate {
-	rc.mutation.AddOccurrenceIDs(ids...)
+// SetOccurrenceID sets the "occurrence" edge to the Occurrence entity by ID.
+func (rc *ReviewCreate) SetOccurrenceID(id uuid.UUID) *ReviewCreate {
+	rc.mutation.SetOccurrenceID(id)
 	return rc
 }
 
-// AddOccurrence adds the "occurrence" edges to the Occurrence entity.
-func (rc *ReviewCreate) AddOccurrence(o ...*Occurrence) *ReviewCreate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return rc.AddOccurrenceIDs(ids...)
+// SetOccurrence sets the "occurrence" edge to the Occurrence entity.
+func (rc *ReviewCreate) SetOccurrence(o *Occurrence) *ReviewCreate {
+	return rc.SetOccurrenceID(o.ID)
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by IDs.
@@ -248,6 +244,9 @@ func (rc *ReviewCreate) check() error {
 	if _, ok := rc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Review.updated_at"`)}
 	}
+	if _, ok := rc.mutation.OccurrenceID(); !ok {
+		return &ValidationError{Name: "occurrence", err: errors.New(`ent: missing required edge "Review.occurrence"`)}
+	}
 	return nil
 }
 
@@ -311,8 +310,8 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	}
 	if nodes := rc.mutation.OccurrenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
 			Table:   review.OccurrenceTable,
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
@@ -326,6 +325,7 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
+		_node.occurrence = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := rc.mutation.ImagesIDs(); len(nodes) > 0 {

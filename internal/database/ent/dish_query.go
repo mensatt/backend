@@ -458,13 +458,13 @@ func (dq *DishQuery) loadOccurrences(ctx context.Context, query *OccurrenceQuery
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.dish_occurrences
+		fk := n.dish
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "dish_occurrences" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "dish" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "dish_occurrences" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "dish" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -489,13 +489,13 @@ func (dq *DishQuery) loadAliases(ctx context.Context, query *DishAliasQuery, nod
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.dish_aliases
+		fk := n.dish
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "dish_aliases" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "dish" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "dish_aliases" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "dish" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

@@ -16,6 +16,7 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
+	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/schema"
 )
@@ -140,14 +141,6 @@ func (oc *OccurrenceCreate) SetLocationID(id uuid.UUID) *OccurrenceCreate {
 	return oc
 }
 
-// SetNillableLocationID sets the "location" edge to the Location entity by ID if the given value is not nil.
-func (oc *OccurrenceCreate) SetNillableLocationID(id *uuid.UUID) *OccurrenceCreate {
-	if id != nil {
-		oc = oc.SetLocationID(*id)
-	}
-	return oc
-}
-
 // SetLocation sets the "location" edge to the Location entity.
 func (oc *OccurrenceCreate) SetLocation(l *Location) *OccurrenceCreate {
 	return oc.SetLocationID(l.ID)
@@ -156,14 +149,6 @@ func (oc *OccurrenceCreate) SetLocation(l *Location) *OccurrenceCreate {
 // SetDishID sets the "dish" edge to the Dish entity by ID.
 func (oc *OccurrenceCreate) SetDishID(id uuid.UUID) *OccurrenceCreate {
 	oc.mutation.SetDishID(id)
-	return oc
-}
-
-// SetNillableDishID sets the "dish" edge to the Dish entity by ID if the given value is not nil.
-func (oc *OccurrenceCreate) SetNillableDishID(id *uuid.UUID) *OccurrenceCreate {
-	if id != nil {
-		oc = oc.SetDishID(*id)
-	}
 	return oc
 }
 
@@ -187,19 +172,34 @@ func (oc *OccurrenceCreate) AddSideDishes(d ...*Dish) *OccurrenceCreate {
 	return oc.AddSideDishIDs(ids...)
 }
 
-// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
 func (oc *OccurrenceCreate) AddTagIDs(ids ...int) *OccurrenceCreate {
 	oc.mutation.AddTagIDs(ids...)
 	return oc
 }
 
-// AddTags adds the "tags" edges to the Tag entity.
-func (oc *OccurrenceCreate) AddTags(t ...*Tag) *OccurrenceCreate {
+// AddTag adds the "tag" edges to the Tag entity.
+func (oc *OccurrenceCreate) AddTag(t ...*Tag) *OccurrenceCreate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return oc.AddTagIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (oc *OccurrenceCreate) AddReviewIDs(ids ...uuid.UUID) *OccurrenceCreate {
+	oc.mutation.AddReviewIDs(ids...)
+	return oc
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (oc *OccurrenceCreate) AddReviews(r ...*Review) *OccurrenceCreate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return oc.AddReviewIDs(ids...)
 }
 
 // Mutation returns the OccurrenceMutation object of the builder.
@@ -338,6 +338,12 @@ func (oc *OccurrenceCreate) check() error {
 	if _, ok := oc.mutation.PriceGuest(); !ok {
 		return &ValidationError{Name: "price_guest", err: errors.New(`ent: missing required field "Occurrence.price_guest"`)}
 	}
+	if _, ok := oc.mutation.LocationID(); !ok {
+		return &ValidationError{Name: "location", err: errors.New(`ent: missing required edge "Occurrence.location"`)}
+	}
+	if _, ok := oc.mutation.DishID(); !ok {
+		return &ValidationError{Name: "dish", err: errors.New(`ent: missing required edge "Occurrence.dish"`)}
+	}
 	return nil
 }
 
@@ -434,7 +440,7 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 	if nodes := oc.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.LocationTable,
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
@@ -448,13 +454,13 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.occurrence_location = &nodes[0]
+		_node.location = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := oc.mutation.DishIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.DishTable,
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
@@ -468,7 +474,7 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.occurrence_dish = &nodes[0]
+		_node.dish = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := oc.mutation.SideDishesIDs(); len(nodes) > 0 {
@@ -490,17 +496,36 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := oc.mutation.TagsIDs(); len(nodes) > 0 {
+	if nodes := oc.mutation.TagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   occurrence.TagsTable,
-			Columns: []string{occurrence.TagsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := oc.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   occurrence.ReviewsTable,
+			Columns: []string{occurrence.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: review.FieldID,
 				},
 			},
 		}
