@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/review"
 )
 
@@ -31,13 +32,14 @@ type Review struct {
 	AcceptedAt *time.Time `json:"accepted_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ReviewQuery when eager-loading is set.
-	Edges ReviewEdges `json:"edges"`
+	Edges      ReviewEdges `json:"edges"`
+	occurrence *uuid.UUID
 }
 
 // ReviewEdges holds the relations/edges for other nodes in the graph.
 type ReviewEdges struct {
 	// Occurrence holds the value of the occurrence edge.
-	Occurrence []*Occurrence `json:"occurrence,omitempty"`
+	Occurrence *Occurrence `json:"occurrence,omitempty"`
 	// Images holds the value of the images edge.
 	Images []*Image `json:"images,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -46,9 +48,13 @@ type ReviewEdges struct {
 }
 
 // OccurrenceOrErr returns the Occurrence value or an error if the edge
-// was not loaded in eager-loading.
-func (e ReviewEdges) OccurrenceOrErr() ([]*Occurrence, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ReviewEdges) OccurrenceOrErr() (*Occurrence, error) {
 	if e.loadedTypes[0] {
+		if e.Occurrence == nil {
+			// Edge was loaded but was not found.
+			return nil, &NotFoundError{label: occurrence.Label}
+		}
 		return e.Occurrence, nil
 	}
 	return nil, &NotLoadedError{edge: "occurrence"}
@@ -76,6 +82,8 @@ func (*Review) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case review.FieldID:
 			values[i] = new(uuid.UUID)
+		case review.ForeignKeys[0]: // occurrence
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Review", columns[i])
 		}
@@ -133,6 +141,13 @@ func (r *Review) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				r.AcceptedAt = new(time.Time)
 				*r.AcceptedAt = value.Time
+			}
+		case review.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field occurrence", values[i])
+			} else if value.Valid {
+				r.occurrence = new(uuid.UUID)
+				*r.occurrence = *value.S.(*uuid.UUID)
 			}
 		}
 	}

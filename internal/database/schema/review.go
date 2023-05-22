@@ -29,7 +29,7 @@ func (Review) Fields() []ent.Field {
 // Edges of the Review.
 func (Review) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("occurrence", Occurrence.Type),
-		edge.To("images", Image.Type),
+		edge.From("occurrence", Occurrence.Type).Ref("reviews").Unique().Required(),
+		edge.To("images", Image.Type).StorageKey(edge.Column("review")),
 	}
 }

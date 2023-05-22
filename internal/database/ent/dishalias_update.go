@@ -47,14 +47,6 @@ func (dau *DishAliasUpdate) SetDishID(id uuid.UUID) *DishAliasUpdate {
 	return dau
 }
 
-// SetNillableDishID sets the "dish" edge to the Dish entity by ID if the given value is not nil.
-func (dau *DishAliasUpdate) SetNillableDishID(id *uuid.UUID) *DishAliasUpdate {
-	if id != nil {
-		dau = dau.SetDishID(*id)
-	}
-	return dau
-}
-
 // SetDish sets the "dish" edge to the Dish entity.
 func (dau *DishAliasUpdate) SetDish(d *Dish) *DishAliasUpdate {
 	return dau.SetDishID(d.ID)
@@ -78,12 +70,18 @@ func (dau *DishAliasUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(dau.hooks) == 0 {
+		if err = dau.check(); err != nil {
+			return 0, err
+		}
 		affected, err = dau.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DishAliasMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = dau.check(); err != nil {
+				return 0, err
 			}
 			dau.mutation = mutation
 			affected, err = dau.sqlSave(ctx)
@@ -125,6 +123,14 @@ func (dau *DishAliasUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (dau *DishAliasUpdate) check() error {
+	if _, ok := dau.mutation.DishID(); dau.mutation.DishCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "DishAlias.dish"`)
+	}
+	return nil
+}
+
 func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -152,7 +158,7 @@ func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if dau.mutation.DishCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   dishalias.DishTable,
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
@@ -168,7 +174,7 @@ func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := dau.mutation.DishIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   dishalias.DishTable,
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
@@ -221,14 +227,6 @@ func (dauo *DishAliasUpdateOne) SetDishID(id uuid.UUID) *DishAliasUpdateOne {
 	return dauo
 }
 
-// SetNillableDishID sets the "dish" edge to the Dish entity by ID if the given value is not nil.
-func (dauo *DishAliasUpdateOne) SetNillableDishID(id *uuid.UUID) *DishAliasUpdateOne {
-	if id != nil {
-		dauo = dauo.SetDishID(*id)
-	}
-	return dauo
-}
-
 // SetDish sets the "dish" edge to the Dish entity.
 func (dauo *DishAliasUpdateOne) SetDish(d *Dish) *DishAliasUpdateOne {
 	return dauo.SetDishID(d.ID)
@@ -259,12 +257,18 @@ func (dauo *DishAliasUpdateOne) Save(ctx context.Context) (*DishAlias, error) {
 		node *DishAlias
 	)
 	if len(dauo.hooks) == 0 {
+		if err = dauo.check(); err != nil {
+			return nil, err
+		}
 		node, err = dauo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DishAliasMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = dauo.check(); err != nil {
+				return nil, err
 			}
 			dauo.mutation = mutation
 			node, err = dauo.sqlSave(ctx)
@@ -312,6 +316,14 @@ func (dauo *DishAliasUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (dauo *DishAliasUpdateOne) check() error {
+	if _, ok := dauo.mutation.DishID(); dauo.mutation.DishCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "DishAlias.dish"`)
+	}
+	return nil
+}
+
 func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -356,7 +368,7 @@ func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, 
 	if dauo.mutation.DishCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   dishalias.DishTable,
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
@@ -372,7 +384,7 @@ func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, 
 	if nodes := dauo.mutation.DishIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   dishalias.DishTable,
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,

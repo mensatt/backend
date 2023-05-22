@@ -41,14 +41,6 @@ func (dac *DishAliasCreate) SetDishID(id uuid.UUID) *DishAliasCreate {
 	return dac
 }
 
-// SetNillableDishID sets the "dish" edge to the Dish entity by ID if the given value is not nil.
-func (dac *DishAliasCreate) SetNillableDishID(id *uuid.UUID) *DishAliasCreate {
-	if id != nil {
-		dac = dac.SetDishID(*id)
-	}
-	return dac
-}
-
 // SetDish sets the "dish" edge to the Dish entity.
 func (dac *DishAliasCreate) SetDish(d *Dish) *DishAliasCreate {
 	return dac.SetDishID(d.ID)
@@ -136,6 +128,9 @@ func (dac *DishAliasCreate) check() error {
 	if _, ok := dac.mutation.NormalizedAliasName(); !ok {
 		return &ValidationError{Name: "normalized_alias_name", err: errors.New(`ent: missing required field "DishAlias.normalized_alias_name"`)}
 	}
+	if _, ok := dac.mutation.DishID(); !ok {
+		return &ValidationError{Name: "dish", err: errors.New(`ent: missing required edge "DishAlias.dish"`)}
+	}
 	return nil
 }
 
@@ -175,7 +170,7 @@ func (dac *DishAliasCreate) createSpec() (*DishAlias, *sqlgraph.CreateSpec) {
 	if nodes := dac.mutation.DishIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   dishalias.DishTable,
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
@@ -189,7 +184,7 @@ func (dac *DishAliasCreate) createSpec() (*DishAlias, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.dish_alias_dish = &nodes[0]
+		_node.dish = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

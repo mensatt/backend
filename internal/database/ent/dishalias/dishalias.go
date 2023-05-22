@@ -21,7 +21,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "dish" package.
 	DishInverseTable = "dishes"
 	// DishColumn is the table column denoting the dish relation/edge.
-	DishColumn = "dish_alias_dish"
+	DishColumn = "dish"
 )
 
 // Columns holds all SQL columns for dishalias fields.
@@ -34,8 +34,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "dish_alias"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"dish_aliases",
-	"dish_alias_dish",
+	"dish",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

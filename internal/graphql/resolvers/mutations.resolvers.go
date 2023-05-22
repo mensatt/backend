@@ -290,7 +290,8 @@ func (r *mutationResolver) AddTagToOccurrence(ctx context.Context, input models.
 		return nil, err
 	}
 
-	err = r.Database.Occurrence.UpdateOne(occurrence).AddTags(tag).Exec(ctx) // only difference to remove tag
+	//err = r.Database.Occurrence.UpdateOne(occurrence).AddTags(tag).Exec(ctx) // only difference to remove tag
+	err = r.Database.Occurrence.UpdateOne(occurrence).AddTag(tag).Exec(ctx) // only difference to remove tag
 	if err != nil {
 		return nil, err
 	}
@@ -313,7 +314,8 @@ func (r *mutationResolver) RemoveTagFromOccurrence(ctx context.Context, input mo
 		return nil, err
 	}
 
-	err = r.Database.Occurrence.UpdateOne(occurrence).RemoveTags(tag).Exec(ctx) // only difference to add tag
+	//err = r.Database.Occurrence.UpdateOne(occurrence).RemoveTags(tag).Exec(ctx) // only difference to add tag
+	err = r.Database.Occurrence.UpdateOne(occurrence).RemoveTag(tag).Exec(ctx) // only difference to add tag
 	if err != nil {
 		return nil, err
 	}
@@ -373,7 +375,8 @@ func (r *mutationResolver) RemoveSideDishFromOccurrence(ctx context.Context, inp
 // CreateReview is the resolver for the createReview field.
 func (r *mutationResolver) CreateReview(ctx context.Context, input models.CreateReviewInput) (*ent.Review, error) {
 	queryBuilder := r.Database.Review.Create().
-		AddOccurrenceIDs(input.Occurrence).
+		SetOccurrenceID(input.Occurrence).
+		//AddOccurrenceIDs(input.Occurrence).
 		SetStars(input.Stars)
 
 	if input.DisplayName != nil {
@@ -406,8 +409,12 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 
 	queryBuilder := r.Database.Review.UpdateOne(review)
 
+	//if input.Occurrence != nil {
+	//	queryBuilder = queryBuilder.ClearOccurrence().AddOccurrenceIDs(*input.Occurrence) // todo: check if there is a better way
+	//}
+
 	if input.Occurrence != nil {
-		queryBuilder = queryBuilder.ClearOccurrence().AddOccurrenceIDs(*input.Occurrence) // todo: check if there is a better way
+		queryBuilder = queryBuilder.SetOccurrenceID(*input.Occurrence)
 	}
 
 	if input.DisplayName != nil {

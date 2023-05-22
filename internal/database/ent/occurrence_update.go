@@ -16,6 +16,7 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/predicate"
+	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/schema"
 )
@@ -215,14 +216,6 @@ func (ou *OccurrenceUpdate) SetLocationID(id uuid.UUID) *OccurrenceUpdate {
 	return ou
 }
 
-// SetNillableLocationID sets the "location" edge to the Location entity by ID if the given value is not nil.
-func (ou *OccurrenceUpdate) SetNillableLocationID(id *uuid.UUID) *OccurrenceUpdate {
-	if id != nil {
-		ou = ou.SetLocationID(*id)
-	}
-	return ou
-}
-
 // SetLocation sets the "location" edge to the Location entity.
 func (ou *OccurrenceUpdate) SetLocation(l *Location) *OccurrenceUpdate {
 	return ou.SetLocationID(l.ID)
@@ -231,14 +224,6 @@ func (ou *OccurrenceUpdate) SetLocation(l *Location) *OccurrenceUpdate {
 // SetDishID sets the "dish" edge to the Dish entity by ID.
 func (ou *OccurrenceUpdate) SetDishID(id uuid.UUID) *OccurrenceUpdate {
 	ou.mutation.SetDishID(id)
-	return ou
-}
-
-// SetNillableDishID sets the "dish" edge to the Dish entity by ID if the given value is not nil.
-func (ou *OccurrenceUpdate) SetNillableDishID(id *uuid.UUID) *OccurrenceUpdate {
-	if id != nil {
-		ou = ou.SetDishID(*id)
-	}
 	return ou
 }
 
@@ -262,19 +247,34 @@ func (ou *OccurrenceUpdate) AddSideDishes(d ...*Dish) *OccurrenceUpdate {
 	return ou.AddSideDishIDs(ids...)
 }
 
-// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
 func (ou *OccurrenceUpdate) AddTagIDs(ids ...int) *OccurrenceUpdate {
 	ou.mutation.AddTagIDs(ids...)
 	return ou
 }
 
-// AddTags adds the "tags" edges to the Tag entity.
-func (ou *OccurrenceUpdate) AddTags(t ...*Tag) *OccurrenceUpdate {
+// AddTag adds the "tag" edges to the Tag entity.
+func (ou *OccurrenceUpdate) AddTag(t ...*Tag) *OccurrenceUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return ou.AddTagIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (ou *OccurrenceUpdate) AddReviewIDs(ids ...uuid.UUID) *OccurrenceUpdate {
+	ou.mutation.AddReviewIDs(ids...)
+	return ou
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (ou *OccurrenceUpdate) AddReviews(r ...*Review) *OccurrenceUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ou.AddReviewIDs(ids...)
 }
 
 // Mutation returns the OccurrenceMutation object of the builder.
@@ -315,25 +315,46 @@ func (ou *OccurrenceUpdate) RemoveSideDishes(d ...*Dish) *OccurrenceUpdate {
 	return ou.RemoveSideDishIDs(ids...)
 }
 
-// ClearTags clears all "tags" edges to the Tag entity.
-func (ou *OccurrenceUpdate) ClearTags() *OccurrenceUpdate {
-	ou.mutation.ClearTags()
+// ClearTag clears all "tag" edges to the Tag entity.
+func (ou *OccurrenceUpdate) ClearTag() *OccurrenceUpdate {
+	ou.mutation.ClearTag()
 	return ou
 }
 
-// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
 func (ou *OccurrenceUpdate) RemoveTagIDs(ids ...int) *OccurrenceUpdate {
 	ou.mutation.RemoveTagIDs(ids...)
 	return ou
 }
 
-// RemoveTags removes "tags" edges to Tag entities.
-func (ou *OccurrenceUpdate) RemoveTags(t ...*Tag) *OccurrenceUpdate {
+// RemoveTag removes "tag" edges to Tag entities.
+func (ou *OccurrenceUpdate) RemoveTag(t ...*Tag) *OccurrenceUpdate {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return ou.RemoveTagIDs(ids...)
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (ou *OccurrenceUpdate) ClearReviews() *OccurrenceUpdate {
+	ou.mutation.ClearReviews()
+	return ou
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (ou *OccurrenceUpdate) RemoveReviewIDs(ids ...uuid.UUID) *OccurrenceUpdate {
+	ou.mutation.RemoveReviewIDs(ids...)
+	return ou
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (ou *OccurrenceUpdate) RemoveReviews(r ...*Review) *OccurrenceUpdate {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ou.RemoveReviewIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -402,6 +423,12 @@ func (ou *OccurrenceUpdate) check() error {
 		if err := occurrence.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Occurrence.status": %w`, err)}
 		}
+	}
+	if _, ok := ou.mutation.LocationID(); ou.mutation.LocationCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Occurrence.location"`)
+	}
+	if _, ok := ou.mutation.DishID(); ou.mutation.DishCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Occurrence.dish"`)
 	}
 	return nil
 }
@@ -505,7 +532,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if ou.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.LocationTable,
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
@@ -521,7 +548,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := ou.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.LocationTable,
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
@@ -540,7 +567,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if ou.mutation.DishCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.DishTable,
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
@@ -556,7 +583,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if nodes := ou.mutation.DishIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.DishTable,
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
@@ -626,12 +653,12 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ou.mutation.TagsCleared() {
+	if ou.mutation.TagCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   occurrence.TagsTable,
-			Columns: []string{occurrence.TagsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -642,12 +669,12 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ou.mutation.RemovedTagsIDs(); len(nodes) > 0 && !ou.mutation.TagsCleared() {
+	if nodes := ou.mutation.RemovedTagIDs(); len(nodes) > 0 && !ou.mutation.TagCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   occurrence.TagsTable,
-			Columns: []string{occurrence.TagsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -661,17 +688,71 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ou.mutation.TagsIDs(); len(nodes) > 0 {
+	if nodes := ou.mutation.TagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   occurrence.TagsTable,
-			Columns: []string{occurrence.TagsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ou.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   occurrence.ReviewsTable,
+			Columns: []string{occurrence.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: review.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !ou.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   occurrence.ReviewsTable,
+			Columns: []string{occurrence.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: review.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   occurrence.ReviewsTable,
+			Columns: []string{occurrence.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: review.FieldID,
 				},
 			},
 		}
@@ -881,14 +962,6 @@ func (ouo *OccurrenceUpdateOne) SetLocationID(id uuid.UUID) *OccurrenceUpdateOne
 	return ouo
 }
 
-// SetNillableLocationID sets the "location" edge to the Location entity by ID if the given value is not nil.
-func (ouo *OccurrenceUpdateOne) SetNillableLocationID(id *uuid.UUID) *OccurrenceUpdateOne {
-	if id != nil {
-		ouo = ouo.SetLocationID(*id)
-	}
-	return ouo
-}
-
 // SetLocation sets the "location" edge to the Location entity.
 func (ouo *OccurrenceUpdateOne) SetLocation(l *Location) *OccurrenceUpdateOne {
 	return ouo.SetLocationID(l.ID)
@@ -897,14 +970,6 @@ func (ouo *OccurrenceUpdateOne) SetLocation(l *Location) *OccurrenceUpdateOne {
 // SetDishID sets the "dish" edge to the Dish entity by ID.
 func (ouo *OccurrenceUpdateOne) SetDishID(id uuid.UUID) *OccurrenceUpdateOne {
 	ouo.mutation.SetDishID(id)
-	return ouo
-}
-
-// SetNillableDishID sets the "dish" edge to the Dish entity by ID if the given value is not nil.
-func (ouo *OccurrenceUpdateOne) SetNillableDishID(id *uuid.UUID) *OccurrenceUpdateOne {
-	if id != nil {
-		ouo = ouo.SetDishID(*id)
-	}
 	return ouo
 }
 
@@ -928,19 +993,34 @@ func (ouo *OccurrenceUpdateOne) AddSideDishes(d ...*Dish) *OccurrenceUpdateOne {
 	return ouo.AddSideDishIDs(ids...)
 }
 
-// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
+// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
 func (ouo *OccurrenceUpdateOne) AddTagIDs(ids ...int) *OccurrenceUpdateOne {
 	ouo.mutation.AddTagIDs(ids...)
 	return ouo
 }
 
-// AddTags adds the "tags" edges to the Tag entity.
-func (ouo *OccurrenceUpdateOne) AddTags(t ...*Tag) *OccurrenceUpdateOne {
+// AddTag adds the "tag" edges to the Tag entity.
+func (ouo *OccurrenceUpdateOne) AddTag(t ...*Tag) *OccurrenceUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return ouo.AddTagIDs(ids...)
+}
+
+// AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
+func (ouo *OccurrenceUpdateOne) AddReviewIDs(ids ...uuid.UUID) *OccurrenceUpdateOne {
+	ouo.mutation.AddReviewIDs(ids...)
+	return ouo
+}
+
+// AddReviews adds the "reviews" edges to the Review entity.
+func (ouo *OccurrenceUpdateOne) AddReviews(r ...*Review) *OccurrenceUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ouo.AddReviewIDs(ids...)
 }
 
 // Mutation returns the OccurrenceMutation object of the builder.
@@ -981,25 +1061,46 @@ func (ouo *OccurrenceUpdateOne) RemoveSideDishes(d ...*Dish) *OccurrenceUpdateOn
 	return ouo.RemoveSideDishIDs(ids...)
 }
 
-// ClearTags clears all "tags" edges to the Tag entity.
-func (ouo *OccurrenceUpdateOne) ClearTags() *OccurrenceUpdateOne {
-	ouo.mutation.ClearTags()
+// ClearTag clears all "tag" edges to the Tag entity.
+func (ouo *OccurrenceUpdateOne) ClearTag() *OccurrenceUpdateOne {
+	ouo.mutation.ClearTag()
 	return ouo
 }
 
-// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
+// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
 func (ouo *OccurrenceUpdateOne) RemoveTagIDs(ids ...int) *OccurrenceUpdateOne {
 	ouo.mutation.RemoveTagIDs(ids...)
 	return ouo
 }
 
-// RemoveTags removes "tags" edges to Tag entities.
-func (ouo *OccurrenceUpdateOne) RemoveTags(t ...*Tag) *OccurrenceUpdateOne {
+// RemoveTag removes "tag" edges to Tag entities.
+func (ouo *OccurrenceUpdateOne) RemoveTag(t ...*Tag) *OccurrenceUpdateOne {
 	ids := make([]int, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
 	}
 	return ouo.RemoveTagIDs(ids...)
+}
+
+// ClearReviews clears all "reviews" edges to the Review entity.
+func (ouo *OccurrenceUpdateOne) ClearReviews() *OccurrenceUpdateOne {
+	ouo.mutation.ClearReviews()
+	return ouo
+}
+
+// RemoveReviewIDs removes the "reviews" edge to Review entities by IDs.
+func (ouo *OccurrenceUpdateOne) RemoveReviewIDs(ids ...uuid.UUID) *OccurrenceUpdateOne {
+	ouo.mutation.RemoveReviewIDs(ids...)
+	return ouo
+}
+
+// RemoveReviews removes "reviews" edges to Review entities.
+func (ouo *OccurrenceUpdateOne) RemoveReviews(r ...*Review) *OccurrenceUpdateOne {
+	ids := make([]uuid.UUID, len(r))
+	for i := range r {
+		ids[i] = r[i].ID
+	}
+	return ouo.RemoveReviewIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -1081,6 +1182,12 @@ func (ouo *OccurrenceUpdateOne) check() error {
 		if err := occurrence.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Occurrence.status": %w`, err)}
 		}
+	}
+	if _, ok := ouo.mutation.LocationID(); ouo.mutation.LocationCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Occurrence.location"`)
+	}
+	if _, ok := ouo.mutation.DishID(); ouo.mutation.DishCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Occurrence.dish"`)
 	}
 	return nil
 }
@@ -1201,7 +1308,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if ouo.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.LocationTable,
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
@@ -1217,7 +1324,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if nodes := ouo.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.LocationTable,
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
@@ -1236,7 +1343,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if ouo.mutation.DishCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.DishTable,
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
@@ -1252,7 +1359,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if nodes := ouo.mutation.DishIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
-			Inverse: false,
+			Inverse: true,
 			Table:   occurrence.DishTable,
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
@@ -1322,12 +1429,12 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ouo.mutation.TagsCleared() {
+	if ouo.mutation.TagCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   occurrence.TagsTable,
-			Columns: []string{occurrence.TagsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1338,12 +1445,12 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ouo.mutation.RemovedTagsIDs(); len(nodes) > 0 && !ouo.mutation.TagsCleared() {
+	if nodes := ouo.mutation.RemovedTagIDs(); len(nodes) > 0 && !ouo.mutation.TagCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   occurrence.TagsTable,
-			Columns: []string{occurrence.TagsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1357,17 +1464,71 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ouo.mutation.TagsIDs(); len(nodes) > 0 {
+	if nodes := ouo.mutation.TagIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   occurrence.TagsTable,
-			Columns: []string{occurrence.TagsColumn},
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeInt,
 					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if ouo.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   occurrence.ReviewsTable,
+			Columns: []string{occurrence.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: review.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.RemovedReviewsIDs(); len(nodes) > 0 && !ouo.mutation.ReviewsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   occurrence.ReviewsTable,
+			Columns: []string{occurrence.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: review.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.ReviewsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   occurrence.ReviewsTable,
+			Columns: []string{occurrence.ReviewsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: review.FieldID,
 				},
 			},
 		}

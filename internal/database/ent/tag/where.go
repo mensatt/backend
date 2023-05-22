@@ -4,6 +4,7 @@ package tag
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mensatt/backend/internal/database/ent/predicate"
 	"github.com/mensatt/backend/internal/database/schema"
 )
@@ -573,6 +574,34 @@ func IsAllergyEQ(v bool) predicate.Tag {
 func IsAllergyNEQ(v bool) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldIsAllergy), v))
+	})
+}
+
+// HasOccurrences applies the HasEdge predicate on the "occurrences" edge.
+func HasOccurrences() predicate.Tag {
+	return predicate.Tag(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(OccurrencesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, OccurrencesTable, OccurrencesPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOccurrencesWith applies the HasEdge predicate on the "occurrences" edge with a given conditions (other predicates).
+func HasOccurrencesWith(preds ...predicate.Occurrence) predicate.Tag {
+	return predicate.Tag(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(OccurrencesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, OccurrencesTable, OccurrencesPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

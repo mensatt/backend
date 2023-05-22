@@ -82,19 +82,15 @@ func (ru *ReviewUpdate) ClearAcceptedAt() *ReviewUpdate {
 	return ru
 }
 
-// AddOccurrenceIDs adds the "occurrence" edge to the Occurrence entity by IDs.
-func (ru *ReviewUpdate) AddOccurrenceIDs(ids ...uuid.UUID) *ReviewUpdate {
-	ru.mutation.AddOccurrenceIDs(ids...)
+// SetOccurrenceID sets the "occurrence" edge to the Occurrence entity by ID.
+func (ru *ReviewUpdate) SetOccurrenceID(id uuid.UUID) *ReviewUpdate {
+	ru.mutation.SetOccurrenceID(id)
 	return ru
 }
 
-// AddOccurrence adds the "occurrence" edges to the Occurrence entity.
-func (ru *ReviewUpdate) AddOccurrence(o ...*Occurrence) *ReviewUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ru.AddOccurrenceIDs(ids...)
+// SetOccurrence sets the "occurrence" edge to the Occurrence entity.
+func (ru *ReviewUpdate) SetOccurrence(o *Occurrence) *ReviewUpdate {
+	return ru.SetOccurrenceID(o.ID)
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by IDs.
@@ -117,25 +113,10 @@ func (ru *ReviewUpdate) Mutation() *ReviewMutation {
 	return ru.mutation
 }
 
-// ClearOccurrence clears all "occurrence" edges to the Occurrence entity.
+// ClearOccurrence clears the "occurrence" edge to the Occurrence entity.
 func (ru *ReviewUpdate) ClearOccurrence() *ReviewUpdate {
 	ru.mutation.ClearOccurrence()
 	return ru
-}
-
-// RemoveOccurrenceIDs removes the "occurrence" edge to Occurrence entities by IDs.
-func (ru *ReviewUpdate) RemoveOccurrenceIDs(ids ...uuid.UUID) *ReviewUpdate {
-	ru.mutation.RemoveOccurrenceIDs(ids...)
-	return ru
-}
-
-// RemoveOccurrence removes "occurrence" edges to Occurrence entities.
-func (ru *ReviewUpdate) RemoveOccurrence(o ...*Occurrence) *ReviewUpdate {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ru.RemoveOccurrenceIDs(ids...)
 }
 
 // ClearImages clears all "images" edges to the Image entity.
@@ -240,6 +221,9 @@ func (ru *ReviewUpdate) check() error {
 			return &ValidationError{Name: "stars", err: fmt.Errorf(`ent: validator failed for field "Review.stars": %w`, err)}
 		}
 	}
+	if _, ok := ru.mutation.OccurrenceID(); ru.mutation.OccurrenceCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Review.occurrence"`)
+	}
 	return nil
 }
 
@@ -284,8 +268,8 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if ru.mutation.OccurrenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
 			Table:   review.OccurrenceTable,
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
@@ -295,32 +279,13 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 					Column: occurrence.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ru.mutation.RemovedOccurrenceIDs(); len(nodes) > 0 && !ru.mutation.OccurrenceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   review.OccurrenceTable,
-			Columns: []string{review.OccurrenceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := ru.mutation.OccurrenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
 			Table:   review.OccurrenceTable,
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
@@ -460,19 +425,15 @@ func (ruo *ReviewUpdateOne) ClearAcceptedAt() *ReviewUpdateOne {
 	return ruo
 }
 
-// AddOccurrenceIDs adds the "occurrence" edge to the Occurrence entity by IDs.
-func (ruo *ReviewUpdateOne) AddOccurrenceIDs(ids ...uuid.UUID) *ReviewUpdateOne {
-	ruo.mutation.AddOccurrenceIDs(ids...)
+// SetOccurrenceID sets the "occurrence" edge to the Occurrence entity by ID.
+func (ruo *ReviewUpdateOne) SetOccurrenceID(id uuid.UUID) *ReviewUpdateOne {
+	ruo.mutation.SetOccurrenceID(id)
 	return ruo
 }
 
-// AddOccurrence adds the "occurrence" edges to the Occurrence entity.
-func (ruo *ReviewUpdateOne) AddOccurrence(o ...*Occurrence) *ReviewUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ruo.AddOccurrenceIDs(ids...)
+// SetOccurrence sets the "occurrence" edge to the Occurrence entity.
+func (ruo *ReviewUpdateOne) SetOccurrence(o *Occurrence) *ReviewUpdateOne {
+	return ruo.SetOccurrenceID(o.ID)
 }
 
 // AddImageIDs adds the "images" edge to the Image entity by IDs.
@@ -495,25 +456,10 @@ func (ruo *ReviewUpdateOne) Mutation() *ReviewMutation {
 	return ruo.mutation
 }
 
-// ClearOccurrence clears all "occurrence" edges to the Occurrence entity.
+// ClearOccurrence clears the "occurrence" edge to the Occurrence entity.
 func (ruo *ReviewUpdateOne) ClearOccurrence() *ReviewUpdateOne {
 	ruo.mutation.ClearOccurrence()
 	return ruo
-}
-
-// RemoveOccurrenceIDs removes the "occurrence" edge to Occurrence entities by IDs.
-func (ruo *ReviewUpdateOne) RemoveOccurrenceIDs(ids ...uuid.UUID) *ReviewUpdateOne {
-	ruo.mutation.RemoveOccurrenceIDs(ids...)
-	return ruo
-}
-
-// RemoveOccurrence removes "occurrence" edges to Occurrence entities.
-func (ruo *ReviewUpdateOne) RemoveOccurrence(o ...*Occurrence) *ReviewUpdateOne {
-	ids := make([]uuid.UUID, len(o))
-	for i := range o {
-		ids[i] = o[i].ID
-	}
-	return ruo.RemoveOccurrenceIDs(ids...)
 }
 
 // ClearImages clears all "images" edges to the Image entity.
@@ -631,6 +577,9 @@ func (ruo *ReviewUpdateOne) check() error {
 			return &ValidationError{Name: "stars", err: fmt.Errorf(`ent: validator failed for field "Review.stars": %w`, err)}
 		}
 	}
+	if _, ok := ruo.mutation.OccurrenceID(); ruo.mutation.OccurrenceCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "Review.occurrence"`)
+	}
 	return nil
 }
 
@@ -692,8 +641,8 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 	}
 	if ruo.mutation.OccurrenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
 			Table:   review.OccurrenceTable,
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
@@ -703,32 +652,13 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 					Column: occurrence.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ruo.mutation.RemovedOccurrenceIDs(); len(nodes) > 0 && !ruo.mutation.OccurrenceCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   review.OccurrenceTable,
-			Columns: []string{review.OccurrenceColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := ruo.mutation.OccurrenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
 			Table:   review.OccurrenceTable,
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,

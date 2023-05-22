@@ -1050,7 +1050,7 @@ func HasLocation() predicate.Occurrence {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(LocationTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, LocationTable, LocationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, LocationTable, LocationColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1062,7 +1062,7 @@ func HasLocationWith(preds ...predicate.Location) predicate.Occurrence {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(LocationInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, LocationTable, LocationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, LocationTable, LocationColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -1078,7 +1078,7 @@ func HasDish() predicate.Occurrence {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DishTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, DishTable, DishColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1090,7 +1090,7 @@ func HasDishWith(preds ...predicate.Dish) predicate.Occurrence {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DishInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, DishTable, DishColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -1128,25 +1128,53 @@ func HasSideDishesWith(preds ...predicate.Dish) predicate.Occurrence {
 	})
 }
 
-// HasTags applies the HasEdge predicate on the "tags" edge.
-func HasTags() predicate.Occurrence {
+// HasTag applies the HasEdge predicate on the "tag" edge.
+func HasTag() predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagsTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagsTable, TagsColumn),
+			sqlgraph.To(TagTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TagTable, TagPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTagsWith applies the HasEdge predicate on the "tags" edge with a given conditions (other predicates).
-func HasTagsWith(preds ...predicate.Tag) predicate.Occurrence {
+// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
+func HasTagWith(preds ...predicate.Tag) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagsInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TagsTable, TagsColumn),
+			sqlgraph.To(TagInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TagTable, TagPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasReviews applies the HasEdge predicate on the "reviews" edge.
+func HasReviews() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ReviewsTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ReviewsTable, ReviewsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasReviewsWith applies the HasEdge predicate on the "reviews" edge with a given conditions (other predicates).
+func HasReviewsWith(preds ...predicate.Review) predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(ReviewsInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ReviewsTable, ReviewsColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

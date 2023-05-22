@@ -4,6 +4,7 @@ package location
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/predicate"
 )
@@ -253,6 +254,34 @@ func NameEqualFold(v string) predicate.Location {
 func NameContainsFold(v string) predicate.Location {
 	return predicate.Location(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldName), v))
+	})
+}
+
+// HasOccurrences applies the HasEdge predicate on the "occurrences" edge.
+func HasOccurrences() predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(OccurrencesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OccurrencesTable, OccurrencesColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOccurrencesWith applies the HasEdge predicate on the "occurrences" edge with a given conditions (other predicates).
+func HasOccurrencesWith(preds ...predicate.Occurrence) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(OccurrencesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OccurrencesTable, OccurrencesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 

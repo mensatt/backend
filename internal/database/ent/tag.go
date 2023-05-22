@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/schema"
 )
@@ -28,8 +27,28 @@ type Tag struct {
 	// Priority holds the value of the "priority" field.
 	Priority schema.TagPriority `json:"priority,omitempty"`
 	// IsAllergy holds the value of the "is_allergy" field.
-	IsAllergy       bool `json:"is_allergy,omitempty"`
-	occurrence_tags *uuid.UUID
+	IsAllergy bool `json:"is_allergy,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TagQuery when eager-loading is set.
+	Edges TagEdges `json:"edges"`
+}
+
+// TagEdges holds the relations/edges for other nodes in the graph.
+type TagEdges struct {
+	// Occurrences holds the value of the occurrences edge.
+	Occurrences []*Occurrence `json:"occurrences,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// OccurrencesOrErr returns the Occurrences value or an error if the edge
+// was not loaded in eager-loading.
+func (e TagEdges) OccurrencesOrErr() ([]*Occurrence, error) {
+	if e.loadedTypes[0] {
+		return e.Occurrences, nil
+	}
+	return nil, &NotLoadedError{edge: "occurrences"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -43,8 +62,6 @@ func (*Tag) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case tag.FieldKey, tag.FieldName, tag.FieldDescription, tag.FieldShortName, tag.FieldPriority:
 			values[i] = new(sql.NullString)
-		case tag.ForeignKeys[0]: // occurrence_tags
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
 		}
@@ -102,16 +119,14 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.IsAllergy = value.Bool
 			}
-		case tag.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field occurrence_tags", values[i])
-			} else if value.Valid {
-				t.occurrence_tags = new(uuid.UUID)
-				*t.occurrence_tags = *value.S.(*uuid.UUID)
-			}
 		}
 	}
 	return nil
+}
+
+// QueryOccurrences queries the "occurrences" edge of the Tag entity.
+func (t *Tag) QueryOccurrences() *OccurrenceQuery {
+	return (&TagClient{config: t.config}).QueryOccurrences(t)
 }
 
 // Update returns a builder for updating this Tag.

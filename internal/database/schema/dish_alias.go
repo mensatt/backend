@@ -22,6 +22,6 @@ func (DishAlias) Fields() []ent.Field {
 // Edges of the DishAlias.
 func (DishAlias) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("dish", Dish.Type).Unique(),
+		edge.From("dish", Dish.Type).Ref("aliases").Unique().Required(),
 	}
 }

@@ -50,11 +50,9 @@ type Occurrence struct {
 	PriceGuest int `json:"price_guest,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OccurrenceQuery when eager-loading is set.
-	Edges               OccurrenceEdges `json:"edges"`
-	dish_occurrences    *uuid.UUID
-	occurrence_location *uuid.UUID
-	occurrence_dish     *uuid.UUID
-	review_occurrence   *uuid.UUID
+	Edges    OccurrenceEdges `json:"edges"`
+	dish     *uuid.UUID
+	location *uuid.UUID
 }
 
 // OccurrenceEdges holds the relations/edges for other nodes in the graph.
@@ -65,11 +63,13 @@ type OccurrenceEdges struct {
 	Dish *Dish `json:"dish,omitempty"`
 	// SideDishes holds the value of the side_dishes edge.
 	SideDishes []*Dish `json:"side_dishes,omitempty"`
-	// Tags holds the value of the tags edge.
-	Tags []*Tag `json:"tags,omitempty"`
+	// Tag holds the value of the tag edge.
+	Tag []*Tag `json:"tag,omitempty"`
+	// Reviews holds the value of the reviews edge.
+	Reviews []*Review `json:"reviews,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // LocationOrErr returns the Location value or an error if the edge
@@ -107,13 +107,22 @@ func (e OccurrenceEdges) SideDishesOrErr() ([]*Dish, error) {
 	return nil, &NotLoadedError{edge: "side_dishes"}
 }
 
-// TagsOrErr returns the Tags value or an error if the edge
+// TagOrErr returns the Tag value or an error if the edge
 // was not loaded in eager-loading.
-func (e OccurrenceEdges) TagsOrErr() ([]*Tag, error) {
+func (e OccurrenceEdges) TagOrErr() ([]*Tag, error) {
 	if e.loadedTypes[3] {
-		return e.Tags, nil
+		return e.Tag, nil
 	}
-	return nil, &NotLoadedError{edge: "tags"}
+	return nil, &NotLoadedError{edge: "tag"}
+}
+
+// ReviewsOrErr returns the Reviews value or an error if the edge
+// was not loaded in eager-loading.
+func (e OccurrenceEdges) ReviewsOrErr() ([]*Review, error) {
+	if e.loadedTypes[4] {
+		return e.Reviews, nil
+	}
+	return nil, &NotLoadedError{edge: "reviews"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -129,13 +138,9 @@ func (*Occurrence) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullTime)
 		case occurrence.FieldID:
 			values[i] = new(uuid.UUID)
-		case occurrence.ForeignKeys[0]: // dish_occurrences
+		case occurrence.ForeignKeys[0]: // dish
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case occurrence.ForeignKeys[1]: // occurrence_location
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case occurrence.ForeignKeys[2]: // occurrence_dish
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case occurrence.ForeignKeys[3]: // review_occurrence
+		case occurrence.ForeignKeys[1]: // location
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Occurrence", columns[i])
@@ -244,31 +249,17 @@ func (o *Occurrence) assignValues(columns []string, values []any) error {
 			}
 		case occurrence.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field dish_occurrences", values[i])
+				return fmt.Errorf("unexpected type %T for field dish", values[i])
 			} else if value.Valid {
-				o.dish_occurrences = new(uuid.UUID)
-				*o.dish_occurrences = *value.S.(*uuid.UUID)
+				o.dish = new(uuid.UUID)
+				*o.dish = *value.S.(*uuid.UUID)
 			}
 		case occurrence.ForeignKeys[1]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field occurrence_location", values[i])
+				return fmt.Errorf("unexpected type %T for field location", values[i])
 			} else if value.Valid {
-				o.occurrence_location = new(uuid.UUID)
-				*o.occurrence_location = *value.S.(*uuid.UUID)
-			}
-		case occurrence.ForeignKeys[2]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field occurrence_dish", values[i])
-			} else if value.Valid {
-				o.occurrence_dish = new(uuid.UUID)
-				*o.occurrence_dish = *value.S.(*uuid.UUID)
-			}
-		case occurrence.ForeignKeys[3]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field review_occurrence", values[i])
-			} else if value.Valid {
-				o.review_occurrence = new(uuid.UUID)
-				*o.review_occurrence = *value.S.(*uuid.UUID)
+				o.location = new(uuid.UUID)
+				*o.location = *value.S.(*uuid.UUID)
 			}
 		}
 	}
@@ -290,9 +281,14 @@ func (o *Occurrence) QuerySideDishes() *DishQuery {
 	return (&OccurrenceClient{config: o.config}).QuerySideDishes(o)
 }
 
-// QueryTags queries the "tags" edge of the Occurrence entity.
-func (o *Occurrence) QueryTags() *TagQuery {
-	return (&OccurrenceClient{config: o.config}).QueryTags(o)
+// QueryTag queries the "tag" edge of the Occurrence entity.
+func (o *Occurrence) QueryTag() *TagQuery {
+	return (&OccurrenceClient{config: o.config}).QueryTag(o)
+}
+
+// QueryReviews queries the "reviews" edge of the Occurrence entity.
+func (o *Occurrence) QueryReviews() *ReviewQuery {
+	return (&OccurrenceClient{config: o.config}).QueryReviews(o)
 }
 
 // Update returns a builder for updating this Occurrence.

@@ -29,6 +29,7 @@ type ReviewQuery struct {
 	predicates     []predicate.Review
 	withOccurrence *OccurrenceQuery
 	withImages     *ImageQuery
+	withFKs        bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -79,7 +80,7 @@ func (rq *ReviewQuery) QueryOccurrence() *OccurrenceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(review.Table, review.FieldID, selector),
 			sqlgraph.To(occurrence.Table, occurrence.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, review.OccurrenceTable, review.OccurrenceColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, review.OccurrenceTable, review.OccurrenceColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(rq.driver.Dialect(), step)
 		return fromU, nil
@@ -393,12 +394,19 @@ func (rq *ReviewQuery) prepareQuery(ctx context.Context) error {
 func (rq *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Review, error) {
 	var (
 		nodes       = []*Review{}
+		withFKs     = rq.withFKs
 		_spec       = rq.querySpec()
 		loadedTypes = [2]bool{
 			rq.withOccurrence != nil,
 			rq.withImages != nil,
 		}
 	)
+	if rq.withOccurrence != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, review.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Review).scanValues(nil, columns)
 	}
@@ -418,9 +426,8 @@ func (rq *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Revie
 		return nodes, nil
 	}
 	if query := rq.withOccurrence; query != nil {
-		if err := rq.loadOccurrence(ctx, query, nodes,
-			func(n *Review) { n.Edges.Occurrence = []*Occurrence{} },
-			func(n *Review, e *Occurrence) { n.Edges.Occurrence = append(n.Edges.Occurrence, e) }); err != nil {
+		if err := rq.loadOccurrence(ctx, query, nodes, nil,
+			func(n *Review, e *Occurrence) { n.Edges.Occurrence = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -435,33 +442,31 @@ func (rq *ReviewQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Revie
 }
 
 func (rq *ReviewQuery) loadOccurrence(ctx context.Context, query *OccurrenceQuery, nodes []*Review, init func(*Review), assign func(*Review, *Occurrence)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Review)
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Review)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		if nodes[i].occurrence == nil {
+			continue
 		}
+		fk := *nodes[i].occurrence
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.withFKs = true
-	query.Where(predicate.Occurrence(func(s *sql.Selector) {
-		s.Where(sql.InValues(review.OccurrenceColumn, fks...))
-	}))
+	query.Where(occurrence.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.review_occurrence
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "review_occurrence" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "review_occurrence" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "occurrence" returned %v`, n.ID)
 		}
-		assign(node, n)
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
 	}
 	return nil
 }
@@ -484,13 +489,13 @@ func (rq *ReviewQuery) loadImages(ctx context.Context, query *ImageQuery, nodes 
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.review_images
+		fk := n.review
 		if fk == nil {
-			return fmt.Errorf(`foreign-key "review_images" is nil for node %v`, n.ID)
+			return fmt.Errorf(`foreign-key "review" is nil for node %v`, n.ID)
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "review_images" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "review" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}

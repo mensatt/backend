@@ -23,7 +23,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "review" package.
 	ReviewInverseTable = "reviews"
 	// ReviewColumn is the table column denoting the review relation/edge.
-	ReviewColumn = "review_images"
+	ReviewColumn = "review"
 )
 
 // Columns holds all SQL columns for image fields.
@@ -35,7 +35,7 @@ var Columns = []string{
 // ForeignKeys holds the SQL foreign-keys that are owned by the "images"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
-	"review_images",
+	"review",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

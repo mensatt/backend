@@ -297,7 +297,7 @@ func HasDish() predicate.DishAlias {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DishTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, DishTable, DishColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -309,7 +309,7 @@ func HasDishWith(preds ...predicate.Dish) predicate.DishAlias {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(DishInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, DishTable, DishColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
