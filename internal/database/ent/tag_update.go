@@ -30,12 +30,6 @@ func (tu *TagUpdate) Where(ps ...predicate.Tag) *TagUpdate {
 	return tu
 }
 
-// SetKey sets the "key" field.
-func (tu *TagUpdate) SetKey(s string) *TagUpdate {
-	tu.mutation.SetKey(s)
-	return tu
-}
-
 // SetName sets the "name" field.
 func (tu *TagUpdate) SetName(s string) *TagUpdate {
 	tu.mutation.SetName(s)
@@ -228,7 +222,7 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   tag.Table,
 			Columns: tag.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: tag.FieldID,
 			},
 		},
@@ -239,9 +233,6 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := tu.mutation.Key(); ok {
-		_spec.SetField(tag.FieldKey, field.TypeString, value)
 	}
 	if value, ok := tu.mutation.Name(); ok {
 		_spec.SetField(tag.FieldName, field.TypeString, value)
@@ -332,12 +323,6 @@ type TagUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TagMutation
-}
-
-// SetKey sets the "key" field.
-func (tuo *TagUpdateOne) SetKey(s string) *TagUpdateOne {
-	tuo.mutation.SetKey(s)
-	return tuo
 }
 
 // SetName sets the "name" field.
@@ -545,7 +530,7 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 			Table:   tag.Table,
 			Columns: tag.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: tag.FieldID,
 			},
 		},
@@ -573,9 +558,6 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := tuo.mutation.Key(); ok {
-		_spec.SetField(tag.FieldKey, field.TypeString, value)
 	}
 	if value, ok := tuo.mutation.Name(); ok {
 		_spec.SetField(tag.FieldName, field.TypeString, value)

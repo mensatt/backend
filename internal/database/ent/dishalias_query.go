@@ -109,8 +109,8 @@ func (daq *DishAliasQuery) FirstX(ctx context.Context) *DishAlias {
 
 // FirstID returns the first DishAlias ID from the query.
 // Returns a *NotFoundError when no DishAlias ID was found.
-func (daq *DishAliasQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (daq *DishAliasQuery) FirstID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = daq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -122,7 +122,7 @@ func (daq *DishAliasQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (daq *DishAliasQuery) FirstIDX(ctx context.Context) int {
+func (daq *DishAliasQuery) FirstIDX(ctx context.Context) string {
 	id, err := daq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -160,8 +160,8 @@ func (daq *DishAliasQuery) OnlyX(ctx context.Context) *DishAlias {
 // OnlyID is like Only, but returns the only DishAlias ID in the query.
 // Returns a *NotSingularError when more than one DishAlias ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (daq *DishAliasQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (daq *DishAliasQuery) OnlyID(ctx context.Context) (id string, err error) {
+	var ids []string
 	if ids, err = daq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -177,7 +177,7 @@ func (daq *DishAliasQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (daq *DishAliasQuery) OnlyIDX(ctx context.Context) int {
+func (daq *DishAliasQuery) OnlyIDX(ctx context.Context) string {
 	id, err := daq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -203,8 +203,8 @@ func (daq *DishAliasQuery) AllX(ctx context.Context) []*DishAlias {
 }
 
 // IDs executes the query and returns a list of DishAlias IDs.
-func (daq *DishAliasQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (daq *DishAliasQuery) IDs(ctx context.Context) ([]string, error) {
+	var ids []string
 	if err := daq.Select(dishalias.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (daq *DishAliasQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (daq *DishAliasQuery) IDsX(ctx context.Context) []int {
+func (daq *DishAliasQuery) IDsX(ctx context.Context) []string {
 	ids, err := daq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -291,12 +291,12 @@ func (daq *DishAliasQuery) WithDish(opts ...func(*DishQuery)) *DishAliasQuery {
 // Example:
 //
 //	var v []struct {
-//		AliasName string `json:"alias_name,omitempty"`
+//		NormalizedAliasName string `json:"normalized_alias_name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.DishAlias.Query().
-//		GroupBy(dishalias.FieldAliasName).
+//		GroupBy(dishalias.FieldNormalizedAliasName).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (daq *DishAliasQuery) GroupBy(field string, fields ...string) *DishAliasGroupBy {
@@ -319,11 +319,11 @@ func (daq *DishAliasQuery) GroupBy(field string, fields ...string) *DishAliasGro
 // Example:
 //
 //	var v []struct {
-//		AliasName string `json:"alias_name,omitempty"`
+//		NormalizedAliasName string `json:"normalized_alias_name,omitempty"`
 //	}
 //
 //	client.DishAlias.Query().
-//		Select(dishalias.FieldAliasName).
+//		Select(dishalias.FieldNormalizedAliasName).
 //		Scan(ctx, &v)
 func (daq *DishAliasQuery) Select(fields ...string) *DishAliasSelect {
 	daq.fields = append(daq.fields, fields...)
@@ -452,7 +452,7 @@ func (daq *DishAliasQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   dishalias.Table,
 			Columns: dishalias.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: dishalias.FieldID,
 			},
 		},

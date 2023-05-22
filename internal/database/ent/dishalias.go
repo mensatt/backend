@@ -16,9 +16,7 @@ import (
 type DishAlias struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// AliasName holds the value of the "alias_name" field.
-	AliasName string `json:"alias_name,omitempty"`
+	ID string `json:"id,omitempty"`
 	// NormalizedAliasName holds the value of the "normalized_alias_name" field.
 	NormalizedAliasName string `json:"normalized_alias_name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -54,9 +52,7 @@ func (*DishAlias) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case dishalias.FieldID:
-			values[i] = new(sql.NullInt64)
-		case dishalias.FieldAliasName, dishalias.FieldNormalizedAliasName:
+		case dishalias.FieldID, dishalias.FieldNormalizedAliasName:
 			values[i] = new(sql.NullString)
 		case dishalias.ForeignKeys[0]: // dish
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
@@ -76,16 +72,10 @@ func (da *DishAlias) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case dishalias.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			da.ID = int(value.Int64)
-		case dishalias.FieldAliasName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field alias_name", values[i])
+				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
-				da.AliasName = value.String
+				da.ID = value.String
 			}
 		case dishalias.FieldNormalizedAliasName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -133,9 +123,6 @@ func (da *DishAlias) String() string {
 	var builder strings.Builder
 	builder.WriteString("DishAlias(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", da.ID))
-	builder.WriteString("alias_name=")
-	builder.WriteString(da.AliasName)
-	builder.WriteString(", ")
 	builder.WriteString("normalized_alias_name=")
 	builder.WriteString(da.NormalizedAliasName)
 	builder.WriteByte(')')

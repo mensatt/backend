@@ -37,6 +37,14 @@ func (dc *DishCreate) SetNameEn(s string) *DishCreate {
 	return dc
 }
 
+// SetNillableNameEn sets the "name_en" field if the given value is not nil.
+func (dc *DishCreate) SetNillableNameEn(s *string) *DishCreate {
+	if s != nil {
+		dc.SetNameEn(*s)
+	}
+	return dc
+}
+
 // SetID sets the "id" field.
 func (dc *DishCreate) SetID(u uuid.UUID) *DishCreate {
 	dc.mutation.SetID(u)
@@ -67,14 +75,14 @@ func (dc *DishCreate) AddOccurrences(o ...*Occurrence) *DishCreate {
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by IDs.
-func (dc *DishCreate) AddAliasIDs(ids ...int) *DishCreate {
+func (dc *DishCreate) AddAliasIDs(ids ...string) *DishCreate {
 	dc.mutation.AddAliasIDs(ids...)
 	return dc
 }
 
 // AddAliases adds the "aliases" edges to the DishAlias entity.
 func (dc *DishCreate) AddAliases(d ...*DishAlias) *DishCreate {
-	ids := make([]int, len(d))
+	ids := make([]string, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -169,8 +177,15 @@ func (dc *DishCreate) check() error {
 	if _, ok := dc.mutation.NameDe(); !ok {
 		return &ValidationError{Name: "name_de", err: errors.New(`ent: missing required field "Dish.name_de"`)}
 	}
-	if _, ok := dc.mutation.NameEn(); !ok {
-		return &ValidationError{Name: "name_en", err: errors.New(`ent: missing required field "Dish.name_en"`)}
+	if v, ok := dc.mutation.NameDe(); ok {
+		if err := dish.NameDeValidator(v); err != nil {
+			return &ValidationError{Name: "name_de", err: fmt.Errorf(`ent: validator failed for field "Dish.name_de": %w`, err)}
+		}
+	}
+	if v, ok := dc.mutation.NameEn(); ok {
+		if err := dish.NameEnValidator(v); err != nil {
+			return &ValidationError{Name: "name_en", err: fmt.Errorf(`ent: validator failed for field "Dish.name_en": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -215,7 +230,7 @@ func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := dc.mutation.NameEn(); ok {
 		_spec.SetField(dish.FieldNameEn, field.TypeString, value)
-		_node.NameEn = value
+		_node.NameEn = &value
 	}
 	if nodes := dc.mutation.OccurrencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -245,7 +260,7 @@ func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: dishalias.FieldID,
 				},
 			},
@@ -331,6 +346,12 @@ func (u *DishUpsert) UpdateNameEn() *DishUpsert {
 	return u
 }
 
+// ClearNameEn clears the value of the "name_en" field.
+func (u *DishUpsert) ClearNameEn() *DishUpsert {
+	u.SetNull(dish.FieldNameEn)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -404,6 +425,13 @@ func (u *DishUpsertOne) SetNameEn(v string) *DishUpsertOne {
 func (u *DishUpsertOne) UpdateNameEn() *DishUpsertOne {
 	return u.Update(func(s *DishUpsert) {
 		s.UpdateNameEn()
+	})
+}
+
+// ClearNameEn clears the value of the "name_en" field.
+func (u *DishUpsertOne) ClearNameEn() *DishUpsertOne {
+	return u.Update(func(s *DishUpsert) {
+		s.ClearNameEn()
 	})
 }
 
@@ -643,6 +671,13 @@ func (u *DishUpsertBulk) SetNameEn(v string) *DishUpsertBulk {
 func (u *DishUpsertBulk) UpdateNameEn() *DishUpsertBulk {
 	return u.Update(func(s *DishUpsert) {
 		s.UpdateNameEn()
+	})
+}
+
+// ClearNameEn clears the value of the "name_en" field.
+func (u *DishUpsertBulk) ClearNameEn() *DishUpsertBulk {
+	return u.Update(func(s *DishUpsert) {
+		s.ClearNameEn()
 	})
 }
 

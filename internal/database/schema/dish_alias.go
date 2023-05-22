@@ -14,8 +14,8 @@ type DishAlias struct {
 // Fields of the DishAlias.
 func (DishAlias) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("alias_name").Unique(), // primary key in old schema
-		field.String("normalized_alias_name"),
+		field.String("id").StorageKey("alias_name"),
+		field.String("normalized_alias_name").NotEmpty(),
 	}
 }
 

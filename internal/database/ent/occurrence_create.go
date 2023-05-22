@@ -55,9 +55,25 @@ func (oc *OccurrenceCreate) SetKj(i int) *OccurrenceCreate {
 	return oc
 }
 
+// SetNillableKj sets the "kj" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableKj(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetKj(*i)
+	}
+	return oc
+}
+
 // SetKcal sets the "kcal" field.
 func (oc *OccurrenceCreate) SetKcal(i int) *OccurrenceCreate {
 	oc.mutation.SetKcal(i)
+	return oc
+}
+
+// SetNillableKcal sets the "kcal" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableKcal(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetKcal(*i)
+	}
 	return oc
 }
 
@@ -67,9 +83,25 @@ func (oc *OccurrenceCreate) SetFat(i int) *OccurrenceCreate {
 	return oc
 }
 
+// SetNillableFat sets the "fat" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableFat(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetFat(*i)
+	}
+	return oc
+}
+
 // SetSaturatedFat sets the "saturated_fat" field.
 func (oc *OccurrenceCreate) SetSaturatedFat(i int) *OccurrenceCreate {
 	oc.mutation.SetSaturatedFat(i)
+	return oc
+}
+
+// SetNillableSaturatedFat sets the "saturated_fat" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableSaturatedFat(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetSaturatedFat(*i)
+	}
 	return oc
 }
 
@@ -79,9 +111,25 @@ func (oc *OccurrenceCreate) SetCarbohydrates(i int) *OccurrenceCreate {
 	return oc
 }
 
+// SetNillableCarbohydrates sets the "carbohydrates" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableCarbohydrates(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetCarbohydrates(*i)
+	}
+	return oc
+}
+
 // SetSugar sets the "sugar" field.
 func (oc *OccurrenceCreate) SetSugar(i int) *OccurrenceCreate {
 	oc.mutation.SetSugar(i)
+	return oc
+}
+
+// SetNillableSugar sets the "sugar" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableSugar(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetSugar(*i)
+	}
 	return oc
 }
 
@@ -91,9 +139,25 @@ func (oc *OccurrenceCreate) SetFiber(i int) *OccurrenceCreate {
 	return oc
 }
 
+// SetNillableFiber sets the "fiber" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableFiber(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetFiber(*i)
+	}
+	return oc
+}
+
 // SetProtein sets the "protein" field.
 func (oc *OccurrenceCreate) SetProtein(i int) *OccurrenceCreate {
 	oc.mutation.SetProtein(i)
+	return oc
+}
+
+// SetNillableProtein sets the "protein" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableProtein(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetProtein(*i)
+	}
 	return oc
 }
 
@@ -103,9 +167,25 @@ func (oc *OccurrenceCreate) SetSalt(i int) *OccurrenceCreate {
 	return oc
 }
 
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableSalt(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetSalt(*i)
+	}
+	return oc
+}
+
 // SetPriceStudent sets the "price_student" field.
 func (oc *OccurrenceCreate) SetPriceStudent(i int) *OccurrenceCreate {
 	oc.mutation.SetPriceStudent(i)
+	return oc
+}
+
+// SetNillablePriceStudent sets the "price_student" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillablePriceStudent(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetPriceStudent(*i)
+	}
 	return oc
 }
 
@@ -115,9 +195,25 @@ func (oc *OccurrenceCreate) SetPriceStaff(i int) *OccurrenceCreate {
 	return oc
 }
 
+// SetNillablePriceStaff sets the "price_staff" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillablePriceStaff(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetPriceStaff(*i)
+	}
+	return oc
+}
+
 // SetPriceGuest sets the "price_guest" field.
 func (oc *OccurrenceCreate) SetPriceGuest(i int) *OccurrenceCreate {
 	oc.mutation.SetPriceGuest(i)
+	return oc
+}
+
+// SetNillablePriceGuest sets the "price_guest" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillablePriceGuest(i *int) *OccurrenceCreate {
+	if i != nil {
+		oc.SetPriceGuest(*i)
+	}
 	return oc
 }
 
@@ -157,6 +253,21 @@ func (oc *OccurrenceCreate) SetDish(d *Dish) *OccurrenceCreate {
 	return oc.SetDishID(d.ID)
 }
 
+// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
+func (oc *OccurrenceCreate) AddTagIDs(ids ...string) *OccurrenceCreate {
+	oc.mutation.AddTagIDs(ids...)
+	return oc
+}
+
+// AddTag adds the "tag" edges to the Tag entity.
+func (oc *OccurrenceCreate) AddTag(t ...*Tag) *OccurrenceCreate {
+	ids := make([]string, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return oc.AddTagIDs(ids...)
+}
+
 // AddSideDishIDs adds the "side_dishes" edge to the Dish entity by IDs.
 func (oc *OccurrenceCreate) AddSideDishIDs(ids ...uuid.UUID) *OccurrenceCreate {
 	oc.mutation.AddSideDishIDs(ids...)
@@ -170,21 +281,6 @@ func (oc *OccurrenceCreate) AddSideDishes(d ...*Dish) *OccurrenceCreate {
 		ids[i] = d[i].ID
 	}
 	return oc.AddSideDishIDs(ids...)
-}
-
-// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
-func (oc *OccurrenceCreate) AddTagIDs(ids ...int) *OccurrenceCreate {
-	oc.mutation.AddTagIDs(ids...)
-	return oc
-}
-
-// AddTag adds the "tag" edges to the Tag entity.
-func (oc *OccurrenceCreate) AddTag(t ...*Tag) *OccurrenceCreate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return oc.AddTagIDs(ids...)
 }
 
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
@@ -302,42 +398,6 @@ func (oc *OccurrenceCreate) check() error {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Occurrence.status": %w`, err)}
 		}
 	}
-	if _, ok := oc.mutation.Kj(); !ok {
-		return &ValidationError{Name: "kj", err: errors.New(`ent: missing required field "Occurrence.kj"`)}
-	}
-	if _, ok := oc.mutation.Kcal(); !ok {
-		return &ValidationError{Name: "kcal", err: errors.New(`ent: missing required field "Occurrence.kcal"`)}
-	}
-	if _, ok := oc.mutation.Fat(); !ok {
-		return &ValidationError{Name: "fat", err: errors.New(`ent: missing required field "Occurrence.fat"`)}
-	}
-	if _, ok := oc.mutation.SaturatedFat(); !ok {
-		return &ValidationError{Name: "saturated_fat", err: errors.New(`ent: missing required field "Occurrence.saturated_fat"`)}
-	}
-	if _, ok := oc.mutation.Carbohydrates(); !ok {
-		return &ValidationError{Name: "carbohydrates", err: errors.New(`ent: missing required field "Occurrence.carbohydrates"`)}
-	}
-	if _, ok := oc.mutation.Sugar(); !ok {
-		return &ValidationError{Name: "sugar", err: errors.New(`ent: missing required field "Occurrence.sugar"`)}
-	}
-	if _, ok := oc.mutation.Fiber(); !ok {
-		return &ValidationError{Name: "fiber", err: errors.New(`ent: missing required field "Occurrence.fiber"`)}
-	}
-	if _, ok := oc.mutation.Protein(); !ok {
-		return &ValidationError{Name: "protein", err: errors.New(`ent: missing required field "Occurrence.protein"`)}
-	}
-	if _, ok := oc.mutation.Salt(); !ok {
-		return &ValidationError{Name: "salt", err: errors.New(`ent: missing required field "Occurrence.salt"`)}
-	}
-	if _, ok := oc.mutation.PriceStudent(); !ok {
-		return &ValidationError{Name: "price_student", err: errors.New(`ent: missing required field "Occurrence.price_student"`)}
-	}
-	if _, ok := oc.mutation.PriceStaff(); !ok {
-		return &ValidationError{Name: "price_staff", err: errors.New(`ent: missing required field "Occurrence.price_staff"`)}
-	}
-	if _, ok := oc.mutation.PriceGuest(); !ok {
-		return &ValidationError{Name: "price_guest", err: errors.New(`ent: missing required field "Occurrence.price_guest"`)}
-	}
 	if _, ok := oc.mutation.LocationID(); !ok {
 		return &ValidationError{Name: "location", err: errors.New(`ent: missing required edge "Occurrence.location"`)}
 	}
@@ -391,51 +451,51 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := oc.mutation.Kj(); ok {
 		_spec.SetField(occurrence.FieldKj, field.TypeInt, value)
-		_node.Kj = value
+		_node.Kj = &value
 	}
 	if value, ok := oc.mutation.Kcal(); ok {
 		_spec.SetField(occurrence.FieldKcal, field.TypeInt, value)
-		_node.Kcal = value
+		_node.Kcal = &value
 	}
 	if value, ok := oc.mutation.Fat(); ok {
 		_spec.SetField(occurrence.FieldFat, field.TypeInt, value)
-		_node.Fat = value
+		_node.Fat = &value
 	}
 	if value, ok := oc.mutation.SaturatedFat(); ok {
 		_spec.SetField(occurrence.FieldSaturatedFat, field.TypeInt, value)
-		_node.SaturatedFat = value
+		_node.SaturatedFat = &value
 	}
 	if value, ok := oc.mutation.Carbohydrates(); ok {
 		_spec.SetField(occurrence.FieldCarbohydrates, field.TypeInt, value)
-		_node.Carbohydrates = value
+		_node.Carbohydrates = &value
 	}
 	if value, ok := oc.mutation.Sugar(); ok {
 		_spec.SetField(occurrence.FieldSugar, field.TypeInt, value)
-		_node.Sugar = value
+		_node.Sugar = &value
 	}
 	if value, ok := oc.mutation.Fiber(); ok {
 		_spec.SetField(occurrence.FieldFiber, field.TypeInt, value)
-		_node.Fiber = value
+		_node.Fiber = &value
 	}
 	if value, ok := oc.mutation.Protein(); ok {
 		_spec.SetField(occurrence.FieldProtein, field.TypeInt, value)
-		_node.Protein = value
+		_node.Protein = &value
 	}
 	if value, ok := oc.mutation.Salt(); ok {
 		_spec.SetField(occurrence.FieldSalt, field.TypeInt, value)
-		_node.Salt = value
+		_node.Salt = &value
 	}
 	if value, ok := oc.mutation.PriceStudent(); ok {
 		_spec.SetField(occurrence.FieldPriceStudent, field.TypeInt, value)
-		_node.PriceStudent = value
+		_node.PriceStudent = &value
 	}
 	if value, ok := oc.mutation.PriceStaff(); ok {
 		_spec.SetField(occurrence.FieldPriceStaff, field.TypeInt, value)
-		_node.PriceStaff = value
+		_node.PriceStaff = &value
 	}
 	if value, ok := oc.mutation.PriceGuest(); ok {
 		_spec.SetField(occurrence.FieldPriceGuest, field.TypeInt, value)
-		_node.PriceGuest = value
+		_node.PriceGuest = &value
 	}
 	if nodes := oc.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -477,6 +537,25 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 		_node.dish = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := oc.mutation.TagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := oc.mutation.SideDishesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -488,25 +567,6 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: dish.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := oc.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
 				},
 			},
 		}
@@ -628,6 +688,12 @@ func (u *OccurrenceUpsert) AddKj(v int) *OccurrenceUpsert {
 	return u
 }
 
+// ClearKj clears the value of the "kj" field.
+func (u *OccurrenceUpsert) ClearKj() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldKj)
+	return u
+}
+
 // SetKcal sets the "kcal" field.
 func (u *OccurrenceUpsert) SetKcal(v int) *OccurrenceUpsert {
 	u.Set(occurrence.FieldKcal, v)
@@ -643,6 +709,12 @@ func (u *OccurrenceUpsert) UpdateKcal() *OccurrenceUpsert {
 // AddKcal adds v to the "kcal" field.
 func (u *OccurrenceUpsert) AddKcal(v int) *OccurrenceUpsert {
 	u.Add(occurrence.FieldKcal, v)
+	return u
+}
+
+// ClearKcal clears the value of the "kcal" field.
+func (u *OccurrenceUpsert) ClearKcal() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldKcal)
 	return u
 }
 
@@ -664,6 +736,12 @@ func (u *OccurrenceUpsert) AddFat(v int) *OccurrenceUpsert {
 	return u
 }
 
+// ClearFat clears the value of the "fat" field.
+func (u *OccurrenceUpsert) ClearFat() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldFat)
+	return u
+}
+
 // SetSaturatedFat sets the "saturated_fat" field.
 func (u *OccurrenceUpsert) SetSaturatedFat(v int) *OccurrenceUpsert {
 	u.Set(occurrence.FieldSaturatedFat, v)
@@ -679,6 +757,12 @@ func (u *OccurrenceUpsert) UpdateSaturatedFat() *OccurrenceUpsert {
 // AddSaturatedFat adds v to the "saturated_fat" field.
 func (u *OccurrenceUpsert) AddSaturatedFat(v int) *OccurrenceUpsert {
 	u.Add(occurrence.FieldSaturatedFat, v)
+	return u
+}
+
+// ClearSaturatedFat clears the value of the "saturated_fat" field.
+func (u *OccurrenceUpsert) ClearSaturatedFat() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldSaturatedFat)
 	return u
 }
 
@@ -700,6 +784,12 @@ func (u *OccurrenceUpsert) AddCarbohydrates(v int) *OccurrenceUpsert {
 	return u
 }
 
+// ClearCarbohydrates clears the value of the "carbohydrates" field.
+func (u *OccurrenceUpsert) ClearCarbohydrates() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldCarbohydrates)
+	return u
+}
+
 // SetSugar sets the "sugar" field.
 func (u *OccurrenceUpsert) SetSugar(v int) *OccurrenceUpsert {
 	u.Set(occurrence.FieldSugar, v)
@@ -715,6 +805,12 @@ func (u *OccurrenceUpsert) UpdateSugar() *OccurrenceUpsert {
 // AddSugar adds v to the "sugar" field.
 func (u *OccurrenceUpsert) AddSugar(v int) *OccurrenceUpsert {
 	u.Add(occurrence.FieldSugar, v)
+	return u
+}
+
+// ClearSugar clears the value of the "sugar" field.
+func (u *OccurrenceUpsert) ClearSugar() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldSugar)
 	return u
 }
 
@@ -736,6 +832,12 @@ func (u *OccurrenceUpsert) AddFiber(v int) *OccurrenceUpsert {
 	return u
 }
 
+// ClearFiber clears the value of the "fiber" field.
+func (u *OccurrenceUpsert) ClearFiber() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldFiber)
+	return u
+}
+
 // SetProtein sets the "protein" field.
 func (u *OccurrenceUpsert) SetProtein(v int) *OccurrenceUpsert {
 	u.Set(occurrence.FieldProtein, v)
@@ -751,6 +853,12 @@ func (u *OccurrenceUpsert) UpdateProtein() *OccurrenceUpsert {
 // AddProtein adds v to the "protein" field.
 func (u *OccurrenceUpsert) AddProtein(v int) *OccurrenceUpsert {
 	u.Add(occurrence.FieldProtein, v)
+	return u
+}
+
+// ClearProtein clears the value of the "protein" field.
+func (u *OccurrenceUpsert) ClearProtein() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldProtein)
 	return u
 }
 
@@ -772,6 +880,12 @@ func (u *OccurrenceUpsert) AddSalt(v int) *OccurrenceUpsert {
 	return u
 }
 
+// ClearSalt clears the value of the "salt" field.
+func (u *OccurrenceUpsert) ClearSalt() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldSalt)
+	return u
+}
+
 // SetPriceStudent sets the "price_student" field.
 func (u *OccurrenceUpsert) SetPriceStudent(v int) *OccurrenceUpsert {
 	u.Set(occurrence.FieldPriceStudent, v)
@@ -787,6 +901,12 @@ func (u *OccurrenceUpsert) UpdatePriceStudent() *OccurrenceUpsert {
 // AddPriceStudent adds v to the "price_student" field.
 func (u *OccurrenceUpsert) AddPriceStudent(v int) *OccurrenceUpsert {
 	u.Add(occurrence.FieldPriceStudent, v)
+	return u
+}
+
+// ClearPriceStudent clears the value of the "price_student" field.
+func (u *OccurrenceUpsert) ClearPriceStudent() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldPriceStudent)
 	return u
 }
 
@@ -808,6 +928,12 @@ func (u *OccurrenceUpsert) AddPriceStaff(v int) *OccurrenceUpsert {
 	return u
 }
 
+// ClearPriceStaff clears the value of the "price_staff" field.
+func (u *OccurrenceUpsert) ClearPriceStaff() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldPriceStaff)
+	return u
+}
+
 // SetPriceGuest sets the "price_guest" field.
 func (u *OccurrenceUpsert) SetPriceGuest(v int) *OccurrenceUpsert {
 	u.Set(occurrence.FieldPriceGuest, v)
@@ -823,6 +949,12 @@ func (u *OccurrenceUpsert) UpdatePriceGuest() *OccurrenceUpsert {
 // AddPriceGuest adds v to the "price_guest" field.
 func (u *OccurrenceUpsert) AddPriceGuest(v int) *OccurrenceUpsert {
 	u.Add(occurrence.FieldPriceGuest, v)
+	return u
+}
+
+// ClearPriceGuest clears the value of the "price_guest" field.
+func (u *OccurrenceUpsert) ClearPriceGuest() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldPriceGuest)
 	return u
 }
 
@@ -923,6 +1055,13 @@ func (u *OccurrenceUpsertOne) UpdateKj() *OccurrenceUpsertOne {
 	})
 }
 
+// ClearKj clears the value of the "kj" field.
+func (u *OccurrenceUpsertOne) ClearKj() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearKj()
+	})
+}
+
 // SetKcal sets the "kcal" field.
 func (u *OccurrenceUpsertOne) SetKcal(v int) *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -941,6 +1080,13 @@ func (u *OccurrenceUpsertOne) AddKcal(v int) *OccurrenceUpsertOne {
 func (u *OccurrenceUpsertOne) UpdateKcal() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateKcal()
+	})
+}
+
+// ClearKcal clears the value of the "kcal" field.
+func (u *OccurrenceUpsertOne) ClearKcal() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearKcal()
 	})
 }
 
@@ -965,6 +1111,13 @@ func (u *OccurrenceUpsertOne) UpdateFat() *OccurrenceUpsertOne {
 	})
 }
 
+// ClearFat clears the value of the "fat" field.
+func (u *OccurrenceUpsertOne) ClearFat() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearFat()
+	})
+}
+
 // SetSaturatedFat sets the "saturated_fat" field.
 func (u *OccurrenceUpsertOne) SetSaturatedFat(v int) *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -983,6 +1136,13 @@ func (u *OccurrenceUpsertOne) AddSaturatedFat(v int) *OccurrenceUpsertOne {
 func (u *OccurrenceUpsertOne) UpdateSaturatedFat() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateSaturatedFat()
+	})
+}
+
+// ClearSaturatedFat clears the value of the "saturated_fat" field.
+func (u *OccurrenceUpsertOne) ClearSaturatedFat() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearSaturatedFat()
 	})
 }
 
@@ -1007,6 +1167,13 @@ func (u *OccurrenceUpsertOne) UpdateCarbohydrates() *OccurrenceUpsertOne {
 	})
 }
 
+// ClearCarbohydrates clears the value of the "carbohydrates" field.
+func (u *OccurrenceUpsertOne) ClearCarbohydrates() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearCarbohydrates()
+	})
+}
+
 // SetSugar sets the "sugar" field.
 func (u *OccurrenceUpsertOne) SetSugar(v int) *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1025,6 +1192,13 @@ func (u *OccurrenceUpsertOne) AddSugar(v int) *OccurrenceUpsertOne {
 func (u *OccurrenceUpsertOne) UpdateSugar() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateSugar()
+	})
+}
+
+// ClearSugar clears the value of the "sugar" field.
+func (u *OccurrenceUpsertOne) ClearSugar() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearSugar()
 	})
 }
 
@@ -1049,6 +1223,13 @@ func (u *OccurrenceUpsertOne) UpdateFiber() *OccurrenceUpsertOne {
 	})
 }
 
+// ClearFiber clears the value of the "fiber" field.
+func (u *OccurrenceUpsertOne) ClearFiber() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearFiber()
+	})
+}
+
 // SetProtein sets the "protein" field.
 func (u *OccurrenceUpsertOne) SetProtein(v int) *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1067,6 +1248,13 @@ func (u *OccurrenceUpsertOne) AddProtein(v int) *OccurrenceUpsertOne {
 func (u *OccurrenceUpsertOne) UpdateProtein() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateProtein()
+	})
+}
+
+// ClearProtein clears the value of the "protein" field.
+func (u *OccurrenceUpsertOne) ClearProtein() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearProtein()
 	})
 }
 
@@ -1091,6 +1279,13 @@ func (u *OccurrenceUpsertOne) UpdateSalt() *OccurrenceUpsertOne {
 	})
 }
 
+// ClearSalt clears the value of the "salt" field.
+func (u *OccurrenceUpsertOne) ClearSalt() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearSalt()
+	})
+}
+
 // SetPriceStudent sets the "price_student" field.
 func (u *OccurrenceUpsertOne) SetPriceStudent(v int) *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1109,6 +1304,13 @@ func (u *OccurrenceUpsertOne) AddPriceStudent(v int) *OccurrenceUpsertOne {
 func (u *OccurrenceUpsertOne) UpdatePriceStudent() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdatePriceStudent()
+	})
+}
+
+// ClearPriceStudent clears the value of the "price_student" field.
+func (u *OccurrenceUpsertOne) ClearPriceStudent() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearPriceStudent()
 	})
 }
 
@@ -1133,6 +1335,13 @@ func (u *OccurrenceUpsertOne) UpdatePriceStaff() *OccurrenceUpsertOne {
 	})
 }
 
+// ClearPriceStaff clears the value of the "price_staff" field.
+func (u *OccurrenceUpsertOne) ClearPriceStaff() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearPriceStaff()
+	})
+}
+
 // SetPriceGuest sets the "price_guest" field.
 func (u *OccurrenceUpsertOne) SetPriceGuest(v int) *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1151,6 +1360,13 @@ func (u *OccurrenceUpsertOne) AddPriceGuest(v int) *OccurrenceUpsertOne {
 func (u *OccurrenceUpsertOne) UpdatePriceGuest() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdatePriceGuest()
+	})
+}
+
+// ClearPriceGuest clears the value of the "price_guest" field.
+func (u *OccurrenceUpsertOne) ClearPriceGuest() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearPriceGuest()
 	})
 }
 
@@ -1414,6 +1630,13 @@ func (u *OccurrenceUpsertBulk) UpdateKj() *OccurrenceUpsertBulk {
 	})
 }
 
+// ClearKj clears the value of the "kj" field.
+func (u *OccurrenceUpsertBulk) ClearKj() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearKj()
+	})
+}
+
 // SetKcal sets the "kcal" field.
 func (u *OccurrenceUpsertBulk) SetKcal(v int) *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1432,6 +1655,13 @@ func (u *OccurrenceUpsertBulk) AddKcal(v int) *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) UpdateKcal() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateKcal()
+	})
+}
+
+// ClearKcal clears the value of the "kcal" field.
+func (u *OccurrenceUpsertBulk) ClearKcal() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearKcal()
 	})
 }
 
@@ -1456,6 +1686,13 @@ func (u *OccurrenceUpsertBulk) UpdateFat() *OccurrenceUpsertBulk {
 	})
 }
 
+// ClearFat clears the value of the "fat" field.
+func (u *OccurrenceUpsertBulk) ClearFat() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearFat()
+	})
+}
+
 // SetSaturatedFat sets the "saturated_fat" field.
 func (u *OccurrenceUpsertBulk) SetSaturatedFat(v int) *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1474,6 +1711,13 @@ func (u *OccurrenceUpsertBulk) AddSaturatedFat(v int) *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) UpdateSaturatedFat() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateSaturatedFat()
+	})
+}
+
+// ClearSaturatedFat clears the value of the "saturated_fat" field.
+func (u *OccurrenceUpsertBulk) ClearSaturatedFat() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearSaturatedFat()
 	})
 }
 
@@ -1498,6 +1742,13 @@ func (u *OccurrenceUpsertBulk) UpdateCarbohydrates() *OccurrenceUpsertBulk {
 	})
 }
 
+// ClearCarbohydrates clears the value of the "carbohydrates" field.
+func (u *OccurrenceUpsertBulk) ClearCarbohydrates() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearCarbohydrates()
+	})
+}
+
 // SetSugar sets the "sugar" field.
 func (u *OccurrenceUpsertBulk) SetSugar(v int) *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1516,6 +1767,13 @@ func (u *OccurrenceUpsertBulk) AddSugar(v int) *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) UpdateSugar() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateSugar()
+	})
+}
+
+// ClearSugar clears the value of the "sugar" field.
+func (u *OccurrenceUpsertBulk) ClearSugar() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearSugar()
 	})
 }
 
@@ -1540,6 +1798,13 @@ func (u *OccurrenceUpsertBulk) UpdateFiber() *OccurrenceUpsertBulk {
 	})
 }
 
+// ClearFiber clears the value of the "fiber" field.
+func (u *OccurrenceUpsertBulk) ClearFiber() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearFiber()
+	})
+}
+
 // SetProtein sets the "protein" field.
 func (u *OccurrenceUpsertBulk) SetProtein(v int) *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1558,6 +1823,13 @@ func (u *OccurrenceUpsertBulk) AddProtein(v int) *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) UpdateProtein() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateProtein()
+	})
+}
+
+// ClearProtein clears the value of the "protein" field.
+func (u *OccurrenceUpsertBulk) ClearProtein() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearProtein()
 	})
 }
 
@@ -1582,6 +1854,13 @@ func (u *OccurrenceUpsertBulk) UpdateSalt() *OccurrenceUpsertBulk {
 	})
 }
 
+// ClearSalt clears the value of the "salt" field.
+func (u *OccurrenceUpsertBulk) ClearSalt() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearSalt()
+	})
+}
+
 // SetPriceStudent sets the "price_student" field.
 func (u *OccurrenceUpsertBulk) SetPriceStudent(v int) *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1600,6 +1879,13 @@ func (u *OccurrenceUpsertBulk) AddPriceStudent(v int) *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) UpdatePriceStudent() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdatePriceStudent()
+	})
+}
+
+// ClearPriceStudent clears the value of the "price_student" field.
+func (u *OccurrenceUpsertBulk) ClearPriceStudent() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearPriceStudent()
 	})
 }
 
@@ -1624,6 +1910,13 @@ func (u *OccurrenceUpsertBulk) UpdatePriceStaff() *OccurrenceUpsertBulk {
 	})
 }
 
+// ClearPriceStaff clears the value of the "price_staff" field.
+func (u *OccurrenceUpsertBulk) ClearPriceStaff() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearPriceStaff()
+	})
+}
+
 // SetPriceGuest sets the "price_guest" field.
 func (u *OccurrenceUpsertBulk) SetPriceGuest(v int) *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
@@ -1642,6 +1935,13 @@ func (u *OccurrenceUpsertBulk) AddPriceGuest(v int) *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) UpdatePriceGuest() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdatePriceGuest()
+	})
+}
+
+// ClearPriceGuest clears the value of the "price_guest" field.
+func (u *OccurrenceUpsertBulk) ClearPriceGuest() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearPriceGuest()
 	})
 }
 

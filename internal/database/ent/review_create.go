@@ -32,6 +32,14 @@ func (rc *ReviewCreate) SetDisplayName(s string) *ReviewCreate {
 	return rc
 }
 
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (rc *ReviewCreate) SetNillableDisplayName(s *string) *ReviewCreate {
+	if s != nil {
+		rc.SetDisplayName(*s)
+	}
+	return rc
+}
+
 // SetStars sets the "stars" field.
 func (rc *ReviewCreate) SetStars(i int) *ReviewCreate {
 	rc.mutation.SetStars(i)
@@ -41,6 +49,14 @@ func (rc *ReviewCreate) SetStars(i int) *ReviewCreate {
 // SetText sets the "text" field.
 func (rc *ReviewCreate) SetText(s string) *ReviewCreate {
 	rc.mutation.SetText(s)
+	return rc
+}
+
+// SetNillableText sets the "text" field if the given value is not nil.
+func (rc *ReviewCreate) SetNillableText(s *string) *ReviewCreate {
+	if s != nil {
+		rc.SetText(*s)
+	}
 	return rc
 }
 
@@ -219,9 +235,6 @@ func (rc *ReviewCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (rc *ReviewCreate) check() error {
-	if _, ok := rc.mutation.DisplayName(); !ok {
-		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "Review.display_name"`)}
-	}
 	if v, ok := rc.mutation.DisplayName(); ok {
 		if err := review.DisplayNameValidator(v); err != nil {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "Review.display_name": %w`, err)}
@@ -235,8 +248,10 @@ func (rc *ReviewCreate) check() error {
 			return &ValidationError{Name: "stars", err: fmt.Errorf(`ent: validator failed for field "Review.stars": %w`, err)}
 		}
 	}
-	if _, ok := rc.mutation.Text(); !ok {
-		return &ValidationError{Name: "text", err: errors.New(`ent: missing required field "Review.text"`)}
+	if v, ok := rc.mutation.Text(); ok {
+		if err := review.TextValidator(v); err != nil {
+			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "Review.text": %w`, err)}
+		}
 	}
 	if _, ok := rc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Review.created_at"`)}
@@ -286,7 +301,7 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := rc.mutation.DisplayName(); ok {
 		_spec.SetField(review.FieldDisplayName, field.TypeString, value)
-		_node.DisplayName = value
+		_node.DisplayName = &value
 	}
 	if value, ok := rc.mutation.Stars(); ok {
 		_spec.SetField(review.FieldStars, field.TypeInt, value)
@@ -294,7 +309,7 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := rc.mutation.Text(); ok {
 		_spec.SetField(review.FieldText, field.TypeString, value)
-		_node.Text = value
+		_node.Text = &value
 	}
 	if value, ok := rc.mutation.CreatedAt(); ok {
 		_spec.SetField(review.FieldCreatedAt, field.TypeTime, value)
@@ -411,6 +426,12 @@ func (u *ReviewUpsert) UpdateDisplayName() *ReviewUpsert {
 	return u
 }
 
+// ClearDisplayName clears the value of the "display_name" field.
+func (u *ReviewUpsert) ClearDisplayName() *ReviewUpsert {
+	u.SetNull(review.FieldDisplayName)
+	return u
+}
+
 // SetStars sets the "stars" field.
 func (u *ReviewUpsert) SetStars(v int) *ReviewUpsert {
 	u.Set(review.FieldStars, v)
@@ -438,6 +459,12 @@ func (u *ReviewUpsert) SetText(v string) *ReviewUpsert {
 // UpdateText sets the "text" field to the value that was provided on create.
 func (u *ReviewUpsert) UpdateText() *ReviewUpsert {
 	u.SetExcluded(review.FieldText)
+	return u
+}
+
+// ClearText clears the value of the "text" field.
+func (u *ReviewUpsert) ClearText() *ReviewUpsert {
+	u.SetNull(review.FieldText)
 	return u
 }
 
@@ -536,6 +563,13 @@ func (u *ReviewUpsertOne) UpdateDisplayName() *ReviewUpsertOne {
 	})
 }
 
+// ClearDisplayName clears the value of the "display_name" field.
+func (u *ReviewUpsertOne) ClearDisplayName() *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearDisplayName()
+	})
+}
+
 // SetStars sets the "stars" field.
 func (u *ReviewUpsertOne) SetStars(v int) *ReviewUpsertOne {
 	return u.Update(func(s *ReviewUpsert) {
@@ -568,6 +602,13 @@ func (u *ReviewUpsertOne) SetText(v string) *ReviewUpsertOne {
 func (u *ReviewUpsertOne) UpdateText() *ReviewUpsertOne {
 	return u.Update(func(s *ReviewUpsert) {
 		s.UpdateText()
+	})
+}
+
+// ClearText clears the value of the "text" field.
+func (u *ReviewUpsertOne) ClearText() *ReviewUpsertOne {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearText()
 	})
 }
 
@@ -834,6 +875,13 @@ func (u *ReviewUpsertBulk) UpdateDisplayName() *ReviewUpsertBulk {
 	})
 }
 
+// ClearDisplayName clears the value of the "display_name" field.
+func (u *ReviewUpsertBulk) ClearDisplayName() *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearDisplayName()
+	})
+}
+
 // SetStars sets the "stars" field.
 func (u *ReviewUpsertBulk) SetStars(v int) *ReviewUpsertBulk {
 	return u.Update(func(s *ReviewUpsert) {
@@ -866,6 +914,13 @@ func (u *ReviewUpsertBulk) SetText(v string) *ReviewUpsertBulk {
 func (u *ReviewUpsertBulk) UpdateText() *ReviewUpsertBulk {
 	return u.Update(func(s *ReviewUpsert) {
 		s.UpdateText()
+	})
+}
+
+// ClearText clears the value of the "text" field.
+func (u *ReviewUpsertBulk) ClearText() *ReviewUpsertBulk {
+	return u.Update(func(s *ReviewUpsert) {
+		s.ClearText()
 	})
 }
 

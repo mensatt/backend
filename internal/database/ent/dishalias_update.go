@@ -29,12 +29,6 @@ func (dau *DishAliasUpdate) Where(ps ...predicate.DishAlias) *DishAliasUpdate {
 	return dau
 }
 
-// SetAliasName sets the "alias_name" field.
-func (dau *DishAliasUpdate) SetAliasName(s string) *DishAliasUpdate {
-	dau.mutation.SetAliasName(s)
-	return dau
-}
-
 // SetNormalizedAliasName sets the "normalized_alias_name" field.
 func (dau *DishAliasUpdate) SetNormalizedAliasName(s string) *DishAliasUpdate {
 	dau.mutation.SetNormalizedAliasName(s)
@@ -125,6 +119,11 @@ func (dau *DishAliasUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (dau *DishAliasUpdate) check() error {
+	if v, ok := dau.mutation.NormalizedAliasName(); ok {
+		if err := dishalias.NormalizedAliasNameValidator(v); err != nil {
+			return &ValidationError{Name: "normalized_alias_name", err: fmt.Errorf(`ent: validator failed for field "DishAlias.normalized_alias_name": %w`, err)}
+		}
+	}
 	if _, ok := dau.mutation.DishID(); dau.mutation.DishCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "DishAlias.dish"`)
 	}
@@ -137,7 +136,7 @@ func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   dishalias.Table,
 			Columns: dishalias.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: dishalias.FieldID,
 			},
 		},
@@ -148,9 +147,6 @@ func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := dau.mutation.AliasName(); ok {
-		_spec.SetField(dishalias.FieldAliasName, field.TypeString, value)
 	}
 	if value, ok := dau.mutation.NormalizedAliasName(); ok {
 		_spec.SetField(dishalias.FieldNormalizedAliasName, field.TypeString, value)
@@ -207,12 +203,6 @@ type DishAliasUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *DishAliasMutation
-}
-
-// SetAliasName sets the "alias_name" field.
-func (dauo *DishAliasUpdateOne) SetAliasName(s string) *DishAliasUpdateOne {
-	dauo.mutation.SetAliasName(s)
-	return dauo
 }
 
 // SetNormalizedAliasName sets the "normalized_alias_name" field.
@@ -318,6 +308,11 @@ func (dauo *DishAliasUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (dauo *DishAliasUpdateOne) check() error {
+	if v, ok := dauo.mutation.NormalizedAliasName(); ok {
+		if err := dishalias.NormalizedAliasNameValidator(v); err != nil {
+			return &ValidationError{Name: "normalized_alias_name", err: fmt.Errorf(`ent: validator failed for field "DishAlias.normalized_alias_name": %w`, err)}
+		}
+	}
 	if _, ok := dauo.mutation.DishID(); dauo.mutation.DishCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "DishAlias.dish"`)
 	}
@@ -330,7 +325,7 @@ func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, 
 			Table:   dishalias.Table,
 			Columns: dishalias.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: dishalias.FieldID,
 			},
 		},
@@ -358,9 +353,6 @@ func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, 
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := dauo.mutation.AliasName(); ok {
-		_spec.SetField(dishalias.FieldAliasName, field.TypeString, value)
 	}
 	if value, ok := dauo.mutation.NormalizedAliasName(); ok {
 		_spec.SetField(dishalias.FieldNormalizedAliasName, field.TypeString, value)

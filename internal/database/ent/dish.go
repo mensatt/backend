@@ -19,7 +19,7 @@ type Dish struct {
 	// NameDe holds the value of the "name_de" field.
 	NameDe string `json:"name_de,omitempty"`
 	// NameEn holds the value of the "name_en" field.
-	NameEn string `json:"name_en,omitempty"`
+	NameEn *string `json:"name_en,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DishQuery when eager-loading is set.
 	Edges                  DishEdges `json:"edges"`
@@ -97,7 +97,8 @@ func (d *Dish) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name_en", values[i])
 			} else if value.Valid {
-				d.NameEn = value.String
+				d.NameEn = new(string)
+				*d.NameEn = value.String
 			}
 		case dish.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -147,8 +148,10 @@ func (d *Dish) String() string {
 	builder.WriteString("name_de=")
 	builder.WriteString(d.NameDe)
 	builder.WriteString(", ")
-	builder.WriteString("name_en=")
-	builder.WriteString(d.NameEn)
+	if v := d.NameEn; v != nil {
+		builder.WriteString("name_en=")
+		builder.WriteString(*v)
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

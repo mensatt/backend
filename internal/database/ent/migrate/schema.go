@@ -12,7 +12,7 @@ var (
 	DishesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name_de", Type: field.TypeString, Unique: true},
-		{Name: "name_en", Type: field.TypeString},
+		{Name: "name_en", Type: field.TypeString, Nullable: true},
 		{Name: "occurrence_side_dishes", Type: field.TypeUUID, Nullable: true},
 	}
 	// DishesTable holds the schema information for the "dishes" table.
@@ -31,8 +31,7 @@ var (
 	}
 	// DishAliasColumns holds the columns for the "dish_alias" table.
 	DishAliasColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "alias_name", Type: field.TypeString, Unique: true},
+		{Name: "alias_name", Type: field.TypeString},
 		{Name: "normalized_alias_name", Type: field.TypeString},
 		{Name: "dish", Type: field.TypeUUID},
 	}
@@ -44,7 +43,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "dish_alias_dishes_aliases",
-				Columns:    []*schema.Column{DishAliasColumns[3]},
+				Columns:    []*schema.Column{DishAliasColumns[2]},
 				RefColumns: []*schema.Column{DishesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -87,18 +86,18 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "date", Type: field.TypeTime},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"CONFIRMED", "APPROVED", "AWAITING_APPROVAL", "UPDATED", "PENDING_DELETION"}, Default: "AWAITING_APPROVAL"},
-		{Name: "kj", Type: field.TypeInt},
-		{Name: "kcal", Type: field.TypeInt},
-		{Name: "fat", Type: field.TypeInt},
-		{Name: "saturated_fat", Type: field.TypeInt},
-		{Name: "carbohydrates", Type: field.TypeInt},
-		{Name: "sugar", Type: field.TypeInt},
-		{Name: "fiber", Type: field.TypeInt},
-		{Name: "protein", Type: field.TypeInt},
-		{Name: "salt", Type: field.TypeInt},
-		{Name: "price_student", Type: field.TypeInt},
-		{Name: "price_staff", Type: field.TypeInt},
-		{Name: "price_guest", Type: field.TypeInt},
+		{Name: "kj", Type: field.TypeInt, Nullable: true},
+		{Name: "kcal", Type: field.TypeInt, Nullable: true},
+		{Name: "fat", Type: field.TypeInt, Nullable: true},
+		{Name: "saturated_fat", Type: field.TypeInt, Nullable: true},
+		{Name: "carbohydrates", Type: field.TypeInt, Nullable: true},
+		{Name: "sugar", Type: field.TypeInt, Nullable: true},
+		{Name: "fiber", Type: field.TypeInt, Nullable: true},
+		{Name: "protein", Type: field.TypeInt, Nullable: true},
+		{Name: "salt", Type: field.TypeInt, Nullable: true},
+		{Name: "price_student", Type: field.TypeInt, Nullable: true},
+		{Name: "price_staff", Type: field.TypeInt, Nullable: true},
+		{Name: "price_guest", Type: field.TypeInt, Nullable: true},
 		{Name: "dish", Type: field.TypeUUID},
 		{Name: "location", Type: field.TypeUUID},
 	}
@@ -125,9 +124,9 @@ var (
 	// ReviewsColumns holds the columns for the "reviews" table.
 	ReviewsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "display_name", Type: field.TypeString, Size: 32},
+		{Name: "display_name", Type: field.TypeString, Nullable: true, Size: 32},
 		{Name: "stars", Type: field.TypeInt},
-		{Name: "text", Type: field.TypeString},
+		{Name: "text", Type: field.TypeString, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
@@ -149,8 +148,7 @@ var (
 	}
 	// TagsColumns holds the columns for the "tags" table.
 	TagsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "key", Type: field.TypeString, Unique: true},
+		{Name: "key", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
 		{Name: "short_name", Type: field.TypeString, Nullable: true},
@@ -179,7 +177,7 @@ var (
 	}
 	// TagOccurrencesColumns holds the columns for the "tag_occurrences" table.
 	TagOccurrencesColumns = []*schema.Column{
-		{Name: "tag_id", Type: field.TypeInt},
+		{Name: "tag_id", Type: field.TypeString},
 		{Name: "occurrence_id", Type: field.TypeUUID},
 	}
 	// TagOccurrencesTable holds the schema information for the "tag_occurrences" table.

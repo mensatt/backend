@@ -19,11 +19,11 @@ type Review struct {
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// DisplayName holds the value of the "display_name" field.
-	DisplayName string `json:"display_name,omitempty"`
+	DisplayName *string `json:"display_name,omitempty"`
 	// Stars holds the value of the "stars" field.
 	Stars int `json:"stars,omitempty"`
 	// Text holds the value of the "text" field.
-	Text string `json:"text,omitempty"`
+	Text *string `json:"text,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -109,7 +109,8 @@ func (r *Review) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field display_name", values[i])
 			} else if value.Valid {
-				r.DisplayName = value.String
+				r.DisplayName = new(string)
+				*r.DisplayName = value.String
 			}
 		case review.FieldStars:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -121,7 +122,8 @@ func (r *Review) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field text", values[i])
 			} else if value.Valid {
-				r.Text = value.String
+				r.Text = new(string)
+				*r.Text = value.String
 			}
 		case review.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -187,14 +189,18 @@ func (r *Review) String() string {
 	var builder strings.Builder
 	builder.WriteString("Review(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", r.ID))
-	builder.WriteString("display_name=")
-	builder.WriteString(r.DisplayName)
+	if v := r.DisplayName; v != nil {
+		builder.WriteString("display_name=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("stars=")
 	builder.WriteString(fmt.Sprintf("%v", r.Stars))
 	builder.WriteString(", ")
-	builder.WriteString("text=")
-	builder.WriteString(r.Text)
+	if v := r.Text; v != nil {
+		builder.WriteString("text=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(r.CreatedAt.Format(time.ANSIC))

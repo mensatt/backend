@@ -16,8 +16,8 @@ type Dish struct {
 func (Dish) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.String("name_de").Unique(),
-		field.String("name_en"),
+		field.String("name_de").Unique().NotEmpty(),
+		field.String("name_en").Optional().Nillable().NotEmpty(),
 	}
 }
 

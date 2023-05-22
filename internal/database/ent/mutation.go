@@ -55,8 +55,8 @@ type DishMutation struct {
 	occurrences        map[uuid.UUID]struct{}
 	removedoccurrences map[uuid.UUID]struct{}
 	clearedoccurrences bool
-	aliases            map[int]struct{}
-	removedaliases     map[int]struct{}
+	aliases            map[string]struct{}
+	removedaliases     map[string]struct{}
 	clearedaliases     bool
 	done               bool
 	oldValue           func(context.Context) (*Dish, error)
@@ -220,7 +220,7 @@ func (m *DishMutation) NameEn() (r string, exists bool) {
 // OldNameEn returns the old "name_en" field's value of the Dish entity.
 // If the Dish object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DishMutation) OldNameEn(ctx context.Context) (v string, err error) {
+func (m *DishMutation) OldNameEn(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNameEn is only allowed on UpdateOne operations")
 	}
@@ -234,9 +234,22 @@ func (m *DishMutation) OldNameEn(ctx context.Context) (v string, err error) {
 	return oldValue.NameEn, nil
 }
 
+// ClearNameEn clears the value of the "name_en" field.
+func (m *DishMutation) ClearNameEn() {
+	m.name_en = nil
+	m.clearedFields[dish.FieldNameEn] = struct{}{}
+}
+
+// NameEnCleared returns if the "name_en" field was cleared in this mutation.
+func (m *DishMutation) NameEnCleared() bool {
+	_, ok := m.clearedFields[dish.FieldNameEn]
+	return ok
+}
+
 // ResetNameEn resets all changes to the "name_en" field.
 func (m *DishMutation) ResetNameEn() {
 	m.name_en = nil
+	delete(m.clearedFields, dish.FieldNameEn)
 }
 
 // AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by ids.
@@ -294,9 +307,9 @@ func (m *DishMutation) ResetOccurrences() {
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by ids.
-func (m *DishMutation) AddAliasIDs(ids ...int) {
+func (m *DishMutation) AddAliasIDs(ids ...string) {
 	if m.aliases == nil {
-		m.aliases = make(map[int]struct{})
+		m.aliases = make(map[string]struct{})
 	}
 	for i := range ids {
 		m.aliases[ids[i]] = struct{}{}
@@ -314,9 +327,9 @@ func (m *DishMutation) AliasesCleared() bool {
 }
 
 // RemoveAliasIDs removes the "aliases" edge to the DishAlias entity by IDs.
-func (m *DishMutation) RemoveAliasIDs(ids ...int) {
+func (m *DishMutation) RemoveAliasIDs(ids ...string) {
 	if m.removedaliases == nil {
-		m.removedaliases = make(map[int]struct{})
+		m.removedaliases = make(map[string]struct{})
 	}
 	for i := range ids {
 		delete(m.aliases, ids[i])
@@ -325,7 +338,7 @@ func (m *DishMutation) RemoveAliasIDs(ids ...int) {
 }
 
 // RemovedAliases returns the removed IDs of the "aliases" edge to the DishAlias entity.
-func (m *DishMutation) RemovedAliasesIDs() (ids []int) {
+func (m *DishMutation) RemovedAliasesIDs() (ids []string) {
 	for id := range m.removedaliases {
 		ids = append(ids, id)
 	}
@@ -333,7 +346,7 @@ func (m *DishMutation) RemovedAliasesIDs() (ids []int) {
 }
 
 // AliasesIDs returns the "aliases" edge IDs in the mutation.
-func (m *DishMutation) AliasesIDs() (ids []int) {
+func (m *DishMutation) AliasesIDs() (ids []string) {
 	for id := range m.aliases {
 		ids = append(ids, id)
 	}
@@ -450,7 +463,11 @@ func (m *DishMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *DishMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(dish.FieldNameEn) {
+		fields = append(fields, dish.FieldNameEn)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -463,6 +480,11 @@ func (m *DishMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *DishMutation) ClearField(name string) error {
+	switch name {
+	case dish.FieldNameEn:
+		m.ClearNameEn()
+		return nil
+	}
 	return fmt.Errorf("unknown Dish nullable field %s", name)
 }
 
@@ -595,8 +617,7 @@ type DishAliasMutation struct {
 	config
 	op                    Op
 	typ                   string
-	id                    *int
-	alias_name            *string
+	id                    *string
 	normalized_alias_name *string
 	clearedFields         map[string]struct{}
 	dish                  *uuid.UUID
@@ -626,7 +647,7 @@ func newDishAliasMutation(c config, op Op, opts ...dishaliasOption) *DishAliasMu
 }
 
 // withDishAliasID sets the ID field of the mutation.
-func withDishAliasID(id int) dishaliasOption {
+func withDishAliasID(id string) dishaliasOption {
 	return func(m *DishAliasMutation) {
 		var (
 			err   error
@@ -676,9 +697,15 @@ func (m DishAliasMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of DishAlias entities.
+func (m *DishAliasMutation) SetID(id string) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *DishAliasMutation) ID() (id int, exists bool) {
+func (m *DishAliasMutation) ID() (id string, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -689,12 +716,12 @@ func (m *DishAliasMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *DishAliasMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *DishAliasMutation) IDs(ctx context.Context) ([]string, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []string{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -702,42 +729,6 @@ func (m *DishAliasMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetAliasName sets the "alias_name" field.
-func (m *DishAliasMutation) SetAliasName(s string) {
-	m.alias_name = &s
-}
-
-// AliasName returns the value of the "alias_name" field in the mutation.
-func (m *DishAliasMutation) AliasName() (r string, exists bool) {
-	v := m.alias_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAliasName returns the old "alias_name" field's value of the DishAlias entity.
-// If the DishAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *DishAliasMutation) OldAliasName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAliasName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAliasName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAliasName: %w", err)
-	}
-	return oldValue.AliasName, nil
-}
-
-// ResetAliasName resets all changes to the "alias_name" field.
-func (m *DishAliasMutation) ResetAliasName() {
-	m.alias_name = nil
 }
 
 // SetNormalizedAliasName sets the "normalized_alias_name" field.
@@ -834,10 +825,7 @@ func (m *DishAliasMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DishAliasMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.alias_name != nil {
-		fields = append(fields, dishalias.FieldAliasName)
-	}
+	fields := make([]string, 0, 1)
 	if m.normalized_alias_name != nil {
 		fields = append(fields, dishalias.FieldNormalizedAliasName)
 	}
@@ -849,8 +837,6 @@ func (m *DishAliasMutation) Fields() []string {
 // schema.
 func (m *DishAliasMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case dishalias.FieldAliasName:
-		return m.AliasName()
 	case dishalias.FieldNormalizedAliasName:
 		return m.NormalizedAliasName()
 	}
@@ -862,8 +848,6 @@ func (m *DishAliasMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *DishAliasMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case dishalias.FieldAliasName:
-		return m.OldAliasName(ctx)
 	case dishalias.FieldNormalizedAliasName:
 		return m.OldNormalizedAliasName(ctx)
 	}
@@ -875,13 +859,6 @@ func (m *DishAliasMutation) OldField(ctx context.Context, name string) (ent.Valu
 // type.
 func (m *DishAliasMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case dishalias.FieldAliasName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAliasName(v)
-		return nil
 	case dishalias.FieldNormalizedAliasName:
 		v, ok := value.(string)
 		if !ok {
@@ -938,9 +915,6 @@ func (m *DishAliasMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *DishAliasMutation) ResetField(name string) error {
 	switch name {
-	case dishalias.FieldAliasName:
-		m.ResetAliasName()
-		return nil
 	case dishalias.FieldNormalizedAliasName:
 		m.ResetNormalizedAliasName()
 		return nil
@@ -1943,12 +1917,12 @@ type OccurrenceMutation struct {
 	clearedlocation    bool
 	dish               *uuid.UUID
 	cleareddish        bool
+	tag                map[string]struct{}
+	removedtag         map[string]struct{}
+	clearedtag         bool
 	side_dishes        map[uuid.UUID]struct{}
 	removedside_dishes map[uuid.UUID]struct{}
 	clearedside_dishes bool
-	tag                map[int]struct{}
-	removedtag         map[int]struct{}
-	clearedtag         bool
 	reviews            map[uuid.UUID]struct{}
 	removedreviews     map[uuid.UUID]struct{}
 	clearedreviews     bool
@@ -2151,7 +2125,7 @@ func (m *OccurrenceMutation) Kj() (r int, exists bool) {
 // OldKj returns the old "kj" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldKj(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldKj(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKj is only allowed on UpdateOne operations")
 	}
@@ -2183,10 +2157,24 @@ func (m *OccurrenceMutation) AddedKj() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearKj clears the value of the "kj" field.
+func (m *OccurrenceMutation) ClearKj() {
+	m.kj = nil
+	m.addkj = nil
+	m.clearedFields[occurrence.FieldKj] = struct{}{}
+}
+
+// KjCleared returns if the "kj" field was cleared in this mutation.
+func (m *OccurrenceMutation) KjCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldKj]
+	return ok
+}
+
 // ResetKj resets all changes to the "kj" field.
 func (m *OccurrenceMutation) ResetKj() {
 	m.kj = nil
 	m.addkj = nil
+	delete(m.clearedFields, occurrence.FieldKj)
 }
 
 // SetKcal sets the "kcal" field.
@@ -2207,7 +2195,7 @@ func (m *OccurrenceMutation) Kcal() (r int, exists bool) {
 // OldKcal returns the old "kcal" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldKcal(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldKcal(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKcal is only allowed on UpdateOne operations")
 	}
@@ -2239,10 +2227,24 @@ func (m *OccurrenceMutation) AddedKcal() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearKcal clears the value of the "kcal" field.
+func (m *OccurrenceMutation) ClearKcal() {
+	m.kcal = nil
+	m.addkcal = nil
+	m.clearedFields[occurrence.FieldKcal] = struct{}{}
+}
+
+// KcalCleared returns if the "kcal" field was cleared in this mutation.
+func (m *OccurrenceMutation) KcalCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldKcal]
+	return ok
+}
+
 // ResetKcal resets all changes to the "kcal" field.
 func (m *OccurrenceMutation) ResetKcal() {
 	m.kcal = nil
 	m.addkcal = nil
+	delete(m.clearedFields, occurrence.FieldKcal)
 }
 
 // SetFat sets the "fat" field.
@@ -2263,7 +2265,7 @@ func (m *OccurrenceMutation) Fat() (r int, exists bool) {
 // OldFat returns the old "fat" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldFat(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldFat(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFat is only allowed on UpdateOne operations")
 	}
@@ -2295,10 +2297,24 @@ func (m *OccurrenceMutation) AddedFat() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearFat clears the value of the "fat" field.
+func (m *OccurrenceMutation) ClearFat() {
+	m.fat = nil
+	m.addfat = nil
+	m.clearedFields[occurrence.FieldFat] = struct{}{}
+}
+
+// FatCleared returns if the "fat" field was cleared in this mutation.
+func (m *OccurrenceMutation) FatCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldFat]
+	return ok
+}
+
 // ResetFat resets all changes to the "fat" field.
 func (m *OccurrenceMutation) ResetFat() {
 	m.fat = nil
 	m.addfat = nil
+	delete(m.clearedFields, occurrence.FieldFat)
 }
 
 // SetSaturatedFat sets the "saturated_fat" field.
@@ -2319,7 +2335,7 @@ func (m *OccurrenceMutation) SaturatedFat() (r int, exists bool) {
 // OldSaturatedFat returns the old "saturated_fat" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldSaturatedFat(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldSaturatedFat(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSaturatedFat is only allowed on UpdateOne operations")
 	}
@@ -2351,10 +2367,24 @@ func (m *OccurrenceMutation) AddedSaturatedFat() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearSaturatedFat clears the value of the "saturated_fat" field.
+func (m *OccurrenceMutation) ClearSaturatedFat() {
+	m.saturated_fat = nil
+	m.addsaturated_fat = nil
+	m.clearedFields[occurrence.FieldSaturatedFat] = struct{}{}
+}
+
+// SaturatedFatCleared returns if the "saturated_fat" field was cleared in this mutation.
+func (m *OccurrenceMutation) SaturatedFatCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldSaturatedFat]
+	return ok
+}
+
 // ResetSaturatedFat resets all changes to the "saturated_fat" field.
 func (m *OccurrenceMutation) ResetSaturatedFat() {
 	m.saturated_fat = nil
 	m.addsaturated_fat = nil
+	delete(m.clearedFields, occurrence.FieldSaturatedFat)
 }
 
 // SetCarbohydrates sets the "carbohydrates" field.
@@ -2375,7 +2405,7 @@ func (m *OccurrenceMutation) Carbohydrates() (r int, exists bool) {
 // OldCarbohydrates returns the old "carbohydrates" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldCarbohydrates(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldCarbohydrates(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCarbohydrates is only allowed on UpdateOne operations")
 	}
@@ -2407,10 +2437,24 @@ func (m *OccurrenceMutation) AddedCarbohydrates() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearCarbohydrates clears the value of the "carbohydrates" field.
+func (m *OccurrenceMutation) ClearCarbohydrates() {
+	m.carbohydrates = nil
+	m.addcarbohydrates = nil
+	m.clearedFields[occurrence.FieldCarbohydrates] = struct{}{}
+}
+
+// CarbohydratesCleared returns if the "carbohydrates" field was cleared in this mutation.
+func (m *OccurrenceMutation) CarbohydratesCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldCarbohydrates]
+	return ok
+}
+
 // ResetCarbohydrates resets all changes to the "carbohydrates" field.
 func (m *OccurrenceMutation) ResetCarbohydrates() {
 	m.carbohydrates = nil
 	m.addcarbohydrates = nil
+	delete(m.clearedFields, occurrence.FieldCarbohydrates)
 }
 
 // SetSugar sets the "sugar" field.
@@ -2431,7 +2475,7 @@ func (m *OccurrenceMutation) Sugar() (r int, exists bool) {
 // OldSugar returns the old "sugar" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldSugar(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldSugar(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSugar is only allowed on UpdateOne operations")
 	}
@@ -2463,10 +2507,24 @@ func (m *OccurrenceMutation) AddedSugar() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearSugar clears the value of the "sugar" field.
+func (m *OccurrenceMutation) ClearSugar() {
+	m.sugar = nil
+	m.addsugar = nil
+	m.clearedFields[occurrence.FieldSugar] = struct{}{}
+}
+
+// SugarCleared returns if the "sugar" field was cleared in this mutation.
+func (m *OccurrenceMutation) SugarCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldSugar]
+	return ok
+}
+
 // ResetSugar resets all changes to the "sugar" field.
 func (m *OccurrenceMutation) ResetSugar() {
 	m.sugar = nil
 	m.addsugar = nil
+	delete(m.clearedFields, occurrence.FieldSugar)
 }
 
 // SetFiber sets the "fiber" field.
@@ -2487,7 +2545,7 @@ func (m *OccurrenceMutation) Fiber() (r int, exists bool) {
 // OldFiber returns the old "fiber" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldFiber(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldFiber(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFiber is only allowed on UpdateOne operations")
 	}
@@ -2519,10 +2577,24 @@ func (m *OccurrenceMutation) AddedFiber() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearFiber clears the value of the "fiber" field.
+func (m *OccurrenceMutation) ClearFiber() {
+	m.fiber = nil
+	m.addfiber = nil
+	m.clearedFields[occurrence.FieldFiber] = struct{}{}
+}
+
+// FiberCleared returns if the "fiber" field was cleared in this mutation.
+func (m *OccurrenceMutation) FiberCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldFiber]
+	return ok
+}
+
 // ResetFiber resets all changes to the "fiber" field.
 func (m *OccurrenceMutation) ResetFiber() {
 	m.fiber = nil
 	m.addfiber = nil
+	delete(m.clearedFields, occurrence.FieldFiber)
 }
 
 // SetProtein sets the "protein" field.
@@ -2543,7 +2615,7 @@ func (m *OccurrenceMutation) Protein() (r int, exists bool) {
 // OldProtein returns the old "protein" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldProtein(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldProtein(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProtein is only allowed on UpdateOne operations")
 	}
@@ -2575,10 +2647,24 @@ func (m *OccurrenceMutation) AddedProtein() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearProtein clears the value of the "protein" field.
+func (m *OccurrenceMutation) ClearProtein() {
+	m.protein = nil
+	m.addprotein = nil
+	m.clearedFields[occurrence.FieldProtein] = struct{}{}
+}
+
+// ProteinCleared returns if the "protein" field was cleared in this mutation.
+func (m *OccurrenceMutation) ProteinCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldProtein]
+	return ok
+}
+
 // ResetProtein resets all changes to the "protein" field.
 func (m *OccurrenceMutation) ResetProtein() {
 	m.protein = nil
 	m.addprotein = nil
+	delete(m.clearedFields, occurrence.FieldProtein)
 }
 
 // SetSalt sets the "salt" field.
@@ -2599,7 +2685,7 @@ func (m *OccurrenceMutation) Salt() (r int, exists bool) {
 // OldSalt returns the old "salt" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldSalt(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldSalt(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldSalt is only allowed on UpdateOne operations")
 	}
@@ -2631,10 +2717,24 @@ func (m *OccurrenceMutation) AddedSalt() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearSalt clears the value of the "salt" field.
+func (m *OccurrenceMutation) ClearSalt() {
+	m.salt = nil
+	m.addsalt = nil
+	m.clearedFields[occurrence.FieldSalt] = struct{}{}
+}
+
+// SaltCleared returns if the "salt" field was cleared in this mutation.
+func (m *OccurrenceMutation) SaltCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldSalt]
+	return ok
+}
+
 // ResetSalt resets all changes to the "salt" field.
 func (m *OccurrenceMutation) ResetSalt() {
 	m.salt = nil
 	m.addsalt = nil
+	delete(m.clearedFields, occurrence.FieldSalt)
 }
 
 // SetPriceStudent sets the "price_student" field.
@@ -2655,7 +2755,7 @@ func (m *OccurrenceMutation) PriceStudent() (r int, exists bool) {
 // OldPriceStudent returns the old "price_student" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldPriceStudent(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldPriceStudent(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPriceStudent is only allowed on UpdateOne operations")
 	}
@@ -2687,10 +2787,24 @@ func (m *OccurrenceMutation) AddedPriceStudent() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearPriceStudent clears the value of the "price_student" field.
+func (m *OccurrenceMutation) ClearPriceStudent() {
+	m.price_student = nil
+	m.addprice_student = nil
+	m.clearedFields[occurrence.FieldPriceStudent] = struct{}{}
+}
+
+// PriceStudentCleared returns if the "price_student" field was cleared in this mutation.
+func (m *OccurrenceMutation) PriceStudentCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldPriceStudent]
+	return ok
+}
+
 // ResetPriceStudent resets all changes to the "price_student" field.
 func (m *OccurrenceMutation) ResetPriceStudent() {
 	m.price_student = nil
 	m.addprice_student = nil
+	delete(m.clearedFields, occurrence.FieldPriceStudent)
 }
 
 // SetPriceStaff sets the "price_staff" field.
@@ -2711,7 +2825,7 @@ func (m *OccurrenceMutation) PriceStaff() (r int, exists bool) {
 // OldPriceStaff returns the old "price_staff" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldPriceStaff(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldPriceStaff(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPriceStaff is only allowed on UpdateOne operations")
 	}
@@ -2743,10 +2857,24 @@ func (m *OccurrenceMutation) AddedPriceStaff() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearPriceStaff clears the value of the "price_staff" field.
+func (m *OccurrenceMutation) ClearPriceStaff() {
+	m.price_staff = nil
+	m.addprice_staff = nil
+	m.clearedFields[occurrence.FieldPriceStaff] = struct{}{}
+}
+
+// PriceStaffCleared returns if the "price_staff" field was cleared in this mutation.
+func (m *OccurrenceMutation) PriceStaffCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldPriceStaff]
+	return ok
+}
+
 // ResetPriceStaff resets all changes to the "price_staff" field.
 func (m *OccurrenceMutation) ResetPriceStaff() {
 	m.price_staff = nil
 	m.addprice_staff = nil
+	delete(m.clearedFields, occurrence.FieldPriceStaff)
 }
 
 // SetPriceGuest sets the "price_guest" field.
@@ -2767,7 +2895,7 @@ func (m *OccurrenceMutation) PriceGuest() (r int, exists bool) {
 // OldPriceGuest returns the old "price_guest" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldPriceGuest(ctx context.Context) (v int, err error) {
+func (m *OccurrenceMutation) OldPriceGuest(ctx context.Context) (v *int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldPriceGuest is only allowed on UpdateOne operations")
 	}
@@ -2799,10 +2927,24 @@ func (m *OccurrenceMutation) AddedPriceGuest() (r int, exists bool) {
 	return *v, true
 }
 
+// ClearPriceGuest clears the value of the "price_guest" field.
+func (m *OccurrenceMutation) ClearPriceGuest() {
+	m.price_guest = nil
+	m.addprice_guest = nil
+	m.clearedFields[occurrence.FieldPriceGuest] = struct{}{}
+}
+
+// PriceGuestCleared returns if the "price_guest" field was cleared in this mutation.
+func (m *OccurrenceMutation) PriceGuestCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldPriceGuest]
+	return ok
+}
+
 // ResetPriceGuest resets all changes to the "price_guest" field.
 func (m *OccurrenceMutation) ResetPriceGuest() {
 	m.price_guest = nil
 	m.addprice_guest = nil
+	delete(m.clearedFields, occurrence.FieldPriceGuest)
 }
 
 // SetLocationID sets the "location" edge to the Location entity by id.
@@ -2883,6 +3025,60 @@ func (m *OccurrenceMutation) ResetDish() {
 	m.cleareddish = false
 }
 
+// AddTagIDs adds the "tag" edge to the Tag entity by ids.
+func (m *OccurrenceMutation) AddTagIDs(ids ...string) {
+	if m.tag == nil {
+		m.tag = make(map[string]struct{})
+	}
+	for i := range ids {
+		m.tag[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTag clears the "tag" edge to the Tag entity.
+func (m *OccurrenceMutation) ClearTag() {
+	m.clearedtag = true
+}
+
+// TagCleared reports if the "tag" edge to the Tag entity was cleared.
+func (m *OccurrenceMutation) TagCleared() bool {
+	return m.clearedtag
+}
+
+// RemoveTagIDs removes the "tag" edge to the Tag entity by IDs.
+func (m *OccurrenceMutation) RemoveTagIDs(ids ...string) {
+	if m.removedtag == nil {
+		m.removedtag = make(map[string]struct{})
+	}
+	for i := range ids {
+		delete(m.tag, ids[i])
+		m.removedtag[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTag returns the removed IDs of the "tag" edge to the Tag entity.
+func (m *OccurrenceMutation) RemovedTagIDs() (ids []string) {
+	for id := range m.removedtag {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TagIDs returns the "tag" edge IDs in the mutation.
+func (m *OccurrenceMutation) TagIDs() (ids []string) {
+	for id := range m.tag {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTag resets all changes to the "tag" edge.
+func (m *OccurrenceMutation) ResetTag() {
+	m.tag = nil
+	m.clearedtag = false
+	m.removedtag = nil
+}
+
 // AddSideDishIDs adds the "side_dishes" edge to the Dish entity by ids.
 func (m *OccurrenceMutation) AddSideDishIDs(ids ...uuid.UUID) {
 	if m.side_dishes == nil {
@@ -2935,60 +3131,6 @@ func (m *OccurrenceMutation) ResetSideDishes() {
 	m.side_dishes = nil
 	m.clearedside_dishes = false
 	m.removedside_dishes = nil
-}
-
-// AddTagIDs adds the "tag" edge to the Tag entity by ids.
-func (m *OccurrenceMutation) AddTagIDs(ids ...int) {
-	if m.tag == nil {
-		m.tag = make(map[int]struct{})
-	}
-	for i := range ids {
-		m.tag[ids[i]] = struct{}{}
-	}
-}
-
-// ClearTag clears the "tag" edge to the Tag entity.
-func (m *OccurrenceMutation) ClearTag() {
-	m.clearedtag = true
-}
-
-// TagCleared reports if the "tag" edge to the Tag entity was cleared.
-func (m *OccurrenceMutation) TagCleared() bool {
-	return m.clearedtag
-}
-
-// RemoveTagIDs removes the "tag" edge to the Tag entity by IDs.
-func (m *OccurrenceMutation) RemoveTagIDs(ids ...int) {
-	if m.removedtag == nil {
-		m.removedtag = make(map[int]struct{})
-	}
-	for i := range ids {
-		delete(m.tag, ids[i])
-		m.removedtag[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTag returns the removed IDs of the "tag" edge to the Tag entity.
-func (m *OccurrenceMutation) RemovedTagIDs() (ids []int) {
-	for id := range m.removedtag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// TagIDs returns the "tag" edge IDs in the mutation.
-func (m *OccurrenceMutation) TagIDs() (ids []int) {
-	for id := range m.tag {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetTag resets all changes to the "tag" edge.
-func (m *OccurrenceMutation) ResetTag() {
-	m.tag = nil
-	m.clearedtag = false
-	m.removedtag = nil
 }
 
 // AddReviewIDs adds the "reviews" edge to the Review entity by ids.
@@ -3463,7 +3605,44 @@ func (m *OccurrenceMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *OccurrenceMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(occurrence.FieldKj) {
+		fields = append(fields, occurrence.FieldKj)
+	}
+	if m.FieldCleared(occurrence.FieldKcal) {
+		fields = append(fields, occurrence.FieldKcal)
+	}
+	if m.FieldCleared(occurrence.FieldFat) {
+		fields = append(fields, occurrence.FieldFat)
+	}
+	if m.FieldCleared(occurrence.FieldSaturatedFat) {
+		fields = append(fields, occurrence.FieldSaturatedFat)
+	}
+	if m.FieldCleared(occurrence.FieldCarbohydrates) {
+		fields = append(fields, occurrence.FieldCarbohydrates)
+	}
+	if m.FieldCleared(occurrence.FieldSugar) {
+		fields = append(fields, occurrence.FieldSugar)
+	}
+	if m.FieldCleared(occurrence.FieldFiber) {
+		fields = append(fields, occurrence.FieldFiber)
+	}
+	if m.FieldCleared(occurrence.FieldProtein) {
+		fields = append(fields, occurrence.FieldProtein)
+	}
+	if m.FieldCleared(occurrence.FieldSalt) {
+		fields = append(fields, occurrence.FieldSalt)
+	}
+	if m.FieldCleared(occurrence.FieldPriceStudent) {
+		fields = append(fields, occurrence.FieldPriceStudent)
+	}
+	if m.FieldCleared(occurrence.FieldPriceStaff) {
+		fields = append(fields, occurrence.FieldPriceStaff)
+	}
+	if m.FieldCleared(occurrence.FieldPriceGuest) {
+		fields = append(fields, occurrence.FieldPriceGuest)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -3476,6 +3655,44 @@ func (m *OccurrenceMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *OccurrenceMutation) ClearField(name string) error {
+	switch name {
+	case occurrence.FieldKj:
+		m.ClearKj()
+		return nil
+	case occurrence.FieldKcal:
+		m.ClearKcal()
+		return nil
+	case occurrence.FieldFat:
+		m.ClearFat()
+		return nil
+	case occurrence.FieldSaturatedFat:
+		m.ClearSaturatedFat()
+		return nil
+	case occurrence.FieldCarbohydrates:
+		m.ClearCarbohydrates()
+		return nil
+	case occurrence.FieldSugar:
+		m.ClearSugar()
+		return nil
+	case occurrence.FieldFiber:
+		m.ClearFiber()
+		return nil
+	case occurrence.FieldProtein:
+		m.ClearProtein()
+		return nil
+	case occurrence.FieldSalt:
+		m.ClearSalt()
+		return nil
+	case occurrence.FieldPriceStudent:
+		m.ClearPriceStudent()
+		return nil
+	case occurrence.FieldPriceStaff:
+		m.ClearPriceStaff()
+		return nil
+	case occurrence.FieldPriceGuest:
+		m.ClearPriceGuest()
+		return nil
+	}
 	return fmt.Errorf("unknown Occurrence nullable field %s", name)
 }
 
@@ -3538,11 +3755,11 @@ func (m *OccurrenceMutation) AddedEdges() []string {
 	if m.dish != nil {
 		edges = append(edges, occurrence.EdgeDish)
 	}
-	if m.side_dishes != nil {
-		edges = append(edges, occurrence.EdgeSideDishes)
-	}
 	if m.tag != nil {
 		edges = append(edges, occurrence.EdgeTag)
+	}
+	if m.side_dishes != nil {
+		edges = append(edges, occurrence.EdgeSideDishes)
 	}
 	if m.reviews != nil {
 		edges = append(edges, occurrence.EdgeReviews)
@@ -3562,15 +3779,15 @@ func (m *OccurrenceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.dish; id != nil {
 			return []ent.Value{*id}
 		}
-	case occurrence.EdgeSideDishes:
-		ids := make([]ent.Value, 0, len(m.side_dishes))
-		for id := range m.side_dishes {
-			ids = append(ids, id)
-		}
-		return ids
 	case occurrence.EdgeTag:
 		ids := make([]ent.Value, 0, len(m.tag))
 		for id := range m.tag {
+			ids = append(ids, id)
+		}
+		return ids
+	case occurrence.EdgeSideDishes:
+		ids := make([]ent.Value, 0, len(m.side_dishes))
+		for id := range m.side_dishes {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3587,11 +3804,11 @@ func (m *OccurrenceMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OccurrenceMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 5)
-	if m.removedside_dishes != nil {
-		edges = append(edges, occurrence.EdgeSideDishes)
-	}
 	if m.removedtag != nil {
 		edges = append(edges, occurrence.EdgeTag)
+	}
+	if m.removedside_dishes != nil {
+		edges = append(edges, occurrence.EdgeSideDishes)
 	}
 	if m.removedreviews != nil {
 		edges = append(edges, occurrence.EdgeReviews)
@@ -3603,15 +3820,15 @@ func (m *OccurrenceMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *OccurrenceMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case occurrence.EdgeSideDishes:
-		ids := make([]ent.Value, 0, len(m.removedside_dishes))
-		for id := range m.removedside_dishes {
-			ids = append(ids, id)
-		}
-		return ids
 	case occurrence.EdgeTag:
 		ids := make([]ent.Value, 0, len(m.removedtag))
 		for id := range m.removedtag {
+			ids = append(ids, id)
+		}
+		return ids
+	case occurrence.EdgeSideDishes:
+		ids := make([]ent.Value, 0, len(m.removedside_dishes))
+		for id := range m.removedside_dishes {
 			ids = append(ids, id)
 		}
 		return ids
@@ -3634,11 +3851,11 @@ func (m *OccurrenceMutation) ClearedEdges() []string {
 	if m.cleareddish {
 		edges = append(edges, occurrence.EdgeDish)
 	}
-	if m.clearedside_dishes {
-		edges = append(edges, occurrence.EdgeSideDishes)
-	}
 	if m.clearedtag {
 		edges = append(edges, occurrence.EdgeTag)
+	}
+	if m.clearedside_dishes {
+		edges = append(edges, occurrence.EdgeSideDishes)
 	}
 	if m.clearedreviews {
 		edges = append(edges, occurrence.EdgeReviews)
@@ -3654,10 +3871,10 @@ func (m *OccurrenceMutation) EdgeCleared(name string) bool {
 		return m.clearedlocation
 	case occurrence.EdgeDish:
 		return m.cleareddish
-	case occurrence.EdgeSideDishes:
-		return m.clearedside_dishes
 	case occurrence.EdgeTag:
 		return m.clearedtag
+	case occurrence.EdgeSideDishes:
+		return m.clearedside_dishes
 	case occurrence.EdgeReviews:
 		return m.clearedreviews
 	}
@@ -3688,11 +3905,11 @@ func (m *OccurrenceMutation) ResetEdge(name string) error {
 	case occurrence.EdgeDish:
 		m.ResetDish()
 		return nil
-	case occurrence.EdgeSideDishes:
-		m.ResetSideDishes()
-		return nil
 	case occurrence.EdgeTag:
 		m.ResetTag()
+		return nil
+	case occurrence.EdgeSideDishes:
+		m.ResetSideDishes()
 		return nil
 	case occurrence.EdgeReviews:
 		m.ResetReviews()
@@ -3846,7 +4063,7 @@ func (m *ReviewMutation) DisplayName() (r string, exists bool) {
 // OldDisplayName returns the old "display_name" field's value of the Review entity.
 // If the Review object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ReviewMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+func (m *ReviewMutation) OldDisplayName(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
 	}
@@ -3860,9 +4077,22 @@ func (m *ReviewMutation) OldDisplayName(ctx context.Context) (v string, err erro
 	return oldValue.DisplayName, nil
 }
 
+// ClearDisplayName clears the value of the "display_name" field.
+func (m *ReviewMutation) ClearDisplayName() {
+	m.display_name = nil
+	m.clearedFields[review.FieldDisplayName] = struct{}{}
+}
+
+// DisplayNameCleared returns if the "display_name" field was cleared in this mutation.
+func (m *ReviewMutation) DisplayNameCleared() bool {
+	_, ok := m.clearedFields[review.FieldDisplayName]
+	return ok
+}
+
 // ResetDisplayName resets all changes to the "display_name" field.
 func (m *ReviewMutation) ResetDisplayName() {
 	m.display_name = nil
+	delete(m.clearedFields, review.FieldDisplayName)
 }
 
 // SetStars sets the "stars" field.
@@ -3938,7 +4168,7 @@ func (m *ReviewMutation) Text() (r string, exists bool) {
 // OldText returns the old "text" field's value of the Review entity.
 // If the Review object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ReviewMutation) OldText(ctx context.Context) (v string, err error) {
+func (m *ReviewMutation) OldText(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldText is only allowed on UpdateOne operations")
 	}
@@ -3952,9 +4182,22 @@ func (m *ReviewMutation) OldText(ctx context.Context) (v string, err error) {
 	return oldValue.Text, nil
 }
 
+// ClearText clears the value of the "text" field.
+func (m *ReviewMutation) ClearText() {
+	m.text = nil
+	m.clearedFields[review.FieldText] = struct{}{}
+}
+
+// TextCleared returns if the "text" field was cleared in this mutation.
+func (m *ReviewMutation) TextCleared() bool {
+	_, ok := m.clearedFields[review.FieldText]
+	return ok
+}
+
 // ResetText resets all changes to the "text" field.
 func (m *ReviewMutation) ResetText() {
 	m.text = nil
+	delete(m.clearedFields, review.FieldText)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -4346,6 +4589,12 @@ func (m *ReviewMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ReviewMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(review.FieldDisplayName) {
+		fields = append(fields, review.FieldDisplayName)
+	}
+	if m.FieldCleared(review.FieldText) {
+		fields = append(fields, review.FieldText)
+	}
 	if m.FieldCleared(review.FieldAcceptedAt) {
 		fields = append(fields, review.FieldAcceptedAt)
 	}
@@ -4363,6 +4612,12 @@ func (m *ReviewMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ReviewMutation) ClearField(name string) error {
 	switch name {
+	case review.FieldDisplayName:
+		m.ClearDisplayName()
+		return nil
+	case review.FieldText:
+		m.ClearText()
+		return nil
 	case review.FieldAcceptedAt:
 		m.ClearAcceptedAt()
 		return nil
@@ -4503,8 +4758,7 @@ type TagMutation struct {
 	config
 	op                 Op
 	typ                string
-	id                 *int
-	key                *string
+	id                 *string
 	name               *string
 	description        *string
 	short_name         *string
@@ -4539,7 +4793,7 @@ func newTagMutation(c config, op Op, opts ...tagOption) *TagMutation {
 }
 
 // withTagID sets the ID field of the mutation.
-func withTagID(id int) tagOption {
+func withTagID(id string) tagOption {
 	return func(m *TagMutation) {
 		var (
 			err   error
@@ -4589,9 +4843,15 @@ func (m TagMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Tag entities.
+func (m *TagMutation) SetID(id string) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *TagMutation) ID() (id int, exists bool) {
+func (m *TagMutation) ID() (id string, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -4602,12 +4862,12 @@ func (m *TagMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *TagMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *TagMutation) IDs(ctx context.Context) ([]string, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []string{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -4615,42 +4875,6 @@ func (m *TagMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
-}
-
-// SetKey sets the "key" field.
-func (m *TagMutation) SetKey(s string) {
-	m.key = &s
-}
-
-// Key returns the value of the "key" field in the mutation.
-func (m *TagMutation) Key() (r string, exists bool) {
-	v := m.key
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldKey returns the old "key" field's value of the Tag entity.
-// If the Tag object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TagMutation) OldKey(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKey is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKey requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKey: %w", err)
-	}
-	return oldValue.Key, nil
-}
-
-// ResetKey resets all changes to the "key" field.
-func (m *TagMutation) ResetKey() {
-	m.key = nil
 }
 
 // SetName sets the "name" field.
@@ -4742,7 +4966,7 @@ func (m *TagMutation) ShortName() (r string, exists bool) {
 // OldShortName returns the old "short_name" field's value of the Tag entity.
 // If the Tag object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TagMutation) OldShortName(ctx context.Context) (v string, err error) {
+func (m *TagMutation) OldShortName(ctx context.Context) (v *string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldShortName is only allowed on UpdateOne operations")
 	}
@@ -4919,10 +5143,7 @@ func (m *TagMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TagMutation) Fields() []string {
-	fields := make([]string, 0, 6)
-	if m.key != nil {
-		fields = append(fields, tag.FieldKey)
-	}
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, tag.FieldName)
 	}
@@ -4946,8 +5167,6 @@ func (m *TagMutation) Fields() []string {
 // schema.
 func (m *TagMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case tag.FieldKey:
-		return m.Key()
 	case tag.FieldName:
 		return m.Name()
 	case tag.FieldDescription:
@@ -4967,8 +5186,6 @@ func (m *TagMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case tag.FieldKey:
-		return m.OldKey(ctx)
 	case tag.FieldName:
 		return m.OldName(ctx)
 	case tag.FieldDescription:
@@ -4988,13 +5205,6 @@ func (m *TagMutation) OldField(ctx context.Context, name string) (ent.Value, err
 // type.
 func (m *TagMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case tag.FieldKey:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetKey(v)
-		return nil
 	case tag.FieldName:
 		v, ok := value.(string)
 		if !ok {
@@ -5088,9 +5298,6 @@ func (m *TagMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TagMutation) ResetField(name string) error {
 	switch name {
-	case tag.FieldKey:
-		m.ResetKey()
-		return nil
 	case tag.FieldName:
 		m.ResetName()
 		return nil

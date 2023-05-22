@@ -15,15 +15,13 @@ import (
 type Tag struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// Key holds the value of the "key" field.
-	Key string `json:"key,omitempty"`
+	ID string `json:"id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
 	// ShortName holds the value of the "short_name" field.
-	ShortName string `json:"short_name,omitempty"`
+	ShortName *string `json:"short_name,omitempty"`
 	// Priority holds the value of the "priority" field.
 	Priority schema.TagPriority `json:"priority,omitempty"`
 	// IsAllergy holds the value of the "is_allergy" field.
@@ -58,9 +56,7 @@ func (*Tag) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case tag.FieldIsAllergy:
 			values[i] = new(sql.NullBool)
-		case tag.FieldID:
-			values[i] = new(sql.NullInt64)
-		case tag.FieldKey, tag.FieldName, tag.FieldDescription, tag.FieldShortName, tag.FieldPriority:
+		case tag.FieldID, tag.FieldName, tag.FieldDescription, tag.FieldShortName, tag.FieldPriority:
 			values[i] = new(sql.NullString)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
@@ -78,16 +74,10 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case tag.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
-			}
-			t.ID = int(value.Int64)
-		case tag.FieldKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field key", values[i])
+				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value.Valid {
-				t.Key = value.String
+				t.ID = value.String
 			}
 		case tag.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -105,7 +95,8 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field short_name", values[i])
 			} else if value.Valid {
-				t.ShortName = value.String
+				t.ShortName = new(string)
+				*t.ShortName = value.String
 			}
 		case tag.FieldPriority:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -152,17 +143,16 @@ func (t *Tag) String() string {
 	var builder strings.Builder
 	builder.WriteString("Tag(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", t.ID))
-	builder.WriteString("key=")
-	builder.WriteString(t.Key)
-	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(t.Name)
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(t.Description)
 	builder.WriteString(", ")
-	builder.WriteString("short_name=")
-	builder.WriteString(t.ShortName)
+	if v := t.ShortName; v != nil {
+		builder.WriteString("short_name=")
+		builder.WriteString(*v)
+	}
 	builder.WriteString(", ")
 	builder.WriteString("priority=")
 	builder.WriteString(fmt.Sprintf("%v", t.Priority))
