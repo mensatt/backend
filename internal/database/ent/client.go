@@ -335,7 +335,7 @@ func (c *DishAliasClient) UpdateOne(da *DishAlias) *DishAliasUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DishAliasClient) UpdateOneID(id int) *DishAliasUpdateOne {
+func (c *DishAliasClient) UpdateOneID(id string) *DishAliasUpdateOne {
 	mutation := newDishAliasMutation(c.config, OpUpdateOne, withDishAliasID(id))
 	return &DishAliasUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -352,7 +352,7 @@ func (c *DishAliasClient) DeleteOne(da *DishAlias) *DishAliasDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *DishAliasClient) DeleteOneID(id int) *DishAliasDeleteOne {
+func (c *DishAliasClient) DeleteOneID(id string) *DishAliasDeleteOne {
 	builder := c.Delete().Where(dishalias.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -367,12 +367,12 @@ func (c *DishAliasClient) Query() *DishAliasQuery {
 }
 
 // Get returns a DishAlias entity by its id.
-func (c *DishAliasClient) Get(ctx context.Context, id int) (*DishAlias, error) {
+func (c *DishAliasClient) Get(ctx context.Context, id string) (*DishAlias, error) {
 	return c.Query().Where(dishalias.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DishAliasClient) GetX(ctx context.Context, id int) *DishAlias {
+func (c *DishAliasClient) GetX(ctx context.Context, id string) *DishAlias {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -730,22 +730,6 @@ func (c *OccurrenceClient) QueryDish(o *Occurrence) *DishQuery {
 	return query
 }
 
-// QuerySideDishes queries the side_dishes edge of a Occurrence.
-func (c *OccurrenceClient) QuerySideDishes(o *Occurrence) *DishQuery {
-	query := &DishQuery{config: c.config}
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := o.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(occurrence.Table, occurrence.FieldID, id),
-			sqlgraph.To(dish.Table, dish.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, occurrence.SideDishesTable, occurrence.SideDishesColumn),
-		)
-		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryTag queries the tag edge of a Occurrence.
 func (c *OccurrenceClient) QueryTag(o *Occurrence) *TagQuery {
 	query := &TagQuery{config: c.config}
@@ -755,6 +739,22 @@ func (c *OccurrenceClient) QueryTag(o *Occurrence) *TagQuery {
 			sqlgraph.From(occurrence.Table, occurrence.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, occurrence.TagTable, occurrence.TagPrimaryKey...),
+		)
+		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySideDishes queries the side_dishes edge of a Occurrence.
+func (c *OccurrenceClient) QuerySideDishes(o *Occurrence) *DishQuery {
+	query := &DishQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := o.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(occurrence.Table, occurrence.FieldID, id),
+			sqlgraph.To(dish.Table, dish.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, occurrence.SideDishesTable, occurrence.SideDishesColumn),
 		)
 		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
 		return fromV, nil
@@ -945,7 +945,7 @@ func (c *TagClient) UpdateOne(t *Tag) *TagUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TagClient) UpdateOneID(id int) *TagUpdateOne {
+func (c *TagClient) UpdateOneID(id string) *TagUpdateOne {
 	mutation := newTagMutation(c.config, OpUpdateOne, withTagID(id))
 	return &TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -962,7 +962,7 @@ func (c *TagClient) DeleteOne(t *Tag) *TagDeleteOne {
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *TagClient) DeleteOneID(id int) *TagDeleteOne {
+func (c *TagClient) DeleteOneID(id string) *TagDeleteOne {
 	builder := c.Delete().Where(tag.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -977,12 +977,12 @@ func (c *TagClient) Query() *TagQuery {
 }
 
 // Get returns a Tag entity by its id.
-func (c *TagClient) Get(ctx context.Context, id int) (*Tag, error) {
+func (c *TagClient) Get(ctx context.Context, id string) (*Tag, error) {
 	return c.Query().Where(tag.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TagClient) GetX(ctx context.Context, id int) *Tag {
+func (c *TagClient) GetX(ctx context.Context, id string) *Tag {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

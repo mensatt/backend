@@ -35,7 +35,7 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input models.LoginUser
 // CreateTag is the resolver for the createTag field.
 func (r *mutationResolver) CreateTag(ctx context.Context, input models.CreateTagInput) (*ent.Tag, error) {
 	queryBuilder := r.Database.Tag.Create().
-		SetKey(input.Key).
+		SetID(input.Key).
 		SetName(input.Name).
 		SetDescription(input.Description)
 
@@ -84,7 +84,7 @@ func (r *mutationResolver) UpdateDish(ctx context.Context, input models.UpdateDi
 // CreateDishAlias is the resolver for the createDishAlias field.
 func (r *mutationResolver) CreateDishAlias(ctx context.Context, input models.CreateDishAliasInput) (*ent.DishAlias, error) {
 	return r.Database.DishAlias.Create().
-		SetAliasName(input.AliasName).
+		SetID(input.AliasName).
 		SetNormalizedAliasName(input.NormalizedAliasName).
 		SetDishID(input.Dish).
 		Save(ctx)
@@ -94,16 +94,17 @@ func (r *mutationResolver) CreateDishAlias(ctx context.Context, input models.Cre
 func (r *mutationResolver) UpdateDishAlias(ctx context.Context, input models.UpdateDishAliasInput) (*ent.DishAlias, error) {
 	// find dish alias by name (as we use this as a primary key and not the id)
 	// update dish alias after wards
-	dishAlias, err := r.Database.DishAlias.Query().Where(dishalias.AliasNameEQ(input.AliasName)).Only(ctx)
+	dishAlias, err := r.Database.DishAlias.Query().Where(dishalias.IDEQ(input.AliasName)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	queryBuilder := r.Database.DishAlias.UpdateOne(dishAlias)
 
-	if input.NewAliasName != nil {
-		queryBuilder = queryBuilder.SetAliasName(*input.NewAliasName)
-	}
+	// todo: fix changing the primary key
+	//if input.NewAliasName != nil {
+	//	queryBuilder = queryBuilder.SetAliasName(*input.NewAliasName)
+	//}
 
 	if input.NormalizedAliasName != nil {
 		queryBuilder = queryBuilder.SetNormalizedAliasName(*input.NormalizedAliasName)
@@ -116,7 +117,7 @@ func (r *mutationResolver) UpdateDishAlias(ctx context.Context, input models.Upd
 func (r *mutationResolver) DeleteDishAlias(ctx context.Context, input models.DeleteDishAliasInput) (*ent.DishAlias, error) {
 	// find dish alias by name (as we use this as a primary key and not the id)
 	// delete dish alias after wards
-	dishAlias, err := r.Database.DishAlias.Query().Where(dishalias.AliasNameEQ(input.AliasName)).Only(ctx)
+	dishAlias, err := r.Database.DishAlias.Query().Where(dishalias.IDEQ(input.AliasName)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +286,7 @@ func (r *mutationResolver) AddTagToOccurrence(ctx context.Context, input models.
 		return nil, err
 	}
 
-	tag, err := r.Database.Tag.Query().Where(tag.KeyEQ(input.Tag)).Only(ctx)
+	tag, err := r.Database.Tag.Query().Where(tag.IDEQ(input.Tag)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -309,7 +310,7 @@ func (r *mutationResolver) RemoveTagFromOccurrence(ctx context.Context, input mo
 		return nil, err
 	}
 
-	tag, err := r.Database.Tag.Query().Where(tag.KeyEQ(input.Tag)).Only(ctx)
+	tag, err := r.Database.Tag.Query().Where(tag.IDEQ(input.Tag)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}

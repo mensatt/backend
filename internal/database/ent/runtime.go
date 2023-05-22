@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/dish"
+	"github.com/mensatt/backend/internal/database/ent/dishalias"
 	"github.com/mensatt/backend/internal/database/ent/image"
 	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
@@ -22,10 +23,24 @@ import (
 func init() {
 	dishFields := schema.Dish{}.Fields()
 	_ = dishFields
+	// dishDescNameDe is the schema descriptor for name_de field.
+	dishDescNameDe := dishFields[1].Descriptor()
+	// dish.NameDeValidator is a validator for the "name_de" field. It is called by the builders before save.
+	dish.NameDeValidator = dishDescNameDe.Validators[0].(func(string) error)
+	// dishDescNameEn is the schema descriptor for name_en field.
+	dishDescNameEn := dishFields[2].Descriptor()
+	// dish.NameEnValidator is a validator for the "name_en" field. It is called by the builders before save.
+	dish.NameEnValidator = dishDescNameEn.Validators[0].(func(string) error)
 	// dishDescID is the schema descriptor for id field.
 	dishDescID := dishFields[0].Descriptor()
 	// dish.DefaultID holds the default value on creation for the id field.
 	dish.DefaultID = dishDescID.Default.(func() uuid.UUID)
+	dishaliasFields := schema.DishAlias{}.Fields()
+	_ = dishaliasFields
+	// dishaliasDescNormalizedAliasName is the schema descriptor for normalized_alias_name field.
+	dishaliasDescNormalizedAliasName := dishaliasFields[1].Descriptor()
+	// dishalias.NormalizedAliasNameValidator is a validator for the "normalized_alias_name" field. It is called by the builders before save.
+	dishalias.NormalizedAliasNameValidator = dishaliasDescNormalizedAliasName.Validators[0].(func(string) error)
 	imageFields := schema.Image{}.Fields()
 	_ = imageFields
 	// imageDescImageHash is the schema descriptor for image_hash field.
@@ -90,6 +105,10 @@ func init() {
 			return nil
 		}
 	}()
+	// reviewDescText is the schema descriptor for text field.
+	reviewDescText := reviewFields[3].Descriptor()
+	// review.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	review.TextValidator = reviewDescText.Validators[0].(func(string) error)
 	// reviewDescCreatedAt is the schema descriptor for created_at field.
 	reviewDescCreatedAt := reviewFields[4].Descriptor()
 	// review.DefaultCreatedAt holds the default value on creation for the created_at field.

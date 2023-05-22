@@ -18,18 +18,18 @@ func (Occurrence) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
 		field.Time("date"),
 		field.Enum("status").GoType(OccurrenceStatus("")).Default("AWAITING_APPROVAL"),
-		field.Int("kj"),
-		field.Int("kcal"),
-		field.Int("fat"),
-		field.Int("saturated_fat"),
-		field.Int("carbohydrates"),
-		field.Int("sugar"),
-		field.Int("fiber"),
-		field.Int("protein"),
-		field.Int("salt"),
-		field.Int("price_student"),
-		field.Int("price_staff"),
-		field.Int("price_guest"),
+		field.Int("kj").Optional().Nillable(),
+		field.Int("kcal").Optional().Nillable(),
+		field.Int("fat").Optional().Nillable(),
+		field.Int("saturated_fat").Optional().Nillable(),
+		field.Int("carbohydrates").Optional().Nillable(),
+		field.Int("sugar").Optional().Nillable(),
+		field.Int("fiber").Optional().Nillable(),
+		field.Int("protein").Optional().Nillable(),
+		field.Int("salt").Optional().Nillable(),
+		field.Int("price_student").Optional().Nillable(),
+		field.Int("price_staff").Optional().Nillable(),
+		field.Int("price_guest").Optional().Nillable(),
 	}
 }
 
@@ -38,8 +38,8 @@ func (Occurrence) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("location", Location.Type).Ref("occurrences").Unique().Required(),
 		edge.From("dish", Dish.Type).Ref("occurrences").Unique().Required(),
-		edge.To("side_dishes", Dish.Type),
 		edge.From("tag", Tag.Type).Ref("occurrences"),
+		edge.To("side_dishes", Dish.Type), // todo: create reverse edge
 		edge.To("reviews", Review.Type).StorageKey(edge.Column("occurrence")),
 	}
 }

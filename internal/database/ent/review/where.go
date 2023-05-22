@@ -209,6 +209,20 @@ func DisplayNameHasSuffix(v string) predicate.Review {
 	})
 }
 
+// DisplayNameIsNil applies the IsNil predicate on the "display_name" field.
+func DisplayNameIsNil() predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldDisplayName)))
+	})
+}
+
+// DisplayNameNotNil applies the NotNil predicate on the "display_name" field.
+func DisplayNameNotNil() predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldDisplayName)))
+	})
+}
+
 // DisplayNameEqualFold applies the EqualFold predicate on the "display_name" field.
 func DisplayNameEqualFold(v string) predicate.Review {
 	return predicate.Review(func(s *sql.Selector) {
@@ -369,6 +383,20 @@ func TextHasPrefix(v string) predicate.Review {
 func TextHasSuffix(v string) predicate.Review {
 	return predicate.Review(func(s *sql.Selector) {
 		s.Where(sql.HasSuffix(s.C(FieldText), v))
+	})
+}
+
+// TextIsNil applies the IsNil predicate on the "text" field.
+func TextIsNil() predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldText)))
+	})
+}
+
+// TextNotNil applies the NotNil predicate on the "text" field.
+func TextNotNil() predicate.Review {
+	return predicate.Review(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldText)))
 	})
 }
 

@@ -278,6 +278,20 @@ func NameEnHasSuffix(v string) predicate.Dish {
 	})
 }
 
+// NameEnIsNil applies the IsNil predicate on the "name_en" field.
+func NameEnIsNil() predicate.Dish {
+	return predicate.Dish(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldNameEn)))
+	})
+}
+
+// NameEnNotNil applies the NotNil predicate on the "name_en" field.
+func NameEnNotNil() predicate.Dish {
+	return predicate.Dish(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldNameEn)))
+	})
+}
+
 // NameEnEqualFold applies the EqualFold predicate on the "name_en" field.
 func NameEnEqualFold(v string) predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
@@ -325,7 +339,7 @@ func HasAliases() predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AliasesTable, FieldID),
+			sqlgraph.To(AliasesTable, DishAliasFieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, AliasesTable, AliasesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -337,7 +351,7 @@ func HasAliasesWith(preds ...predicate.DishAlias) predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AliasesInverseTable, FieldID),
+			sqlgraph.To(AliasesInverseTable, DishAliasFieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, AliasesTable, AliasesColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

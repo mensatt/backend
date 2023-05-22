@@ -12,9 +12,7 @@ const (
 	// Label holds the string label denoting the tag type in the database.
 	Label = "tag"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
-	// FieldKey holds the string denoting the key field in the database.
-	FieldKey = "key"
+	FieldID = "key"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -27,6 +25,8 @@ const (
 	FieldIsAllergy = "is_allergy"
 	// EdgeOccurrences holds the string denoting the occurrences edge name in mutations.
 	EdgeOccurrences = "occurrences"
+	// OccurrenceFieldID holds the string denoting the ID field of the Occurrence.
+	OccurrenceFieldID = "id"
 	// Table holds the table name of the tag in the database.
 	Table = "tags"
 	// OccurrencesTable is the table that holds the occurrences relation/edge. The primary key declared below.
@@ -39,7 +39,6 @@ const (
 // Columns holds all SQL columns for tag fields.
 var Columns = []string{
 	FieldID,
-	FieldKey,
 	FieldName,
 	FieldDescription,
 	FieldShortName,

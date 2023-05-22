@@ -340,6 +340,20 @@ func KjLTE(v int) predicate.Occurrence {
 	})
 }
 
+// KjIsNil applies the IsNil predicate on the "kj" field.
+func KjIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldKj)))
+	})
+}
+
+// KjNotNil applies the NotNil predicate on the "kj" field.
+func KjNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldKj)))
+	})
+}
+
 // KcalEQ applies the EQ predicate on the "kcal" field.
 func KcalEQ(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -401,6 +415,20 @@ func KcalLT(v int) predicate.Occurrence {
 func KcalLTE(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldKcal), v))
+	})
+}
+
+// KcalIsNil applies the IsNil predicate on the "kcal" field.
+func KcalIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldKcal)))
+	})
+}
+
+// KcalNotNil applies the NotNil predicate on the "kcal" field.
+func KcalNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldKcal)))
 	})
 }
 
@@ -468,6 +496,20 @@ func FatLTE(v int) predicate.Occurrence {
 	})
 }
 
+// FatIsNil applies the IsNil predicate on the "fat" field.
+func FatIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldFat)))
+	})
+}
+
+// FatNotNil applies the NotNil predicate on the "fat" field.
+func FatNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldFat)))
+	})
+}
+
 // SaturatedFatEQ applies the EQ predicate on the "saturated_fat" field.
 func SaturatedFatEQ(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -529,6 +571,20 @@ func SaturatedFatLT(v int) predicate.Occurrence {
 func SaturatedFatLTE(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldSaturatedFat), v))
+	})
+}
+
+// SaturatedFatIsNil applies the IsNil predicate on the "saturated_fat" field.
+func SaturatedFatIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSaturatedFat)))
+	})
+}
+
+// SaturatedFatNotNil applies the NotNil predicate on the "saturated_fat" field.
+func SaturatedFatNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSaturatedFat)))
 	})
 }
 
@@ -596,6 +652,20 @@ func CarbohydratesLTE(v int) predicate.Occurrence {
 	})
 }
 
+// CarbohydratesIsNil applies the IsNil predicate on the "carbohydrates" field.
+func CarbohydratesIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldCarbohydrates)))
+	})
+}
+
+// CarbohydratesNotNil applies the NotNil predicate on the "carbohydrates" field.
+func CarbohydratesNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldCarbohydrates)))
+	})
+}
+
 // SugarEQ applies the EQ predicate on the "sugar" field.
 func SugarEQ(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -657,6 +727,20 @@ func SugarLT(v int) predicate.Occurrence {
 func SugarLTE(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldSugar), v))
+	})
+}
+
+// SugarIsNil applies the IsNil predicate on the "sugar" field.
+func SugarIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSugar)))
+	})
+}
+
+// SugarNotNil applies the NotNil predicate on the "sugar" field.
+func SugarNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSugar)))
 	})
 }
 
@@ -724,6 +808,20 @@ func FiberLTE(v int) predicate.Occurrence {
 	})
 }
 
+// FiberIsNil applies the IsNil predicate on the "fiber" field.
+func FiberIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldFiber)))
+	})
+}
+
+// FiberNotNil applies the NotNil predicate on the "fiber" field.
+func FiberNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldFiber)))
+	})
+}
+
 // ProteinEQ applies the EQ predicate on the "protein" field.
 func ProteinEQ(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -785,6 +883,20 @@ func ProteinLT(v int) predicate.Occurrence {
 func ProteinLTE(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldProtein), v))
+	})
+}
+
+// ProteinIsNil applies the IsNil predicate on the "protein" field.
+func ProteinIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldProtein)))
+	})
+}
+
+// ProteinNotNil applies the NotNil predicate on the "protein" field.
+func ProteinNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldProtein)))
 	})
 }
 
@@ -852,6 +964,20 @@ func SaltLTE(v int) predicate.Occurrence {
 	})
 }
 
+// SaltIsNil applies the IsNil predicate on the "salt" field.
+func SaltIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldSalt)))
+	})
+}
+
+// SaltNotNil applies the NotNil predicate on the "salt" field.
+func SaltNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldSalt)))
+	})
+}
+
 // PriceStudentEQ applies the EQ predicate on the "price_student" field.
 func PriceStudentEQ(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -913,6 +1039,20 @@ func PriceStudentLT(v int) predicate.Occurrence {
 func PriceStudentLTE(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldPriceStudent), v))
+	})
+}
+
+// PriceStudentIsNil applies the IsNil predicate on the "price_student" field.
+func PriceStudentIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldPriceStudent)))
+	})
+}
+
+// PriceStudentNotNil applies the NotNil predicate on the "price_student" field.
+func PriceStudentNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldPriceStudent)))
 	})
 }
 
@@ -980,6 +1120,20 @@ func PriceStaffLTE(v int) predicate.Occurrence {
 	})
 }
 
+// PriceStaffIsNil applies the IsNil predicate on the "price_staff" field.
+func PriceStaffIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldPriceStaff)))
+	})
+}
+
+// PriceStaffNotNil applies the NotNil predicate on the "price_staff" field.
+func PriceStaffNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldPriceStaff)))
+	})
+}
+
 // PriceGuestEQ applies the EQ predicate on the "price_guest" field.
 func PriceGuestEQ(v int) predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -1044,6 +1198,20 @@ func PriceGuestLTE(v int) predicate.Occurrence {
 	})
 }
 
+// PriceGuestIsNil applies the IsNil predicate on the "price_guest" field.
+func PriceGuestIsNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.IsNull(s.C(FieldPriceGuest)))
+	})
+}
+
+// PriceGuestNotNil applies the NotNil predicate on the "price_guest" field.
+func PriceGuestNotNil() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		s.Where(sql.NotNull(s.C(FieldPriceGuest)))
+	})
+}
+
 // HasLocation applies the HasEdge predicate on the "location" edge.
 func HasLocation() predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -1100,6 +1268,34 @@ func HasDishWith(preds ...predicate.Dish) predicate.Occurrence {
 	})
 }
 
+// HasTag applies the HasEdge predicate on the "tag" edge.
+func HasTag() predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TagTable, TagFieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TagTable, TagPrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
+func HasTagWith(preds ...predicate.Tag) predicate.Occurrence {
+	return predicate.Occurrence(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(TagInverseTable, TagFieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, TagTable, TagPrimaryKey...),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSideDishes applies the HasEdge predicate on the "side_dishes" edge.
 func HasSideDishes() predicate.Occurrence {
 	return predicate.Occurrence(func(s *sql.Selector) {
@@ -1119,34 +1315,6 @@ func HasSideDishesWith(preds ...predicate.Dish) predicate.Occurrence {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SideDishesInverseTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, SideDishesTable, SideDishesColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasTag applies the HasEdge predicate on the "tag" edge.
-func HasTag() predicate.Occurrence {
-	return predicate.Occurrence(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, TagTable, TagPrimaryKey...),
-		)
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasTagWith applies the HasEdge predicate on the "tag" edge with a given conditions (other predicates).
-func HasTagWith(preds ...predicate.Tag) predicate.Occurrence {
-	return predicate.Occurrence(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TagInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, TagTable, TagPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

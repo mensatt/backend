@@ -14,10 +14,10 @@ type Tag struct {
 // Fields of the Tag.
 func (Tag) Fields() []ent.Field {
 	return []ent.Field{
-		field.String("key").Unique(),
+		field.String("id").StorageKey("key"),
 		field.String("name").NotEmpty(),
 		field.String("description").NotEmpty(),
-		field.String("short_name").NotEmpty().Optional(),
+		field.String("short_name").Optional().Nillable().NotEmpty(),
 		field.Enum("priority").GoType(TagPriority("")).Default("HIDE"),
 		field.Bool("is_allergy").Default(false),
 	}

@@ -19,6 +19,8 @@ const (
 	EdgeOccurrences = "occurrences"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
 	EdgeAliases = "aliases"
+	// DishAliasFieldID holds the string denoting the ID field of the DishAlias.
+	DishAliasFieldID = "alias_name"
 	// Table holds the table name of the dish in the database.
 	Table = "dishes"
 	// OccurrencesTable is the table that holds the occurrences relation/edge.
@@ -66,6 +68,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// NameDeValidator is a validator for the "name_de" field. It is called by the builders before save.
+	NameDeValidator func(string) error
+	// NameEnValidator is a validator for the "name_en" field. It is called by the builders before save.
+	NameEnValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

@@ -42,6 +42,20 @@ func (du *DishUpdate) SetNameEn(s string) *DishUpdate {
 	return du
 }
 
+// SetNillableNameEn sets the "name_en" field if the given value is not nil.
+func (du *DishUpdate) SetNillableNameEn(s *string) *DishUpdate {
+	if s != nil {
+		du.SetNameEn(*s)
+	}
+	return du
+}
+
+// ClearNameEn clears the value of the "name_en" field.
+func (du *DishUpdate) ClearNameEn() *DishUpdate {
+	du.mutation.ClearNameEn()
+	return du
+}
+
 // AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
 func (du *DishUpdate) AddOccurrenceIDs(ids ...uuid.UUID) *DishUpdate {
 	du.mutation.AddOccurrenceIDs(ids...)
@@ -58,14 +72,14 @@ func (du *DishUpdate) AddOccurrences(o ...*Occurrence) *DishUpdate {
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by IDs.
-func (du *DishUpdate) AddAliasIDs(ids ...int) *DishUpdate {
+func (du *DishUpdate) AddAliasIDs(ids ...string) *DishUpdate {
 	du.mutation.AddAliasIDs(ids...)
 	return du
 }
 
 // AddAliases adds the "aliases" edges to the DishAlias entity.
 func (du *DishUpdate) AddAliases(d ...*DishAlias) *DishUpdate {
-	ids := make([]int, len(d))
+	ids := make([]string, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -105,14 +119,14 @@ func (du *DishUpdate) ClearAliases() *DishUpdate {
 }
 
 // RemoveAliasIDs removes the "aliases" edge to DishAlias entities by IDs.
-func (du *DishUpdate) RemoveAliasIDs(ids ...int) *DishUpdate {
+func (du *DishUpdate) RemoveAliasIDs(ids ...string) *DishUpdate {
 	du.mutation.RemoveAliasIDs(ids...)
 	return du
 }
 
 // RemoveAliases removes "aliases" edges to DishAlias entities.
 func (du *DishUpdate) RemoveAliases(d ...*DishAlias) *DishUpdate {
-	ids := make([]int, len(d))
+	ids := make([]string, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -126,12 +140,18 @@ func (du *DishUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(du.hooks) == 0 {
+		if err = du.check(); err != nil {
+			return 0, err
+		}
 		affected, err = du.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DishMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = du.check(); err != nil {
+				return 0, err
 			}
 			du.mutation = mutation
 			affected, err = du.sqlSave(ctx)
@@ -173,6 +193,21 @@ func (du *DishUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (du *DishUpdate) check() error {
+	if v, ok := du.mutation.NameDe(); ok {
+		if err := dish.NameDeValidator(v); err != nil {
+			return &ValidationError{Name: "name_de", err: fmt.Errorf(`ent: validator failed for field "Dish.name_de": %w`, err)}
+		}
+	}
+	if v, ok := du.mutation.NameEn(); ok {
+		if err := dish.NameEnValidator(v); err != nil {
+			return &ValidationError{Name: "name_en", err: fmt.Errorf(`ent: validator failed for field "Dish.name_en": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -196,6 +231,9 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := du.mutation.NameEn(); ok {
 		_spec.SetField(dish.FieldNameEn, field.TypeString, value)
+	}
+	if du.mutation.NameEnCleared() {
+		_spec.ClearField(dish.FieldNameEn, field.TypeString)
 	}
 	if du.mutation.OccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -260,7 +298,7 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: dishalias.FieldID,
 				},
 			},
@@ -276,7 +314,7 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: dishalias.FieldID,
 				},
 			},
@@ -295,7 +333,7 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: dishalias.FieldID,
 				},
 			},
@@ -336,6 +374,20 @@ func (duo *DishUpdateOne) SetNameEn(s string) *DishUpdateOne {
 	return duo
 }
 
+// SetNillableNameEn sets the "name_en" field if the given value is not nil.
+func (duo *DishUpdateOne) SetNillableNameEn(s *string) *DishUpdateOne {
+	if s != nil {
+		duo.SetNameEn(*s)
+	}
+	return duo
+}
+
+// ClearNameEn clears the value of the "name_en" field.
+func (duo *DishUpdateOne) ClearNameEn() *DishUpdateOne {
+	duo.mutation.ClearNameEn()
+	return duo
+}
+
 // AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
 func (duo *DishUpdateOne) AddOccurrenceIDs(ids ...uuid.UUID) *DishUpdateOne {
 	duo.mutation.AddOccurrenceIDs(ids...)
@@ -352,14 +404,14 @@ func (duo *DishUpdateOne) AddOccurrences(o ...*Occurrence) *DishUpdateOne {
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by IDs.
-func (duo *DishUpdateOne) AddAliasIDs(ids ...int) *DishUpdateOne {
+func (duo *DishUpdateOne) AddAliasIDs(ids ...string) *DishUpdateOne {
 	duo.mutation.AddAliasIDs(ids...)
 	return duo
 }
 
 // AddAliases adds the "aliases" edges to the DishAlias entity.
 func (duo *DishUpdateOne) AddAliases(d ...*DishAlias) *DishUpdateOne {
-	ids := make([]int, len(d))
+	ids := make([]string, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -399,14 +451,14 @@ func (duo *DishUpdateOne) ClearAliases() *DishUpdateOne {
 }
 
 // RemoveAliasIDs removes the "aliases" edge to DishAlias entities by IDs.
-func (duo *DishUpdateOne) RemoveAliasIDs(ids ...int) *DishUpdateOne {
+func (duo *DishUpdateOne) RemoveAliasIDs(ids ...string) *DishUpdateOne {
 	duo.mutation.RemoveAliasIDs(ids...)
 	return duo
 }
 
 // RemoveAliases removes "aliases" edges to DishAlias entities.
 func (duo *DishUpdateOne) RemoveAliases(d ...*DishAlias) *DishUpdateOne {
-	ids := make([]int, len(d))
+	ids := make([]string, len(d))
 	for i := range d {
 		ids[i] = d[i].ID
 	}
@@ -427,12 +479,18 @@ func (duo *DishUpdateOne) Save(ctx context.Context) (*Dish, error) {
 		node *Dish
 	)
 	if len(duo.hooks) == 0 {
+		if err = duo.check(); err != nil {
+			return nil, err
+		}
 		node, err = duo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*DishMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = duo.check(); err != nil {
+				return nil, err
 			}
 			duo.mutation = mutation
 			node, err = duo.sqlSave(ctx)
@@ -480,6 +538,21 @@ func (duo *DishUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (duo *DishUpdateOne) check() error {
+	if v, ok := duo.mutation.NameDe(); ok {
+		if err := dish.NameDeValidator(v); err != nil {
+			return &ValidationError{Name: "name_de", err: fmt.Errorf(`ent: validator failed for field "Dish.name_de": %w`, err)}
+		}
+	}
+	if v, ok := duo.mutation.NameEn(); ok {
+		if err := dish.NameEnValidator(v); err != nil {
+			return &ValidationError{Name: "name_en", err: fmt.Errorf(`ent: validator failed for field "Dish.name_en": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -520,6 +593,9 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 	}
 	if value, ok := duo.mutation.NameEn(); ok {
 		_spec.SetField(dish.FieldNameEn, field.TypeString, value)
+	}
+	if duo.mutation.NameEnCleared() {
+		_spec.ClearField(dish.FieldNameEn, field.TypeString)
 	}
 	if duo.mutation.OccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -584,7 +660,7 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: dishalias.FieldID,
 				},
 			},
@@ -600,7 +676,7 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: dishalias.FieldID,
 				},
 			},
@@ -619,7 +695,7 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
+					Type:   field.TypeString,
 					Column: dishalias.FieldID,
 				},
 			},

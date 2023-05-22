@@ -23,6 +23,11 @@ func (r *dishAliasResolver) Dish(ctx context.Context, obj *ent.DishAlias) (*ent.
 	return r.Database.DishAlias.QueryDish(obj).Only(ctx)
 }
 
+// AliasName is the resolver for the aliasName field.
+func (r *dishAliasResolver) AliasName(ctx context.Context, obj *ent.DishAlias) (string, error) {
+	panic(fmt.Errorf("not implemented: AliasName - aliasName"))
+}
+
 // Hash is the resolver for the hash field.
 func (r *imageResolver) Hash(ctx context.Context, obj *ent.Image) (string, error) {
 	return r.Database.Image.Query().Where(image.ID(obj.ID)).OnlyX(ctx).ImageHash, nil
@@ -68,6 +73,11 @@ func (r *reviewResolver) Images(ctx context.Context, obj *ent.Review) ([]*ent.Im
 	return r.Database.Review.QueryImages(obj).All(ctx)
 }
 
+// Key is the resolver for the key field.
+func (r *tagResolver) Key(ctx context.Context, obj *ent.Tag) (string, error) {
+	panic(fmt.Errorf("not implemented: Key - key"))
+}
+
 // Dish returns gqlserver.DishResolver implementation.
 func (r *Resolver) Dish() gqlserver.DishResolver { return &dishResolver{r} }
 
@@ -83,8 +93,12 @@ func (r *Resolver) Occurrence() gqlserver.OccurrenceResolver { return &occurrenc
 // Review returns gqlserver.ReviewResolver implementation.
 func (r *Resolver) Review() gqlserver.ReviewResolver { return &reviewResolver{r} }
 
+// Tag returns gqlserver.TagResolver implementation.
+func (r *Resolver) Tag() gqlserver.TagResolver { return &tagResolver{r} }
+
 type dishResolver struct{ *Resolver }
 type dishAliasResolver struct{ *Resolver }
 type imageResolver struct{ *Resolver }
 type occurrenceResolver struct{ *Resolver }
 type reviewResolver struct{ *Resolver }
+type tagResolver struct{ *Resolver }

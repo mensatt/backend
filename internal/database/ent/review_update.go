@@ -37,6 +37,20 @@ func (ru *ReviewUpdate) SetDisplayName(s string) *ReviewUpdate {
 	return ru
 }
 
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (ru *ReviewUpdate) SetNillableDisplayName(s *string) *ReviewUpdate {
+	if s != nil {
+		ru.SetDisplayName(*s)
+	}
+	return ru
+}
+
+// ClearDisplayName clears the value of the "display_name" field.
+func (ru *ReviewUpdate) ClearDisplayName() *ReviewUpdate {
+	ru.mutation.ClearDisplayName()
+	return ru
+}
+
 // SetStars sets the "stars" field.
 func (ru *ReviewUpdate) SetStars(i int) *ReviewUpdate {
 	ru.mutation.ResetStars()
@@ -53,6 +67,20 @@ func (ru *ReviewUpdate) AddStars(i int) *ReviewUpdate {
 // SetText sets the "text" field.
 func (ru *ReviewUpdate) SetText(s string) *ReviewUpdate {
 	ru.mutation.SetText(s)
+	return ru
+}
+
+// SetNillableText sets the "text" field if the given value is not nil.
+func (ru *ReviewUpdate) SetNillableText(s *string) *ReviewUpdate {
+	if s != nil {
+		ru.SetText(*s)
+	}
+	return ru
+}
+
+// ClearText clears the value of the "text" field.
+func (ru *ReviewUpdate) ClearText() *ReviewUpdate {
+	ru.mutation.ClearText()
 	return ru
 }
 
@@ -221,6 +249,11 @@ func (ru *ReviewUpdate) check() error {
 			return &ValidationError{Name: "stars", err: fmt.Errorf(`ent: validator failed for field "Review.stars": %w`, err)}
 		}
 	}
+	if v, ok := ru.mutation.Text(); ok {
+		if err := review.TextValidator(v); err != nil {
+			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "Review.text": %w`, err)}
+		}
+	}
 	if _, ok := ru.mutation.OccurrenceID(); ru.mutation.OccurrenceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Review.occurrence"`)
 	}
@@ -248,6 +281,9 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ru.mutation.DisplayName(); ok {
 		_spec.SetField(review.FieldDisplayName, field.TypeString, value)
 	}
+	if ru.mutation.DisplayNameCleared() {
+		_spec.ClearField(review.FieldDisplayName, field.TypeString)
+	}
 	if value, ok := ru.mutation.Stars(); ok {
 		_spec.SetField(review.FieldStars, field.TypeInt, value)
 	}
@@ -256,6 +292,9 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ru.mutation.Text(); ok {
 		_spec.SetField(review.FieldText, field.TypeString, value)
+	}
+	if ru.mutation.TextCleared() {
+		_spec.ClearField(review.FieldText, field.TypeString)
 	}
 	if value, ok := ru.mutation.UpdatedAt(); ok {
 		_spec.SetField(review.FieldUpdatedAt, field.TypeTime, value)
@@ -380,6 +419,20 @@ func (ruo *ReviewUpdateOne) SetDisplayName(s string) *ReviewUpdateOne {
 	return ruo
 }
 
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (ruo *ReviewUpdateOne) SetNillableDisplayName(s *string) *ReviewUpdateOne {
+	if s != nil {
+		ruo.SetDisplayName(*s)
+	}
+	return ruo
+}
+
+// ClearDisplayName clears the value of the "display_name" field.
+func (ruo *ReviewUpdateOne) ClearDisplayName() *ReviewUpdateOne {
+	ruo.mutation.ClearDisplayName()
+	return ruo
+}
+
 // SetStars sets the "stars" field.
 func (ruo *ReviewUpdateOne) SetStars(i int) *ReviewUpdateOne {
 	ruo.mutation.ResetStars()
@@ -396,6 +449,20 @@ func (ruo *ReviewUpdateOne) AddStars(i int) *ReviewUpdateOne {
 // SetText sets the "text" field.
 func (ruo *ReviewUpdateOne) SetText(s string) *ReviewUpdateOne {
 	ruo.mutation.SetText(s)
+	return ruo
+}
+
+// SetNillableText sets the "text" field if the given value is not nil.
+func (ruo *ReviewUpdateOne) SetNillableText(s *string) *ReviewUpdateOne {
+	if s != nil {
+		ruo.SetText(*s)
+	}
+	return ruo
+}
+
+// ClearText clears the value of the "text" field.
+func (ruo *ReviewUpdateOne) ClearText() *ReviewUpdateOne {
+	ruo.mutation.ClearText()
 	return ruo
 }
 
@@ -577,6 +644,11 @@ func (ruo *ReviewUpdateOne) check() error {
 			return &ValidationError{Name: "stars", err: fmt.Errorf(`ent: validator failed for field "Review.stars": %w`, err)}
 		}
 	}
+	if v, ok := ruo.mutation.Text(); ok {
+		if err := review.TextValidator(v); err != nil {
+			return &ValidationError{Name: "text", err: fmt.Errorf(`ent: validator failed for field "Review.text": %w`, err)}
+		}
+	}
 	if _, ok := ruo.mutation.OccurrenceID(); ruo.mutation.OccurrenceCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Review.occurrence"`)
 	}
@@ -621,6 +693,9 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 	if value, ok := ruo.mutation.DisplayName(); ok {
 		_spec.SetField(review.FieldDisplayName, field.TypeString, value)
 	}
+	if ruo.mutation.DisplayNameCleared() {
+		_spec.ClearField(review.FieldDisplayName, field.TypeString)
+	}
 	if value, ok := ruo.mutation.Stars(); ok {
 		_spec.SetField(review.FieldStars, field.TypeInt, value)
 	}
@@ -629,6 +704,9 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 	}
 	if value, ok := ruo.mutation.Text(); ok {
 		_spec.SetField(review.FieldText, field.TypeString, value)
+	}
+	if ruo.mutation.TextCleared() {
+		_spec.ClearField(review.FieldText, field.TypeString)
 	}
 	if value, ok := ruo.mutation.UpdatedAt(); ok {
 		_spec.SetField(review.FieldUpdatedAt, field.TypeTime, value)

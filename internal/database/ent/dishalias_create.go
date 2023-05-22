@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
@@ -23,15 +24,15 @@ type DishAliasCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetAliasName sets the "alias_name" field.
-func (dac *DishAliasCreate) SetAliasName(s string) *DishAliasCreate {
-	dac.mutation.SetAliasName(s)
-	return dac
-}
-
 // SetNormalizedAliasName sets the "normalized_alias_name" field.
 func (dac *DishAliasCreate) SetNormalizedAliasName(s string) *DishAliasCreate {
 	dac.mutation.SetNormalizedAliasName(s)
+	return dac
+}
+
+// SetID sets the "id" field.
+func (dac *DishAliasCreate) SetID(s string) *DishAliasCreate {
+	dac.mutation.SetID(s)
 	return dac
 }
 
@@ -122,11 +123,13 @@ func (dac *DishAliasCreate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (dac *DishAliasCreate) check() error {
-	if _, ok := dac.mutation.AliasName(); !ok {
-		return &ValidationError{Name: "alias_name", err: errors.New(`ent: missing required field "DishAlias.alias_name"`)}
-	}
 	if _, ok := dac.mutation.NormalizedAliasName(); !ok {
 		return &ValidationError{Name: "normalized_alias_name", err: errors.New(`ent: missing required field "DishAlias.normalized_alias_name"`)}
+	}
+	if v, ok := dac.mutation.NormalizedAliasName(); ok {
+		if err := dishalias.NormalizedAliasNameValidator(v); err != nil {
+			return &ValidationError{Name: "normalized_alias_name", err: fmt.Errorf(`ent: validator failed for field "DishAlias.normalized_alias_name": %w`, err)}
+		}
 	}
 	if _, ok := dac.mutation.DishID(); !ok {
 		return &ValidationError{Name: "dish", err: errors.New(`ent: missing required edge "DishAlias.dish"`)}
@@ -142,8 +145,13 @@ func (dac *DishAliasCreate) sqlSave(ctx context.Context) (*DishAlias, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(string); ok {
+			_node.ID = id
+		} else {
+			return nil, fmt.Errorf("unexpected DishAlias.ID type: %T", _spec.ID.Value)
+		}
+	}
 	return _node, nil
 }
 
@@ -153,15 +161,15 @@ func (dac *DishAliasCreate) createSpec() (*DishAlias, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: dishalias.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: dishalias.FieldID,
 			},
 		}
 	)
 	_spec.OnConflict = dac.conflict
-	if value, ok := dac.mutation.AliasName(); ok {
-		_spec.SetField(dishalias.FieldAliasName, field.TypeString, value)
-		_node.AliasName = value
+	if id, ok := dac.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = id
 	}
 	if value, ok := dac.mutation.NormalizedAliasName(); ok {
 		_spec.SetField(dishalias.FieldNormalizedAliasName, field.TypeString, value)
@@ -194,7 +202,7 @@ func (dac *DishAliasCreate) createSpec() (*DishAlias, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.DishAlias.Create().
-//		SetAliasName(v).
+//		SetNormalizedAliasName(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -203,7 +211,7 @@ func (dac *DishAliasCreate) createSpec() (*DishAlias, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.DishAliasUpsert) {
-//			SetAliasName(v+v).
+//			SetNormalizedAliasName(v+v).
 //		}).
 //		Exec(ctx)
 func (dac *DishAliasCreate) OnConflict(opts ...sql.ConflictOption) *DishAliasUpsertOne {
@@ -239,18 +247,6 @@ type (
 	}
 )
 
-// SetAliasName sets the "alias_name" field.
-func (u *DishAliasUpsert) SetAliasName(v string) *DishAliasUpsert {
-	u.Set(dishalias.FieldAliasName, v)
-	return u
-}
-
-// UpdateAliasName sets the "alias_name" field to the value that was provided on create.
-func (u *DishAliasUpsert) UpdateAliasName() *DishAliasUpsert {
-	u.SetExcluded(dishalias.FieldAliasName)
-	return u
-}
-
 // SetNormalizedAliasName sets the "normalized_alias_name" field.
 func (u *DishAliasUpsert) SetNormalizedAliasName(v string) *DishAliasUpsert {
 	u.Set(dishalias.FieldNormalizedAliasName, v)
@@ -263,16 +259,24 @@ func (u *DishAliasUpsert) UpdateNormalizedAliasName() *DishAliasUpsert {
 	return u
 }
 
-// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
 //	client.DishAlias.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dishalias.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *DishAliasUpsertOne) UpdateNewValues() *DishAliasUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(dishalias.FieldID)
+		}
+	}))
 	return u
 }
 
@@ -301,20 +305,6 @@ func (u *DishAliasUpsertOne) Update(set func(*DishAliasUpsert)) *DishAliasUpsert
 		set(&DishAliasUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetAliasName sets the "alias_name" field.
-func (u *DishAliasUpsertOne) SetAliasName(v string) *DishAliasUpsertOne {
-	return u.Update(func(s *DishAliasUpsert) {
-		s.SetAliasName(v)
-	})
-}
-
-// UpdateAliasName sets the "alias_name" field to the value that was provided on create.
-func (u *DishAliasUpsertOne) UpdateAliasName() *DishAliasUpsertOne {
-	return u.Update(func(s *DishAliasUpsert) {
-		s.UpdateAliasName()
-	})
 }
 
 // SetNormalizedAliasName sets the "normalized_alias_name" field.
@@ -347,7 +337,12 @@ func (u *DishAliasUpsertOne) ExecX(ctx context.Context) {
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *DishAliasUpsertOne) ID(ctx context.Context) (id int, err error) {
+func (u *DishAliasUpsertOne) ID(ctx context.Context) (id string, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: DishAliasUpsertOne.ID is not supported by MySQL driver. Use DishAliasUpsertOne.Exec instead")
+	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
 		return id, err
@@ -356,7 +351,7 @@ func (u *DishAliasUpsertOne) ID(ctx context.Context) (id int, err error) {
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *DishAliasUpsertOne) IDX(ctx context.Context) int {
+func (u *DishAliasUpsertOne) IDX(ctx context.Context) string {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -406,10 +401,6 @@ func (dacb *DishAliasCreateBulk) Save(ctx context.Context) ([]*DishAlias, error)
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})
@@ -461,7 +452,7 @@ func (dacb *DishAliasCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.DishAliasUpsert) {
-//			SetAliasName(v+v).
+//			SetNormalizedAliasName(v+v).
 //		}).
 //		Exec(ctx)
 func (dacb *DishAliasCreateBulk) OnConflict(opts ...sql.ConflictOption) *DishAliasUpsertBulk {
@@ -496,10 +487,20 @@ type DishAliasUpsertBulk struct {
 //	client.DishAlias.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(dishalias.FieldID)
+//			}),
 //		).
 //		Exec(ctx)
 func (u *DishAliasUpsertBulk) UpdateNewValues() *DishAliasUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(dishalias.FieldID)
+			}
+		}
+	}))
 	return u
 }
 
@@ -528,20 +529,6 @@ func (u *DishAliasUpsertBulk) Update(set func(*DishAliasUpsert)) *DishAliasUpser
 		set(&DishAliasUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetAliasName sets the "alias_name" field.
-func (u *DishAliasUpsertBulk) SetAliasName(v string) *DishAliasUpsertBulk {
-	return u.Update(func(s *DishAliasUpsert) {
-		s.SetAliasName(v)
-	})
-}
-
-// UpdateAliasName sets the "alias_name" field to the value that was provided on create.
-func (u *DishAliasUpsertBulk) UpdateAliasName() *DishAliasUpsertBulk {
-	return u.Update(func(s *DishAliasUpsert) {
-		s.UpdateAliasName()
-	})
 }
 
 // SetNormalizedAliasName sets the "normalized_alias_name" field.

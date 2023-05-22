@@ -84,6 +84,8 @@ var (
 	DisplayNameValidator func(string) error
 	// StarsValidator is a validator for the "stars" field. It is called by the builders before save.
 	StarsValidator func(int) error
+	// TextValidator is a validator for the "text" field. It is called by the builders before save.
+	TextValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.

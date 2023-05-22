@@ -49,6 +49,7 @@ type ResolverRoot interface {
 	Occurrence() OccurrenceResolver
 	Query() QueryResolver
 	Review() ReviewResolver
+	Tag() TagResolver
 }
 
 type DirectiveRoot struct {
@@ -196,6 +197,7 @@ type DishResolver interface {
 }
 type DishAliasResolver interface {
 	Dish(ctx context.Context, obj *ent.DishAlias) (*ent.Dish, error)
+	AliasName(ctx context.Context, obj *ent.DishAlias) (string, error)
 }
 type ImageResolver interface {
 	Hash(ctx context.Context, obj *ent.Image) (string, error)
@@ -244,6 +246,9 @@ type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *ent.Review) (*ent.Occurrence, error)
 
 	Images(ctx context.Context, obj *ent.Review) ([]*ent.Image, error)
+}
+type TagResolver interface {
+	Key(ctx context.Context, obj *ent.Tag) (string, error)
 }
 
 type executableSchema struct {
@@ -1980,9 +1985,9 @@ func (ec *executionContext) _Dish_nameEn(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Dish_nameEn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -2118,7 +2123,7 @@ func (ec *executionContext) _DishAlias_aliasName(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.AliasName, nil
+		return ec.resolvers.DishAlias().AliasName(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2139,8 +2144,8 @@ func (ec *executionContext) fieldContext_DishAlias_aliasName(ctx context.Context
 	fc = &graphql.FieldContext{
 		Object:     "DishAlias",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -4472,9 +4477,9 @@ func (ec *executionContext) _Occurrence_kj(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_kj(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4513,9 +4518,9 @@ func (ec *executionContext) _Occurrence_kcal(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_kcal(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4554,9 +4559,9 @@ func (ec *executionContext) _Occurrence_fat(ctx context.Context, field graphql.C
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_fat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4595,9 +4600,9 @@ func (ec *executionContext) _Occurrence_saturatedFat(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_saturatedFat(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4636,9 +4641,9 @@ func (ec *executionContext) _Occurrence_carbohydrates(ctx context.Context, field
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_carbohydrates(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4677,9 +4682,9 @@ func (ec *executionContext) _Occurrence_sugar(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_sugar(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4718,9 +4723,9 @@ func (ec *executionContext) _Occurrence_fiber(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_fiber(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4759,9 +4764,9 @@ func (ec *executionContext) _Occurrence_protein(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_protein(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4800,9 +4805,9 @@ func (ec *executionContext) _Occurrence_salt(ctx context.Context, field graphql.
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_salt(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4841,9 +4846,9 @@ func (ec *executionContext) _Occurrence_priceStudent(ctx context.Context, field 
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_priceStudent(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4882,9 +4887,9 @@ func (ec *executionContext) _Occurrence_priceStaff(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_priceStaff(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4923,9 +4928,9 @@ func (ec *executionContext) _Occurrence_priceGuest(ctx context.Context, field gr
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(*int)
 	fc.Result = res
-	return ec.marshalOInt2int(ctx, field.Selections, res)
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_priceGuest(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6052,9 +6057,9 @@ func (ec *executionContext) _Review_displayName(ctx context.Context, field graph
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_displayName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6191,9 +6196,9 @@ func (ec *executionContext) _Review_text(ctx context.Context, field graphql.Coll
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Review_text(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -6605,7 +6610,7 @@ func (ec *executionContext) _Tag_key(ctx context.Context, field graphql.Collecte
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Key, nil
+		return ec.resolvers.Tag().Key(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -6626,8 +6631,8 @@ func (ec *executionContext) fieldContext_Tag_key(ctx context.Context, field grap
 	fc = &graphql.FieldContext{
 		Object:     "Tag",
 		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
 		},
@@ -6746,9 +6751,9 @@ func (ec *executionContext) _Tag_shortName(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(string)
+	res := resTmp.(*string)
 	fc.Result = res
-	return ec.marshalOString2string(ctx, field.Selections, res)
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Tag_shortName(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -10071,12 +10076,25 @@ func (ec *executionContext) _DishAlias(ctx context.Context, sel ast.SelectionSet
 
 			})
 		case "aliasName":
+			field := field
 
-			out.Values[i] = ec._DishAlias_aliasName(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&invalids, 1)
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._DishAlias_aliasName(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "normalizedAliasName":
 
 			out.Values[i] = ec._DishAlias_normalizedAliasName(ctx, field, obj)
@@ -11072,25 +11090,38 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Tag")
 		case "key":
+			field := field
 
-			out.Values[i] = ec._Tag_key(ctx, field, obj)
-
-			if out.Values[i] == graphql.Null {
-				invalids++
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tag_key(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
 			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		case "name":
 
 			out.Values[i] = ec._Tag_name(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "description":
 
 			out.Values[i] = ec._Tag_description(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "shortName":
 
@@ -11101,14 +11132,14 @@ func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj 
 			out.Values[i] = ec._Tag_priority(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "isAllergy":
 
 			out.Values[i] = ec._Tag_isAllergy(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -12545,16 +12576,6 @@ func (ec *executionContext) unmarshalOImageInput2ᚕᚖgithubᚗcomᚋmensattᚋ
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalOInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	return res
-}
-
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -12602,16 +12623,6 @@ func (ec *executionContext) unmarshalOReviewFilter2ᚖgithubᚗcomᚋmensattᚋb
 	}
 	res, err := ec.unmarshalInputReviewFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
-	res, err := graphql.UnmarshalString(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOString2string(ctx context.Context, sel ast.SelectionSet, v string) graphql.Marshaler {
-	res := graphql.MarshalString(v)
-	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕstringᚄ(ctx context.Context, v interface{}) ([]string, error) {

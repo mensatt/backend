@@ -61,9 +61,23 @@ func (ou *OccurrenceUpdate) SetKj(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableKj sets the "kj" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableKj(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetKj(*i)
+	}
+	return ou
+}
+
 // AddKj adds i to the "kj" field.
 func (ou *OccurrenceUpdate) AddKj(i int) *OccurrenceUpdate {
 	ou.mutation.AddKj(i)
+	return ou
+}
+
+// ClearKj clears the value of the "kj" field.
+func (ou *OccurrenceUpdate) ClearKj() *OccurrenceUpdate {
+	ou.mutation.ClearKj()
 	return ou
 }
 
@@ -74,9 +88,23 @@ func (ou *OccurrenceUpdate) SetKcal(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableKcal sets the "kcal" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableKcal(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetKcal(*i)
+	}
+	return ou
+}
+
 // AddKcal adds i to the "kcal" field.
 func (ou *OccurrenceUpdate) AddKcal(i int) *OccurrenceUpdate {
 	ou.mutation.AddKcal(i)
+	return ou
+}
+
+// ClearKcal clears the value of the "kcal" field.
+func (ou *OccurrenceUpdate) ClearKcal() *OccurrenceUpdate {
+	ou.mutation.ClearKcal()
 	return ou
 }
 
@@ -87,9 +115,23 @@ func (ou *OccurrenceUpdate) SetFat(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableFat sets the "fat" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableFat(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetFat(*i)
+	}
+	return ou
+}
+
 // AddFat adds i to the "fat" field.
 func (ou *OccurrenceUpdate) AddFat(i int) *OccurrenceUpdate {
 	ou.mutation.AddFat(i)
+	return ou
+}
+
+// ClearFat clears the value of the "fat" field.
+func (ou *OccurrenceUpdate) ClearFat() *OccurrenceUpdate {
+	ou.mutation.ClearFat()
 	return ou
 }
 
@@ -100,9 +142,23 @@ func (ou *OccurrenceUpdate) SetSaturatedFat(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableSaturatedFat sets the "saturated_fat" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableSaturatedFat(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetSaturatedFat(*i)
+	}
+	return ou
+}
+
 // AddSaturatedFat adds i to the "saturated_fat" field.
 func (ou *OccurrenceUpdate) AddSaturatedFat(i int) *OccurrenceUpdate {
 	ou.mutation.AddSaturatedFat(i)
+	return ou
+}
+
+// ClearSaturatedFat clears the value of the "saturated_fat" field.
+func (ou *OccurrenceUpdate) ClearSaturatedFat() *OccurrenceUpdate {
+	ou.mutation.ClearSaturatedFat()
 	return ou
 }
 
@@ -113,9 +169,23 @@ func (ou *OccurrenceUpdate) SetCarbohydrates(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableCarbohydrates sets the "carbohydrates" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableCarbohydrates(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetCarbohydrates(*i)
+	}
+	return ou
+}
+
 // AddCarbohydrates adds i to the "carbohydrates" field.
 func (ou *OccurrenceUpdate) AddCarbohydrates(i int) *OccurrenceUpdate {
 	ou.mutation.AddCarbohydrates(i)
+	return ou
+}
+
+// ClearCarbohydrates clears the value of the "carbohydrates" field.
+func (ou *OccurrenceUpdate) ClearCarbohydrates() *OccurrenceUpdate {
+	ou.mutation.ClearCarbohydrates()
 	return ou
 }
 
@@ -126,9 +196,23 @@ func (ou *OccurrenceUpdate) SetSugar(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableSugar sets the "sugar" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableSugar(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetSugar(*i)
+	}
+	return ou
+}
+
 // AddSugar adds i to the "sugar" field.
 func (ou *OccurrenceUpdate) AddSugar(i int) *OccurrenceUpdate {
 	ou.mutation.AddSugar(i)
+	return ou
+}
+
+// ClearSugar clears the value of the "sugar" field.
+func (ou *OccurrenceUpdate) ClearSugar() *OccurrenceUpdate {
+	ou.mutation.ClearSugar()
 	return ou
 }
 
@@ -139,9 +223,23 @@ func (ou *OccurrenceUpdate) SetFiber(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableFiber sets the "fiber" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableFiber(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetFiber(*i)
+	}
+	return ou
+}
+
 // AddFiber adds i to the "fiber" field.
 func (ou *OccurrenceUpdate) AddFiber(i int) *OccurrenceUpdate {
 	ou.mutation.AddFiber(i)
+	return ou
+}
+
+// ClearFiber clears the value of the "fiber" field.
+func (ou *OccurrenceUpdate) ClearFiber() *OccurrenceUpdate {
+	ou.mutation.ClearFiber()
 	return ou
 }
 
@@ -152,9 +250,23 @@ func (ou *OccurrenceUpdate) SetProtein(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableProtein sets the "protein" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableProtein(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetProtein(*i)
+	}
+	return ou
+}
+
 // AddProtein adds i to the "protein" field.
 func (ou *OccurrenceUpdate) AddProtein(i int) *OccurrenceUpdate {
 	ou.mutation.AddProtein(i)
+	return ou
+}
+
+// ClearProtein clears the value of the "protein" field.
+func (ou *OccurrenceUpdate) ClearProtein() *OccurrenceUpdate {
+	ou.mutation.ClearProtein()
 	return ou
 }
 
@@ -165,9 +277,23 @@ func (ou *OccurrenceUpdate) SetSalt(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableSalt(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetSalt(*i)
+	}
+	return ou
+}
+
 // AddSalt adds i to the "salt" field.
 func (ou *OccurrenceUpdate) AddSalt(i int) *OccurrenceUpdate {
 	ou.mutation.AddSalt(i)
+	return ou
+}
+
+// ClearSalt clears the value of the "salt" field.
+func (ou *OccurrenceUpdate) ClearSalt() *OccurrenceUpdate {
+	ou.mutation.ClearSalt()
 	return ou
 }
 
@@ -178,9 +304,23 @@ func (ou *OccurrenceUpdate) SetPriceStudent(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillablePriceStudent sets the "price_student" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillablePriceStudent(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetPriceStudent(*i)
+	}
+	return ou
+}
+
 // AddPriceStudent adds i to the "price_student" field.
 func (ou *OccurrenceUpdate) AddPriceStudent(i int) *OccurrenceUpdate {
 	ou.mutation.AddPriceStudent(i)
+	return ou
+}
+
+// ClearPriceStudent clears the value of the "price_student" field.
+func (ou *OccurrenceUpdate) ClearPriceStudent() *OccurrenceUpdate {
+	ou.mutation.ClearPriceStudent()
 	return ou
 }
 
@@ -191,9 +331,23 @@ func (ou *OccurrenceUpdate) SetPriceStaff(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillablePriceStaff sets the "price_staff" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillablePriceStaff(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetPriceStaff(*i)
+	}
+	return ou
+}
+
 // AddPriceStaff adds i to the "price_staff" field.
 func (ou *OccurrenceUpdate) AddPriceStaff(i int) *OccurrenceUpdate {
 	ou.mutation.AddPriceStaff(i)
+	return ou
+}
+
+// ClearPriceStaff clears the value of the "price_staff" field.
+func (ou *OccurrenceUpdate) ClearPriceStaff() *OccurrenceUpdate {
+	ou.mutation.ClearPriceStaff()
 	return ou
 }
 
@@ -204,9 +358,23 @@ func (ou *OccurrenceUpdate) SetPriceGuest(i int) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillablePriceGuest sets the "price_guest" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillablePriceGuest(i *int) *OccurrenceUpdate {
+	if i != nil {
+		ou.SetPriceGuest(*i)
+	}
+	return ou
+}
+
 // AddPriceGuest adds i to the "price_guest" field.
 func (ou *OccurrenceUpdate) AddPriceGuest(i int) *OccurrenceUpdate {
 	ou.mutation.AddPriceGuest(i)
+	return ou
+}
+
+// ClearPriceGuest clears the value of the "price_guest" field.
+func (ou *OccurrenceUpdate) ClearPriceGuest() *OccurrenceUpdate {
+	ou.mutation.ClearPriceGuest()
 	return ou
 }
 
@@ -232,6 +400,21 @@ func (ou *OccurrenceUpdate) SetDish(d *Dish) *OccurrenceUpdate {
 	return ou.SetDishID(d.ID)
 }
 
+// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
+func (ou *OccurrenceUpdate) AddTagIDs(ids ...string) *OccurrenceUpdate {
+	ou.mutation.AddTagIDs(ids...)
+	return ou
+}
+
+// AddTag adds the "tag" edges to the Tag entity.
+func (ou *OccurrenceUpdate) AddTag(t ...*Tag) *OccurrenceUpdate {
+	ids := make([]string, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ou.AddTagIDs(ids...)
+}
+
 // AddSideDishIDs adds the "side_dishes" edge to the Dish entity by IDs.
 func (ou *OccurrenceUpdate) AddSideDishIDs(ids ...uuid.UUID) *OccurrenceUpdate {
 	ou.mutation.AddSideDishIDs(ids...)
@@ -245,21 +428,6 @@ func (ou *OccurrenceUpdate) AddSideDishes(d ...*Dish) *OccurrenceUpdate {
 		ids[i] = d[i].ID
 	}
 	return ou.AddSideDishIDs(ids...)
-}
-
-// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
-func (ou *OccurrenceUpdate) AddTagIDs(ids ...int) *OccurrenceUpdate {
-	ou.mutation.AddTagIDs(ids...)
-	return ou
-}
-
-// AddTag adds the "tag" edges to the Tag entity.
-func (ou *OccurrenceUpdate) AddTag(t ...*Tag) *OccurrenceUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return ou.AddTagIDs(ids...)
 }
 
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
@@ -294,6 +462,27 @@ func (ou *OccurrenceUpdate) ClearDish() *OccurrenceUpdate {
 	return ou
 }
 
+// ClearTag clears all "tag" edges to the Tag entity.
+func (ou *OccurrenceUpdate) ClearTag() *OccurrenceUpdate {
+	ou.mutation.ClearTag()
+	return ou
+}
+
+// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
+func (ou *OccurrenceUpdate) RemoveTagIDs(ids ...string) *OccurrenceUpdate {
+	ou.mutation.RemoveTagIDs(ids...)
+	return ou
+}
+
+// RemoveTag removes "tag" edges to Tag entities.
+func (ou *OccurrenceUpdate) RemoveTag(t ...*Tag) *OccurrenceUpdate {
+	ids := make([]string, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ou.RemoveTagIDs(ids...)
+}
+
 // ClearSideDishes clears all "side_dishes" edges to the Dish entity.
 func (ou *OccurrenceUpdate) ClearSideDishes() *OccurrenceUpdate {
 	ou.mutation.ClearSideDishes()
@@ -313,27 +502,6 @@ func (ou *OccurrenceUpdate) RemoveSideDishes(d ...*Dish) *OccurrenceUpdate {
 		ids[i] = d[i].ID
 	}
 	return ou.RemoveSideDishIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to the Tag entity.
-func (ou *OccurrenceUpdate) ClearTag() *OccurrenceUpdate {
-	ou.mutation.ClearTag()
-	return ou
-}
-
-// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
-func (ou *OccurrenceUpdate) RemoveTagIDs(ids ...int) *OccurrenceUpdate {
-	ou.mutation.RemoveTagIDs(ids...)
-	return ou
-}
-
-// RemoveTag removes "tag" edges to Tag entities.
-func (ou *OccurrenceUpdate) RemoveTag(t ...*Tag) *OccurrenceUpdate {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return ou.RemoveTagIDs(ids...)
 }
 
 // ClearReviews clears all "reviews" edges to the Review entity.
@@ -463,11 +631,17 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.AddedKj(); ok {
 		_spec.AddField(occurrence.FieldKj, field.TypeInt, value)
 	}
+	if ou.mutation.KjCleared() {
+		_spec.ClearField(occurrence.FieldKj, field.TypeInt)
+	}
 	if value, ok := ou.mutation.Kcal(); ok {
 		_spec.SetField(occurrence.FieldKcal, field.TypeInt, value)
 	}
 	if value, ok := ou.mutation.AddedKcal(); ok {
 		_spec.AddField(occurrence.FieldKcal, field.TypeInt, value)
+	}
+	if ou.mutation.KcalCleared() {
+		_spec.ClearField(occurrence.FieldKcal, field.TypeInt)
 	}
 	if value, ok := ou.mutation.Fat(); ok {
 		_spec.SetField(occurrence.FieldFat, field.TypeInt, value)
@@ -475,11 +649,17 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.AddedFat(); ok {
 		_spec.AddField(occurrence.FieldFat, field.TypeInt, value)
 	}
+	if ou.mutation.FatCleared() {
+		_spec.ClearField(occurrence.FieldFat, field.TypeInt)
+	}
 	if value, ok := ou.mutation.SaturatedFat(); ok {
 		_spec.SetField(occurrence.FieldSaturatedFat, field.TypeInt, value)
 	}
 	if value, ok := ou.mutation.AddedSaturatedFat(); ok {
 		_spec.AddField(occurrence.FieldSaturatedFat, field.TypeInt, value)
+	}
+	if ou.mutation.SaturatedFatCleared() {
+		_spec.ClearField(occurrence.FieldSaturatedFat, field.TypeInt)
 	}
 	if value, ok := ou.mutation.Carbohydrates(); ok {
 		_spec.SetField(occurrence.FieldCarbohydrates, field.TypeInt, value)
@@ -487,11 +667,17 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.AddedCarbohydrates(); ok {
 		_spec.AddField(occurrence.FieldCarbohydrates, field.TypeInt, value)
 	}
+	if ou.mutation.CarbohydratesCleared() {
+		_spec.ClearField(occurrence.FieldCarbohydrates, field.TypeInt)
+	}
 	if value, ok := ou.mutation.Sugar(); ok {
 		_spec.SetField(occurrence.FieldSugar, field.TypeInt, value)
 	}
 	if value, ok := ou.mutation.AddedSugar(); ok {
 		_spec.AddField(occurrence.FieldSugar, field.TypeInt, value)
+	}
+	if ou.mutation.SugarCleared() {
+		_spec.ClearField(occurrence.FieldSugar, field.TypeInt)
 	}
 	if value, ok := ou.mutation.Fiber(); ok {
 		_spec.SetField(occurrence.FieldFiber, field.TypeInt, value)
@@ -499,11 +685,17 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.AddedFiber(); ok {
 		_spec.AddField(occurrence.FieldFiber, field.TypeInt, value)
 	}
+	if ou.mutation.FiberCleared() {
+		_spec.ClearField(occurrence.FieldFiber, field.TypeInt)
+	}
 	if value, ok := ou.mutation.Protein(); ok {
 		_spec.SetField(occurrence.FieldProtein, field.TypeInt, value)
 	}
 	if value, ok := ou.mutation.AddedProtein(); ok {
 		_spec.AddField(occurrence.FieldProtein, field.TypeInt, value)
+	}
+	if ou.mutation.ProteinCleared() {
+		_spec.ClearField(occurrence.FieldProtein, field.TypeInt)
 	}
 	if value, ok := ou.mutation.Salt(); ok {
 		_spec.SetField(occurrence.FieldSalt, field.TypeInt, value)
@@ -511,11 +703,17 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.AddedSalt(); ok {
 		_spec.AddField(occurrence.FieldSalt, field.TypeInt, value)
 	}
+	if ou.mutation.SaltCleared() {
+		_spec.ClearField(occurrence.FieldSalt, field.TypeInt)
+	}
 	if value, ok := ou.mutation.PriceStudent(); ok {
 		_spec.SetField(occurrence.FieldPriceStudent, field.TypeInt, value)
 	}
 	if value, ok := ou.mutation.AddedPriceStudent(); ok {
 		_spec.AddField(occurrence.FieldPriceStudent, field.TypeInt, value)
+	}
+	if ou.mutation.PriceStudentCleared() {
+		_spec.ClearField(occurrence.FieldPriceStudent, field.TypeInt)
 	}
 	if value, ok := ou.mutation.PriceStaff(); ok {
 		_spec.SetField(occurrence.FieldPriceStaff, field.TypeInt, value)
@@ -523,11 +721,17 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := ou.mutation.AddedPriceStaff(); ok {
 		_spec.AddField(occurrence.FieldPriceStaff, field.TypeInt, value)
 	}
+	if ou.mutation.PriceStaffCleared() {
+		_spec.ClearField(occurrence.FieldPriceStaff, field.TypeInt)
+	}
 	if value, ok := ou.mutation.PriceGuest(); ok {
 		_spec.SetField(occurrence.FieldPriceGuest, field.TypeInt, value)
 	}
 	if value, ok := ou.mutation.AddedPriceGuest(); ok {
 		_spec.AddField(occurrence.FieldPriceGuest, field.TypeInt, value)
+	}
+	if ou.mutation.PriceGuestCleared() {
+		_spec.ClearField(occurrence.FieldPriceGuest, field.TypeInt)
 	}
 	if ou.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -599,6 +803,60 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ou.mutation.TagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.RemovedTagIDs(); len(nodes) > 0 && !ou.mutation.TagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ou.mutation.TagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if ou.mutation.SideDishesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -645,60 +903,6 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: dish.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if ou.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ou.mutation.RemovedTagIDs(); len(nodes) > 0 && !ou.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ou.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
 				},
 			},
 		}
@@ -807,9 +1011,23 @@ func (ouo *OccurrenceUpdateOne) SetKj(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableKj sets the "kj" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableKj(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetKj(*i)
+	}
+	return ouo
+}
+
 // AddKj adds i to the "kj" field.
 func (ouo *OccurrenceUpdateOne) AddKj(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddKj(i)
+	return ouo
+}
+
+// ClearKj clears the value of the "kj" field.
+func (ouo *OccurrenceUpdateOne) ClearKj() *OccurrenceUpdateOne {
+	ouo.mutation.ClearKj()
 	return ouo
 }
 
@@ -820,9 +1038,23 @@ func (ouo *OccurrenceUpdateOne) SetKcal(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableKcal sets the "kcal" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableKcal(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetKcal(*i)
+	}
+	return ouo
+}
+
 // AddKcal adds i to the "kcal" field.
 func (ouo *OccurrenceUpdateOne) AddKcal(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddKcal(i)
+	return ouo
+}
+
+// ClearKcal clears the value of the "kcal" field.
+func (ouo *OccurrenceUpdateOne) ClearKcal() *OccurrenceUpdateOne {
+	ouo.mutation.ClearKcal()
 	return ouo
 }
 
@@ -833,9 +1065,23 @@ func (ouo *OccurrenceUpdateOne) SetFat(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableFat sets the "fat" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableFat(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetFat(*i)
+	}
+	return ouo
+}
+
 // AddFat adds i to the "fat" field.
 func (ouo *OccurrenceUpdateOne) AddFat(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddFat(i)
+	return ouo
+}
+
+// ClearFat clears the value of the "fat" field.
+func (ouo *OccurrenceUpdateOne) ClearFat() *OccurrenceUpdateOne {
+	ouo.mutation.ClearFat()
 	return ouo
 }
 
@@ -846,9 +1092,23 @@ func (ouo *OccurrenceUpdateOne) SetSaturatedFat(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableSaturatedFat sets the "saturated_fat" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableSaturatedFat(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetSaturatedFat(*i)
+	}
+	return ouo
+}
+
 // AddSaturatedFat adds i to the "saturated_fat" field.
 func (ouo *OccurrenceUpdateOne) AddSaturatedFat(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddSaturatedFat(i)
+	return ouo
+}
+
+// ClearSaturatedFat clears the value of the "saturated_fat" field.
+func (ouo *OccurrenceUpdateOne) ClearSaturatedFat() *OccurrenceUpdateOne {
+	ouo.mutation.ClearSaturatedFat()
 	return ouo
 }
 
@@ -859,9 +1119,23 @@ func (ouo *OccurrenceUpdateOne) SetCarbohydrates(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableCarbohydrates sets the "carbohydrates" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableCarbohydrates(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetCarbohydrates(*i)
+	}
+	return ouo
+}
+
 // AddCarbohydrates adds i to the "carbohydrates" field.
 func (ouo *OccurrenceUpdateOne) AddCarbohydrates(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddCarbohydrates(i)
+	return ouo
+}
+
+// ClearCarbohydrates clears the value of the "carbohydrates" field.
+func (ouo *OccurrenceUpdateOne) ClearCarbohydrates() *OccurrenceUpdateOne {
+	ouo.mutation.ClearCarbohydrates()
 	return ouo
 }
 
@@ -872,9 +1146,23 @@ func (ouo *OccurrenceUpdateOne) SetSugar(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableSugar sets the "sugar" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableSugar(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetSugar(*i)
+	}
+	return ouo
+}
+
 // AddSugar adds i to the "sugar" field.
 func (ouo *OccurrenceUpdateOne) AddSugar(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddSugar(i)
+	return ouo
+}
+
+// ClearSugar clears the value of the "sugar" field.
+func (ouo *OccurrenceUpdateOne) ClearSugar() *OccurrenceUpdateOne {
+	ouo.mutation.ClearSugar()
 	return ouo
 }
 
@@ -885,9 +1173,23 @@ func (ouo *OccurrenceUpdateOne) SetFiber(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableFiber sets the "fiber" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableFiber(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetFiber(*i)
+	}
+	return ouo
+}
+
 // AddFiber adds i to the "fiber" field.
 func (ouo *OccurrenceUpdateOne) AddFiber(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddFiber(i)
+	return ouo
+}
+
+// ClearFiber clears the value of the "fiber" field.
+func (ouo *OccurrenceUpdateOne) ClearFiber() *OccurrenceUpdateOne {
+	ouo.mutation.ClearFiber()
 	return ouo
 }
 
@@ -898,9 +1200,23 @@ func (ouo *OccurrenceUpdateOne) SetProtein(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableProtein sets the "protein" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableProtein(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetProtein(*i)
+	}
+	return ouo
+}
+
 // AddProtein adds i to the "protein" field.
 func (ouo *OccurrenceUpdateOne) AddProtein(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddProtein(i)
+	return ouo
+}
+
+// ClearProtein clears the value of the "protein" field.
+func (ouo *OccurrenceUpdateOne) ClearProtein() *OccurrenceUpdateOne {
+	ouo.mutation.ClearProtein()
 	return ouo
 }
 
@@ -911,9 +1227,23 @@ func (ouo *OccurrenceUpdateOne) SetSalt(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillableSalt sets the "salt" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableSalt(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetSalt(*i)
+	}
+	return ouo
+}
+
 // AddSalt adds i to the "salt" field.
 func (ouo *OccurrenceUpdateOne) AddSalt(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddSalt(i)
+	return ouo
+}
+
+// ClearSalt clears the value of the "salt" field.
+func (ouo *OccurrenceUpdateOne) ClearSalt() *OccurrenceUpdateOne {
+	ouo.mutation.ClearSalt()
 	return ouo
 }
 
@@ -924,9 +1254,23 @@ func (ouo *OccurrenceUpdateOne) SetPriceStudent(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillablePriceStudent sets the "price_student" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillablePriceStudent(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetPriceStudent(*i)
+	}
+	return ouo
+}
+
 // AddPriceStudent adds i to the "price_student" field.
 func (ouo *OccurrenceUpdateOne) AddPriceStudent(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddPriceStudent(i)
+	return ouo
+}
+
+// ClearPriceStudent clears the value of the "price_student" field.
+func (ouo *OccurrenceUpdateOne) ClearPriceStudent() *OccurrenceUpdateOne {
+	ouo.mutation.ClearPriceStudent()
 	return ouo
 }
 
@@ -937,9 +1281,23 @@ func (ouo *OccurrenceUpdateOne) SetPriceStaff(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillablePriceStaff sets the "price_staff" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillablePriceStaff(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetPriceStaff(*i)
+	}
+	return ouo
+}
+
 // AddPriceStaff adds i to the "price_staff" field.
 func (ouo *OccurrenceUpdateOne) AddPriceStaff(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddPriceStaff(i)
+	return ouo
+}
+
+// ClearPriceStaff clears the value of the "price_staff" field.
+func (ouo *OccurrenceUpdateOne) ClearPriceStaff() *OccurrenceUpdateOne {
+	ouo.mutation.ClearPriceStaff()
 	return ouo
 }
 
@@ -950,9 +1308,23 @@ func (ouo *OccurrenceUpdateOne) SetPriceGuest(i int) *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNillablePriceGuest sets the "price_guest" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillablePriceGuest(i *int) *OccurrenceUpdateOne {
+	if i != nil {
+		ouo.SetPriceGuest(*i)
+	}
+	return ouo
+}
+
 // AddPriceGuest adds i to the "price_guest" field.
 func (ouo *OccurrenceUpdateOne) AddPriceGuest(i int) *OccurrenceUpdateOne {
 	ouo.mutation.AddPriceGuest(i)
+	return ouo
+}
+
+// ClearPriceGuest clears the value of the "price_guest" field.
+func (ouo *OccurrenceUpdateOne) ClearPriceGuest() *OccurrenceUpdateOne {
+	ouo.mutation.ClearPriceGuest()
 	return ouo
 }
 
@@ -978,6 +1350,21 @@ func (ouo *OccurrenceUpdateOne) SetDish(d *Dish) *OccurrenceUpdateOne {
 	return ouo.SetDishID(d.ID)
 }
 
+// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
+func (ouo *OccurrenceUpdateOne) AddTagIDs(ids ...string) *OccurrenceUpdateOne {
+	ouo.mutation.AddTagIDs(ids...)
+	return ouo
+}
+
+// AddTag adds the "tag" edges to the Tag entity.
+func (ouo *OccurrenceUpdateOne) AddTag(t ...*Tag) *OccurrenceUpdateOne {
+	ids := make([]string, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ouo.AddTagIDs(ids...)
+}
+
 // AddSideDishIDs adds the "side_dishes" edge to the Dish entity by IDs.
 func (ouo *OccurrenceUpdateOne) AddSideDishIDs(ids ...uuid.UUID) *OccurrenceUpdateOne {
 	ouo.mutation.AddSideDishIDs(ids...)
@@ -991,21 +1378,6 @@ func (ouo *OccurrenceUpdateOne) AddSideDishes(d ...*Dish) *OccurrenceUpdateOne {
 		ids[i] = d[i].ID
 	}
 	return ouo.AddSideDishIDs(ids...)
-}
-
-// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
-func (ouo *OccurrenceUpdateOne) AddTagIDs(ids ...int) *OccurrenceUpdateOne {
-	ouo.mutation.AddTagIDs(ids...)
-	return ouo
-}
-
-// AddTag adds the "tag" edges to the Tag entity.
-func (ouo *OccurrenceUpdateOne) AddTag(t ...*Tag) *OccurrenceUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return ouo.AddTagIDs(ids...)
 }
 
 // AddReviewIDs adds the "reviews" edge to the Review entity by IDs.
@@ -1040,6 +1412,27 @@ func (ouo *OccurrenceUpdateOne) ClearDish() *OccurrenceUpdateOne {
 	return ouo
 }
 
+// ClearTag clears all "tag" edges to the Tag entity.
+func (ouo *OccurrenceUpdateOne) ClearTag() *OccurrenceUpdateOne {
+	ouo.mutation.ClearTag()
+	return ouo
+}
+
+// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
+func (ouo *OccurrenceUpdateOne) RemoveTagIDs(ids ...string) *OccurrenceUpdateOne {
+	ouo.mutation.RemoveTagIDs(ids...)
+	return ouo
+}
+
+// RemoveTag removes "tag" edges to Tag entities.
+func (ouo *OccurrenceUpdateOne) RemoveTag(t ...*Tag) *OccurrenceUpdateOne {
+	ids := make([]string, len(t))
+	for i := range t {
+		ids[i] = t[i].ID
+	}
+	return ouo.RemoveTagIDs(ids...)
+}
+
 // ClearSideDishes clears all "side_dishes" edges to the Dish entity.
 func (ouo *OccurrenceUpdateOne) ClearSideDishes() *OccurrenceUpdateOne {
 	ouo.mutation.ClearSideDishes()
@@ -1059,27 +1452,6 @@ func (ouo *OccurrenceUpdateOne) RemoveSideDishes(d ...*Dish) *OccurrenceUpdateOn
 		ids[i] = d[i].ID
 	}
 	return ouo.RemoveSideDishIDs(ids...)
-}
-
-// ClearTag clears all "tag" edges to the Tag entity.
-func (ouo *OccurrenceUpdateOne) ClearTag() *OccurrenceUpdateOne {
-	ouo.mutation.ClearTag()
-	return ouo
-}
-
-// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
-func (ouo *OccurrenceUpdateOne) RemoveTagIDs(ids ...int) *OccurrenceUpdateOne {
-	ouo.mutation.RemoveTagIDs(ids...)
-	return ouo
-}
-
-// RemoveTag removes "tag" edges to Tag entities.
-func (ouo *OccurrenceUpdateOne) RemoveTag(t ...*Tag) *OccurrenceUpdateOne {
-	ids := make([]int, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return ouo.RemoveTagIDs(ids...)
 }
 
 // ClearReviews clears all "reviews" edges to the Review entity.
@@ -1239,11 +1611,17 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if value, ok := ouo.mutation.AddedKj(); ok {
 		_spec.AddField(occurrence.FieldKj, field.TypeInt, value)
 	}
+	if ouo.mutation.KjCleared() {
+		_spec.ClearField(occurrence.FieldKj, field.TypeInt)
+	}
 	if value, ok := ouo.mutation.Kcal(); ok {
 		_spec.SetField(occurrence.FieldKcal, field.TypeInt, value)
 	}
 	if value, ok := ouo.mutation.AddedKcal(); ok {
 		_spec.AddField(occurrence.FieldKcal, field.TypeInt, value)
+	}
+	if ouo.mutation.KcalCleared() {
+		_spec.ClearField(occurrence.FieldKcal, field.TypeInt)
 	}
 	if value, ok := ouo.mutation.Fat(); ok {
 		_spec.SetField(occurrence.FieldFat, field.TypeInt, value)
@@ -1251,11 +1629,17 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if value, ok := ouo.mutation.AddedFat(); ok {
 		_spec.AddField(occurrence.FieldFat, field.TypeInt, value)
 	}
+	if ouo.mutation.FatCleared() {
+		_spec.ClearField(occurrence.FieldFat, field.TypeInt)
+	}
 	if value, ok := ouo.mutation.SaturatedFat(); ok {
 		_spec.SetField(occurrence.FieldSaturatedFat, field.TypeInt, value)
 	}
 	if value, ok := ouo.mutation.AddedSaturatedFat(); ok {
 		_spec.AddField(occurrence.FieldSaturatedFat, field.TypeInt, value)
+	}
+	if ouo.mutation.SaturatedFatCleared() {
+		_spec.ClearField(occurrence.FieldSaturatedFat, field.TypeInt)
 	}
 	if value, ok := ouo.mutation.Carbohydrates(); ok {
 		_spec.SetField(occurrence.FieldCarbohydrates, field.TypeInt, value)
@@ -1263,11 +1647,17 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if value, ok := ouo.mutation.AddedCarbohydrates(); ok {
 		_spec.AddField(occurrence.FieldCarbohydrates, field.TypeInt, value)
 	}
+	if ouo.mutation.CarbohydratesCleared() {
+		_spec.ClearField(occurrence.FieldCarbohydrates, field.TypeInt)
+	}
 	if value, ok := ouo.mutation.Sugar(); ok {
 		_spec.SetField(occurrence.FieldSugar, field.TypeInt, value)
 	}
 	if value, ok := ouo.mutation.AddedSugar(); ok {
 		_spec.AddField(occurrence.FieldSugar, field.TypeInt, value)
+	}
+	if ouo.mutation.SugarCleared() {
+		_spec.ClearField(occurrence.FieldSugar, field.TypeInt)
 	}
 	if value, ok := ouo.mutation.Fiber(); ok {
 		_spec.SetField(occurrence.FieldFiber, field.TypeInt, value)
@@ -1275,11 +1665,17 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if value, ok := ouo.mutation.AddedFiber(); ok {
 		_spec.AddField(occurrence.FieldFiber, field.TypeInt, value)
 	}
+	if ouo.mutation.FiberCleared() {
+		_spec.ClearField(occurrence.FieldFiber, field.TypeInt)
+	}
 	if value, ok := ouo.mutation.Protein(); ok {
 		_spec.SetField(occurrence.FieldProtein, field.TypeInt, value)
 	}
 	if value, ok := ouo.mutation.AddedProtein(); ok {
 		_spec.AddField(occurrence.FieldProtein, field.TypeInt, value)
+	}
+	if ouo.mutation.ProteinCleared() {
+		_spec.ClearField(occurrence.FieldProtein, field.TypeInt)
 	}
 	if value, ok := ouo.mutation.Salt(); ok {
 		_spec.SetField(occurrence.FieldSalt, field.TypeInt, value)
@@ -1287,11 +1683,17 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if value, ok := ouo.mutation.AddedSalt(); ok {
 		_spec.AddField(occurrence.FieldSalt, field.TypeInt, value)
 	}
+	if ouo.mutation.SaltCleared() {
+		_spec.ClearField(occurrence.FieldSalt, field.TypeInt)
+	}
 	if value, ok := ouo.mutation.PriceStudent(); ok {
 		_spec.SetField(occurrence.FieldPriceStudent, field.TypeInt, value)
 	}
 	if value, ok := ouo.mutation.AddedPriceStudent(); ok {
 		_spec.AddField(occurrence.FieldPriceStudent, field.TypeInt, value)
+	}
+	if ouo.mutation.PriceStudentCleared() {
+		_spec.ClearField(occurrence.FieldPriceStudent, field.TypeInt)
 	}
 	if value, ok := ouo.mutation.PriceStaff(); ok {
 		_spec.SetField(occurrence.FieldPriceStaff, field.TypeInt, value)
@@ -1299,11 +1701,17 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	if value, ok := ouo.mutation.AddedPriceStaff(); ok {
 		_spec.AddField(occurrence.FieldPriceStaff, field.TypeInt, value)
 	}
+	if ouo.mutation.PriceStaffCleared() {
+		_spec.ClearField(occurrence.FieldPriceStaff, field.TypeInt)
+	}
 	if value, ok := ouo.mutation.PriceGuest(); ok {
 		_spec.SetField(occurrence.FieldPriceGuest, field.TypeInt, value)
 	}
 	if value, ok := ouo.mutation.AddedPriceGuest(); ok {
 		_spec.AddField(occurrence.FieldPriceGuest, field.TypeInt, value)
+	}
+	if ouo.mutation.PriceGuestCleared() {
+		_spec.ClearField(occurrence.FieldPriceGuest, field.TypeInt)
 	}
 	if ouo.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1375,6 +1783,60 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if ouo.mutation.TagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.RemovedTagIDs(); len(nodes) > 0 && !ouo.mutation.TagCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := ouo.mutation.TagIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   occurrence.TagTable,
+			Columns: occurrence.TagPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeString,
+					Column: tag.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if ouo.mutation.SideDishesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1421,60 +1883,6 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeUUID,
 					Column: dish.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if ouo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ouo.mutation.RemovedTagIDs(); len(nodes) > 0 && !ouo.mutation.TagCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := ouo.mutation.TagIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeInt,
-					Column: tag.FieldID,
 				},
 			},
 		}

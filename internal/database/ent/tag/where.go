@@ -10,28 +10,28 @@ import (
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Tag {
+func ID(id string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Tag {
+func IDEQ(id string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Tag {
+func IDNEQ(id string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Tag {
+func IDIn(ids ...string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		v := make([]any, len(ids))
 		for i := range v {
@@ -42,7 +42,7 @@ func IDIn(ids ...int) predicate.Tag {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Tag {
+func IDNotIn(ids ...string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		v := make([]any, len(ids))
 		for i := range v {
@@ -53,37 +53,30 @@ func IDNotIn(ids ...int) predicate.Tag {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Tag {
+func IDGT(id string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Tag {
+func IDGTE(id string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Tag {
+func IDLT(id string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Tag {
+func IDLTE(id string) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
-	})
-}
-
-// Key applies equality check predicate on the "key" field. It's identical to KeyEQ.
-func Key(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldKey), v))
 	})
 }
 
@@ -112,105 +105,6 @@ func ShortName(v string) predicate.Tag {
 func IsAllergy(v bool) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldIsAllergy), v))
-	})
-}
-
-// KeyEQ applies the EQ predicate on the "key" field.
-func KeyEQ(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldKey), v))
-	})
-}
-
-// KeyNEQ applies the NEQ predicate on the "key" field.
-func KeyNEQ(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldKey), v))
-	})
-}
-
-// KeyIn applies the In predicate on the "key" field.
-func KeyIn(vs ...string) predicate.Tag {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldKey), v...))
-	})
-}
-
-// KeyNotIn applies the NotIn predicate on the "key" field.
-func KeyNotIn(vs ...string) predicate.Tag {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldKey), v...))
-	})
-}
-
-// KeyGT applies the GT predicate on the "key" field.
-func KeyGT(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldKey), v))
-	})
-}
-
-// KeyGTE applies the GTE predicate on the "key" field.
-func KeyGTE(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldKey), v))
-	})
-}
-
-// KeyLT applies the LT predicate on the "key" field.
-func KeyLT(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldKey), v))
-	})
-}
-
-// KeyLTE applies the LTE predicate on the "key" field.
-func KeyLTE(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldKey), v))
-	})
-}
-
-// KeyContains applies the Contains predicate on the "key" field.
-func KeyContains(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldKey), v))
-	})
-}
-
-// KeyHasPrefix applies the HasPrefix predicate on the "key" field.
-func KeyHasPrefix(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldKey), v))
-	})
-}
-
-// KeyHasSuffix applies the HasSuffix predicate on the "key" field.
-func KeyHasSuffix(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldKey), v))
-	})
-}
-
-// KeyEqualFold applies the EqualFold predicate on the "key" field.
-func KeyEqualFold(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldKey), v))
-	})
-}
-
-// KeyContainsFold applies the ContainsFold predicate on the "key" field.
-func KeyContainsFold(v string) predicate.Tag {
-	return predicate.Tag(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldKey), v))
 	})
 }
 
@@ -582,7 +476,7 @@ func HasOccurrences() predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OccurrencesTable, FieldID),
+			sqlgraph.To(OccurrencesTable, OccurrenceFieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, OccurrencesTable, OccurrencesPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -594,7 +488,7 @@ func HasOccurrencesWith(preds ...predicate.Occurrence) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OccurrencesInverseTable, FieldID),
+			sqlgraph.To(OccurrencesInverseTable, OccurrenceFieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, OccurrencesTable, OccurrencesPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {

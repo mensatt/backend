@@ -17,9 +17,9 @@ type Review struct {
 func (Review) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.String("display_name").NotEmpty().MaxLen(32),
+		field.String("display_name").Optional().Nillable().NotEmpty().MaxLen(32),
 		field.Int("stars").Min(1).Max(5),
-		field.String("text"),
+		field.String("text").Optional().Nillable().NotEmpty(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 		field.Time("accepted_at").Optional().Nillable(),

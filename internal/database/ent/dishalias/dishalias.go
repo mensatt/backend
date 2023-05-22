@@ -6,13 +6,13 @@ const (
 	// Label holds the string label denoting the dishalias type in the database.
 	Label = "dish_alias"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
-	// FieldAliasName holds the string denoting the alias_name field in the database.
-	FieldAliasName = "alias_name"
+	FieldID = "alias_name"
 	// FieldNormalizedAliasName holds the string denoting the normalized_alias_name field in the database.
 	FieldNormalizedAliasName = "normalized_alias_name"
 	// EdgeDish holds the string denoting the dish edge name in mutations.
 	EdgeDish = "dish"
+	// DishFieldID holds the string denoting the ID field of the Dish.
+	DishFieldID = "id"
 	// Table holds the table name of the dishalias in the database.
 	Table = "dish_alias"
 	// DishTable is the table that holds the dish relation/edge.
@@ -27,7 +27,6 @@ const (
 // Columns holds all SQL columns for dishalias fields.
 var Columns = []string{
 	FieldID,
-	FieldAliasName,
 	FieldNormalizedAliasName,
 }
 
@@ -51,3 +50,8 @@ func ValidColumn(column string) bool {
 	}
 	return false
 }
+
+var (
+	// NormalizedAliasNameValidator is a validator for the "normalized_alias_name" field. It is called by the builders before save.
+	NormalizedAliasNameValidator func(string) error
+)

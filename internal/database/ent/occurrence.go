@@ -25,29 +25,29 @@ type Occurrence struct {
 	// Status holds the value of the "status" field.
 	Status schema.OccurrenceStatus `json:"status,omitempty"`
 	// Kj holds the value of the "kj" field.
-	Kj int `json:"kj,omitempty"`
+	Kj *int `json:"kj,omitempty"`
 	// Kcal holds the value of the "kcal" field.
-	Kcal int `json:"kcal,omitempty"`
+	Kcal *int `json:"kcal,omitempty"`
 	// Fat holds the value of the "fat" field.
-	Fat int `json:"fat,omitempty"`
+	Fat *int `json:"fat,omitempty"`
 	// SaturatedFat holds the value of the "saturated_fat" field.
-	SaturatedFat int `json:"saturated_fat,omitempty"`
+	SaturatedFat *int `json:"saturated_fat,omitempty"`
 	// Carbohydrates holds the value of the "carbohydrates" field.
-	Carbohydrates int `json:"carbohydrates,omitempty"`
+	Carbohydrates *int `json:"carbohydrates,omitempty"`
 	// Sugar holds the value of the "sugar" field.
-	Sugar int `json:"sugar,omitempty"`
+	Sugar *int `json:"sugar,omitempty"`
 	// Fiber holds the value of the "fiber" field.
-	Fiber int `json:"fiber,omitempty"`
+	Fiber *int `json:"fiber,omitempty"`
 	// Protein holds the value of the "protein" field.
-	Protein int `json:"protein,omitempty"`
+	Protein *int `json:"protein,omitempty"`
 	// Salt holds the value of the "salt" field.
-	Salt int `json:"salt,omitempty"`
+	Salt *int `json:"salt,omitempty"`
 	// PriceStudent holds the value of the "price_student" field.
-	PriceStudent int `json:"price_student,omitempty"`
+	PriceStudent *int `json:"price_student,omitempty"`
 	// PriceStaff holds the value of the "price_staff" field.
-	PriceStaff int `json:"price_staff,omitempty"`
+	PriceStaff *int `json:"price_staff,omitempty"`
 	// PriceGuest holds the value of the "price_guest" field.
-	PriceGuest int `json:"price_guest,omitempty"`
+	PriceGuest *int `json:"price_guest,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OccurrenceQuery when eager-loading is set.
 	Edges    OccurrenceEdges `json:"edges"`
@@ -61,10 +61,10 @@ type OccurrenceEdges struct {
 	Location *Location `json:"location,omitempty"`
 	// Dish holds the value of the dish edge.
 	Dish *Dish `json:"dish,omitempty"`
-	// SideDishes holds the value of the side_dishes edge.
-	SideDishes []*Dish `json:"side_dishes,omitempty"`
 	// Tag holds the value of the tag edge.
 	Tag []*Tag `json:"tag,omitempty"`
+	// SideDishes holds the value of the side_dishes edge.
+	SideDishes []*Dish `json:"side_dishes,omitempty"`
 	// Reviews holds the value of the reviews edge.
 	Reviews []*Review `json:"reviews,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -98,22 +98,22 @@ func (e OccurrenceEdges) DishOrErr() (*Dish, error) {
 	return nil, &NotLoadedError{edge: "dish"}
 }
 
-// SideDishesOrErr returns the SideDishes value or an error if the edge
-// was not loaded in eager-loading.
-func (e OccurrenceEdges) SideDishesOrErr() ([]*Dish, error) {
-	if e.loadedTypes[2] {
-		return e.SideDishes, nil
-	}
-	return nil, &NotLoadedError{edge: "side_dishes"}
-}
-
 // TagOrErr returns the Tag value or an error if the edge
 // was not loaded in eager-loading.
 func (e OccurrenceEdges) TagOrErr() ([]*Tag, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[2] {
 		return e.Tag, nil
 	}
 	return nil, &NotLoadedError{edge: "tag"}
+}
+
+// SideDishesOrErr returns the SideDishes value or an error if the edge
+// was not loaded in eager-loading.
+func (e OccurrenceEdges) SideDishesOrErr() ([]*Dish, error) {
+	if e.loadedTypes[3] {
+		return e.SideDishes, nil
+	}
+	return nil, &NotLoadedError{edge: "side_dishes"}
 }
 
 // ReviewsOrErr returns the Reviews value or an error if the edge
@@ -179,73 +179,85 @@ func (o *Occurrence) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field kj", values[i])
 			} else if value.Valid {
-				o.Kj = int(value.Int64)
+				o.Kj = new(int)
+				*o.Kj = int(value.Int64)
 			}
 		case occurrence.FieldKcal:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field kcal", values[i])
 			} else if value.Valid {
-				o.Kcal = int(value.Int64)
+				o.Kcal = new(int)
+				*o.Kcal = int(value.Int64)
 			}
 		case occurrence.FieldFat:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field fat", values[i])
 			} else if value.Valid {
-				o.Fat = int(value.Int64)
+				o.Fat = new(int)
+				*o.Fat = int(value.Int64)
 			}
 		case occurrence.FieldSaturatedFat:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field saturated_fat", values[i])
 			} else if value.Valid {
-				o.SaturatedFat = int(value.Int64)
+				o.SaturatedFat = new(int)
+				*o.SaturatedFat = int(value.Int64)
 			}
 		case occurrence.FieldCarbohydrates:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field carbohydrates", values[i])
 			} else if value.Valid {
-				o.Carbohydrates = int(value.Int64)
+				o.Carbohydrates = new(int)
+				*o.Carbohydrates = int(value.Int64)
 			}
 		case occurrence.FieldSugar:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field sugar", values[i])
 			} else if value.Valid {
-				o.Sugar = int(value.Int64)
+				o.Sugar = new(int)
+				*o.Sugar = int(value.Int64)
 			}
 		case occurrence.FieldFiber:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field fiber", values[i])
 			} else if value.Valid {
-				o.Fiber = int(value.Int64)
+				o.Fiber = new(int)
+				*o.Fiber = int(value.Int64)
 			}
 		case occurrence.FieldProtein:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field protein", values[i])
 			} else if value.Valid {
-				o.Protein = int(value.Int64)
+				o.Protein = new(int)
+				*o.Protein = int(value.Int64)
 			}
 		case occurrence.FieldSalt:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field salt", values[i])
 			} else if value.Valid {
-				o.Salt = int(value.Int64)
+				o.Salt = new(int)
+				*o.Salt = int(value.Int64)
 			}
 		case occurrence.FieldPriceStudent:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field price_student", values[i])
 			} else if value.Valid {
-				o.PriceStudent = int(value.Int64)
+				o.PriceStudent = new(int)
+				*o.PriceStudent = int(value.Int64)
 			}
 		case occurrence.FieldPriceStaff:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field price_staff", values[i])
 			} else if value.Valid {
-				o.PriceStaff = int(value.Int64)
+				o.PriceStaff = new(int)
+				*o.PriceStaff = int(value.Int64)
 			}
 		case occurrence.FieldPriceGuest:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field price_guest", values[i])
 			} else if value.Valid {
-				o.PriceGuest = int(value.Int64)
+				o.PriceGuest = new(int)
+				*o.PriceGuest = int(value.Int64)
 			}
 		case occurrence.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -276,14 +288,14 @@ func (o *Occurrence) QueryDish() *DishQuery {
 	return (&OccurrenceClient{config: o.config}).QueryDish(o)
 }
 
-// QuerySideDishes queries the "side_dishes" edge of the Occurrence entity.
-func (o *Occurrence) QuerySideDishes() *DishQuery {
-	return (&OccurrenceClient{config: o.config}).QuerySideDishes(o)
-}
-
 // QueryTag queries the "tag" edge of the Occurrence entity.
 func (o *Occurrence) QueryTag() *TagQuery {
 	return (&OccurrenceClient{config: o.config}).QueryTag(o)
+}
+
+// QuerySideDishes queries the "side_dishes" edge of the Occurrence entity.
+func (o *Occurrence) QuerySideDishes() *DishQuery {
+	return (&OccurrenceClient{config: o.config}).QuerySideDishes(o)
 }
 
 // QueryReviews queries the "reviews" edge of the Occurrence entity.
@@ -320,41 +332,65 @@ func (o *Occurrence) String() string {
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", o.Status))
 	builder.WriteString(", ")
-	builder.WriteString("kj=")
-	builder.WriteString(fmt.Sprintf("%v", o.Kj))
+	if v := o.Kj; v != nil {
+		builder.WriteString("kj=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("kcal=")
-	builder.WriteString(fmt.Sprintf("%v", o.Kcal))
+	if v := o.Kcal; v != nil {
+		builder.WriteString("kcal=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("fat=")
-	builder.WriteString(fmt.Sprintf("%v", o.Fat))
+	if v := o.Fat; v != nil {
+		builder.WriteString("fat=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("saturated_fat=")
-	builder.WriteString(fmt.Sprintf("%v", o.SaturatedFat))
+	if v := o.SaturatedFat; v != nil {
+		builder.WriteString("saturated_fat=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("carbohydrates=")
-	builder.WriteString(fmt.Sprintf("%v", o.Carbohydrates))
+	if v := o.Carbohydrates; v != nil {
+		builder.WriteString("carbohydrates=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("sugar=")
-	builder.WriteString(fmt.Sprintf("%v", o.Sugar))
+	if v := o.Sugar; v != nil {
+		builder.WriteString("sugar=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("fiber=")
-	builder.WriteString(fmt.Sprintf("%v", o.Fiber))
+	if v := o.Fiber; v != nil {
+		builder.WriteString("fiber=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("protein=")
-	builder.WriteString(fmt.Sprintf("%v", o.Protein))
+	if v := o.Protein; v != nil {
+		builder.WriteString("protein=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("salt=")
-	builder.WriteString(fmt.Sprintf("%v", o.Salt))
+	if v := o.Salt; v != nil {
+		builder.WriteString("salt=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("price_student=")
-	builder.WriteString(fmt.Sprintf("%v", o.PriceStudent))
+	if v := o.PriceStudent; v != nil {
+		builder.WriteString("price_student=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("price_staff=")
-	builder.WriteString(fmt.Sprintf("%v", o.PriceStaff))
+	if v := o.PriceStaff; v != nil {
+		builder.WriteString("price_staff=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
-	builder.WriteString("price_guest=")
-	builder.WriteString(fmt.Sprintf("%v", o.PriceGuest))
+	if v := o.PriceGuest; v != nil {
+		builder.WriteString("price_guest=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteByte(')')
 	return builder.String()
 }

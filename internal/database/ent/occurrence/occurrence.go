@@ -46,12 +46,14 @@ const (
 	EdgeLocation = "location"
 	// EdgeDish holds the string denoting the dish edge name in mutations.
 	EdgeDish = "dish"
-	// EdgeSideDishes holds the string denoting the side_dishes edge name in mutations.
-	EdgeSideDishes = "side_dishes"
 	// EdgeTag holds the string denoting the tag edge name in mutations.
 	EdgeTag = "tag"
+	// EdgeSideDishes holds the string denoting the side_dishes edge name in mutations.
+	EdgeSideDishes = "side_dishes"
 	// EdgeReviews holds the string denoting the reviews edge name in mutations.
 	EdgeReviews = "reviews"
+	// TagFieldID holds the string denoting the ID field of the Tag.
+	TagFieldID = "key"
 	// Table holds the table name of the occurrence in the database.
 	Table = "occurrences"
 	// LocationTable is the table that holds the location relation/edge.
@@ -68,6 +70,11 @@ const (
 	DishInverseTable = "dishes"
 	// DishColumn is the table column denoting the dish relation/edge.
 	DishColumn = "dish"
+	// TagTable is the table that holds the tag relation/edge. The primary key declared below.
+	TagTable = "tag_occurrences"
+	// TagInverseTable is the table name for the Tag entity.
+	// It exists in this package in order to avoid circular dependency with the "tag" package.
+	TagInverseTable = "tags"
 	// SideDishesTable is the table that holds the side_dishes relation/edge.
 	SideDishesTable = "dishes"
 	// SideDishesInverseTable is the table name for the Dish entity.
@@ -75,11 +82,6 @@ const (
 	SideDishesInverseTable = "dishes"
 	// SideDishesColumn is the table column denoting the side_dishes relation/edge.
 	SideDishesColumn = "occurrence_side_dishes"
-	// TagTable is the table that holds the tag relation/edge. The primary key declared below.
-	TagTable = "tag_occurrences"
-	// TagInverseTable is the table name for the Tag entity.
-	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
 	// ReviewsTable is the table that holds the reviews relation/edge.
 	ReviewsTable = "reviews"
 	// ReviewsInverseTable is the table name for the Review entity.

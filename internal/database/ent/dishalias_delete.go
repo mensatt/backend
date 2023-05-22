@@ -72,7 +72,7 @@ func (dad *DishAliasDelete) sqlExec(ctx context.Context) (int, error) {
 		Node: &sqlgraph.NodeSpec{
 			Table: dishalias.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeString,
 				Column: dishalias.FieldID,
 			},
 		},
