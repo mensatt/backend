@@ -471,25 +471,25 @@ func IsAllergyNEQ(v bool) predicate.Tag {
 	})
 }
 
-// HasOccurrences applies the HasEdge predicate on the "occurrences" edge.
-func HasOccurrences() predicate.Tag {
+// HasOccurrence applies the HasEdge predicate on the "occurrence" edge.
+func HasOccurrence() predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OccurrencesTable, OccurrenceFieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, OccurrencesTable, OccurrencesPrimaryKey...),
+			sqlgraph.To(OccurrenceTable, OccurrenceFieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, OccurrenceTable, OccurrencePrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasOccurrencesWith applies the HasEdge predicate on the "occurrences" edge with a given conditions (other predicates).
-func HasOccurrencesWith(preds ...predicate.Occurrence) predicate.Tag {
+// HasOccurrenceWith applies the HasEdge predicate on the "occurrence" edge with a given conditions (other predicates).
+func HasOccurrenceWith(preds ...predicate.Occurrence) predicate.Tag {
 	return predicate.Tag(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OccurrencesInverseTable, OccurrenceFieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, OccurrencesTable, OccurrencesPrimaryKey...),
+			sqlgraph.To(OccurrenceInverseTable, OccurrenceFieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, OccurrenceTable, OccurrencePrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

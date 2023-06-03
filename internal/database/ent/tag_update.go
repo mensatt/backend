@@ -90,14 +90,14 @@ func (tu *TagUpdate) SetNillableIsAllergy(b *bool) *TagUpdate {
 	return tu
 }
 
-// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
+// AddOccurrenceIDs adds the "occurrence" edge to the Occurrence entity by IDs.
 func (tu *TagUpdate) AddOccurrenceIDs(ids ...uuid.UUID) *TagUpdate {
 	tu.mutation.AddOccurrenceIDs(ids...)
 	return tu
 }
 
-// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
-func (tu *TagUpdate) AddOccurrences(o ...*Occurrence) *TagUpdate {
+// AddOccurrence adds the "occurrence" edges to the Occurrence entity.
+func (tu *TagUpdate) AddOccurrence(o ...*Occurrence) *TagUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -110,20 +110,20 @@ func (tu *TagUpdate) Mutation() *TagMutation {
 	return tu.mutation
 }
 
-// ClearOccurrences clears all "occurrences" edges to the Occurrence entity.
-func (tu *TagUpdate) ClearOccurrences() *TagUpdate {
-	tu.mutation.ClearOccurrences()
+// ClearOccurrence clears all "occurrence" edges to the Occurrence entity.
+func (tu *TagUpdate) ClearOccurrence() *TagUpdate {
+	tu.mutation.ClearOccurrence()
 	return tu
 }
 
-// RemoveOccurrenceIDs removes the "occurrences" edge to Occurrence entities by IDs.
+// RemoveOccurrenceIDs removes the "occurrence" edge to Occurrence entities by IDs.
 func (tu *TagUpdate) RemoveOccurrenceIDs(ids ...uuid.UUID) *TagUpdate {
 	tu.mutation.RemoveOccurrenceIDs(ids...)
 	return tu
 }
 
-// RemoveOccurrences removes "occurrences" edges to Occurrence entities.
-func (tu *TagUpdate) RemoveOccurrences(o ...*Occurrence) *TagUpdate {
+// RemoveOccurrence removes "occurrence" edges to Occurrence entities.
+func (tu *TagUpdate) RemoveOccurrence(o ...*Occurrence) *TagUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -252,12 +252,12 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := tu.mutation.IsAllergy(); ok {
 		_spec.SetField(tag.FieldIsAllergy, field.TypeBool, value)
 	}
-	if tu.mutation.OccurrencesCleared() {
+	if tu.mutation.OccurrenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.OccurrencesTable,
-			Columns: tag.OccurrencesPrimaryKey,
+			Inverse: true,
+			Table:   tag.OccurrenceTable,
+			Columns: tag.OccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -268,12 +268,12 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.RemovedOccurrencesIDs(); len(nodes) > 0 && !tu.mutation.OccurrencesCleared() {
+	if nodes := tu.mutation.RemovedOccurrenceIDs(); len(nodes) > 0 && !tu.mutation.OccurrenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.OccurrencesTable,
-			Columns: tag.OccurrencesPrimaryKey,
+			Inverse: true,
+			Table:   tag.OccurrenceTable,
+			Columns: tag.OccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -287,12 +287,12 @@ func (tu *TagUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.OccurrencesIDs(); len(nodes) > 0 {
+	if nodes := tu.mutation.OccurrenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.OccurrencesTable,
-			Columns: tag.OccurrencesPrimaryKey,
+			Inverse: true,
+			Table:   tag.OccurrenceTable,
+			Columns: tag.OccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -385,14 +385,14 @@ func (tuo *TagUpdateOne) SetNillableIsAllergy(b *bool) *TagUpdateOne {
 	return tuo
 }
 
-// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
+// AddOccurrenceIDs adds the "occurrence" edge to the Occurrence entity by IDs.
 func (tuo *TagUpdateOne) AddOccurrenceIDs(ids ...uuid.UUID) *TagUpdateOne {
 	tuo.mutation.AddOccurrenceIDs(ids...)
 	return tuo
 }
 
-// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
-func (tuo *TagUpdateOne) AddOccurrences(o ...*Occurrence) *TagUpdateOne {
+// AddOccurrence adds the "occurrence" edges to the Occurrence entity.
+func (tuo *TagUpdateOne) AddOccurrence(o ...*Occurrence) *TagUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -405,20 +405,20 @@ func (tuo *TagUpdateOne) Mutation() *TagMutation {
 	return tuo.mutation
 }
 
-// ClearOccurrences clears all "occurrences" edges to the Occurrence entity.
-func (tuo *TagUpdateOne) ClearOccurrences() *TagUpdateOne {
-	tuo.mutation.ClearOccurrences()
+// ClearOccurrence clears all "occurrence" edges to the Occurrence entity.
+func (tuo *TagUpdateOne) ClearOccurrence() *TagUpdateOne {
+	tuo.mutation.ClearOccurrence()
 	return tuo
 }
 
-// RemoveOccurrenceIDs removes the "occurrences" edge to Occurrence entities by IDs.
+// RemoveOccurrenceIDs removes the "occurrence" edge to Occurrence entities by IDs.
 func (tuo *TagUpdateOne) RemoveOccurrenceIDs(ids ...uuid.UUID) *TagUpdateOne {
 	tuo.mutation.RemoveOccurrenceIDs(ids...)
 	return tuo
 }
 
-// RemoveOccurrences removes "occurrences" edges to Occurrence entities.
-func (tuo *TagUpdateOne) RemoveOccurrences(o ...*Occurrence) *TagUpdateOne {
+// RemoveOccurrence removes "occurrence" edges to Occurrence entities.
+func (tuo *TagUpdateOne) RemoveOccurrence(o ...*Occurrence) *TagUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -577,12 +577,12 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 	if value, ok := tuo.mutation.IsAllergy(); ok {
 		_spec.SetField(tag.FieldIsAllergy, field.TypeBool, value)
 	}
-	if tuo.mutation.OccurrencesCleared() {
+	if tuo.mutation.OccurrenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.OccurrencesTable,
-			Columns: tag.OccurrencesPrimaryKey,
+			Inverse: true,
+			Table:   tag.OccurrenceTable,
+			Columns: tag.OccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -593,12 +593,12 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.RemovedOccurrencesIDs(); len(nodes) > 0 && !tuo.mutation.OccurrencesCleared() {
+	if nodes := tuo.mutation.RemovedOccurrenceIDs(); len(nodes) > 0 && !tuo.mutation.OccurrenceCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.OccurrencesTable,
-			Columns: tag.OccurrencesPrimaryKey,
+			Inverse: true,
+			Table:   tag.OccurrenceTable,
+			Columns: tag.OccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -612,12 +612,12 @@ func (tuo *TagUpdateOne) sqlSave(ctx context.Context) (_node *Tag, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.OccurrencesIDs(); len(nodes) > 0 {
+	if nodes := tuo.mutation.OccurrenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.OccurrencesTable,
-			Columns: tag.OccurrencesPrimaryKey,
+			Inverse: true,
+			Table:   tag.OccurrenceTable,
+			Columns: tag.OccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

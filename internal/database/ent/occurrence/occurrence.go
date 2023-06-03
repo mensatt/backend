@@ -46,8 +46,8 @@ const (
 	EdgeLocation = "location"
 	// EdgeDish holds the string denoting the dish edge name in mutations.
 	EdgeDish = "dish"
-	// EdgeTag holds the string denoting the tag edge name in mutations.
-	EdgeTag = "tag"
+	// EdgeTags holds the string denoting the tags edge name in mutations.
+	EdgeTags = "tags"
 	// EdgeSideDishes holds the string denoting the side_dishes edge name in mutations.
 	EdgeSideDishes = "side_dishes"
 	// EdgeReviews holds the string denoting the reviews edge name in mutations.
@@ -70,11 +70,11 @@ const (
 	DishInverseTable = "dish"
 	// DishColumn is the table column denoting the dish relation/edge.
 	DishColumn = "dish"
-	// TagTable is the table that holds the tag relation/edge. The primary key declared below.
-	TagTable = "tag_occurrences"
-	// TagInverseTable is the table name for the Tag entity.
+	// TagsTable is the table that holds the tags relation/edge. The primary key declared below.
+	TagsTable = "occurrence_tags"
+	// TagsInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tag"
+	TagsInverseTable = "tag"
 	// SideDishesTable is the table that holds the side_dishes relation/edge.
 	SideDishesTable = "dish"
 	// SideDishesInverseTable is the table name for the Dish entity.
@@ -118,9 +118,9 @@ var ForeignKeys = []string{
 }
 
 var (
-	// TagPrimaryKey and TagColumn2 are the table columns denoting the
-	// primary key for the tag relation (M2M).
-	TagPrimaryKey = []string{"tag_id", "occurrence_id"}
+	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
+	// primary key for the tags relation (M2M).
+	TagsPrimaryKey = []string{"occurrence_id", "tag_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

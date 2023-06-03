@@ -176,27 +176,27 @@ var (
 		Columns:    UserColumns,
 		PrimaryKey: []*schema.Column{UserColumns[0]},
 	}
-	// TagOccurrencesColumns holds the columns for the "tag_occurrences" table.
-	TagOccurrencesColumns = []*schema.Column{
-		{Name: "tag_id", Type: field.TypeString},
+	// OccurrenceTagsColumns holds the columns for the "occurrence_tags" table.
+	OccurrenceTagsColumns = []*schema.Column{
 		{Name: "occurrence_id", Type: field.TypeUUID},
+		{Name: "tag_id", Type: field.TypeString},
 	}
-	// TagOccurrencesTable holds the schema information for the "tag_occurrences" table.
-	TagOccurrencesTable = &schema.Table{
-		Name:       "tag_occurrences",
-		Columns:    TagOccurrencesColumns,
-		PrimaryKey: []*schema.Column{TagOccurrencesColumns[0], TagOccurrencesColumns[1]},
+	// OccurrenceTagsTable holds the schema information for the "occurrence_tags" table.
+	OccurrenceTagsTable = &schema.Table{
+		Name:       "occurrence_tags",
+		Columns:    OccurrenceTagsColumns,
+		PrimaryKey: []*schema.Column{OccurrenceTagsColumns[0], OccurrenceTagsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "tag_occurrences_tag_id",
-				Columns:    []*schema.Column{TagOccurrencesColumns[0]},
-				RefColumns: []*schema.Column{TagColumns[0]},
+				Symbol:     "occurrence_tags_occurrence_id",
+				Columns:    []*schema.Column{OccurrenceTagsColumns[0]},
+				RefColumns: []*schema.Column{OccurrenceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "tag_occurrences_occurrence_id",
-				Columns:    []*schema.Column{TagOccurrencesColumns[1]},
-				RefColumns: []*schema.Column{OccurrenceColumns[0]},
+				Symbol:     "occurrence_tags_tag_id",
+				Columns:    []*schema.Column{OccurrenceTagsColumns[1]},
+				RefColumns: []*schema.Column{TagColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
@@ -211,7 +211,7 @@ var (
 		ReviewTable,
 		TagTable,
 		UserTable,
-		TagOccurrencesTable,
+		OccurrenceTagsTable,
 	}
 )
 
@@ -246,6 +246,6 @@ func init() {
 	UserTable.Annotation = &entsql.Annotation{
 		Table: "user",
 	}
-	TagOccurrencesTable.ForeignKeys[0].RefTable = TagTable
-	TagOccurrencesTable.ForeignKeys[1].RefTable = OccurrenceTable
+	OccurrenceTagsTable.ForeignKeys[0].RefTable = OccurrenceTable
+	OccurrenceTagsTable.ForeignKeys[1].RefTable = TagTable
 }

@@ -85,14 +85,14 @@ func (tc *TagCreate) SetID(s string) *TagCreate {
 	return tc
 }
 
-// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
+// AddOccurrenceIDs adds the "occurrence" edge to the Occurrence entity by IDs.
 func (tc *TagCreate) AddOccurrenceIDs(ids ...uuid.UUID) *TagCreate {
 	tc.mutation.AddOccurrenceIDs(ids...)
 	return tc
 }
 
-// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
-func (tc *TagCreate) AddOccurrences(o ...*Occurrence) *TagCreate {
+// AddOccurrence adds the "occurrence" edges to the Occurrence entity.
+func (tc *TagCreate) AddOccurrence(o ...*Occurrence) *TagCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
@@ -278,12 +278,12 @@ func (tc *TagCreate) createSpec() (*Tag, *sqlgraph.CreateSpec) {
 		_spec.SetField(tag.FieldIsAllergy, field.TypeBool, value)
 		_node.IsAllergy = value
 	}
-	if nodes := tc.mutation.OccurrencesIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.OccurrenceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   tag.OccurrencesTable,
-			Columns: tag.OccurrencesPrimaryKey,
+			Inverse: true,
+			Table:   tag.OccurrenceTable,
+			Columns: tag.OccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

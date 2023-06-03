@@ -35,6 +35,6 @@ func (Tag) Fields() []ent.Field {
 // Edges of the Tag.
 func (Tag) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("occurrences", Occurrence.Type),
+		edge.From("occurrence", Occurrence.Type).Ref("tags"),
 	}
 }

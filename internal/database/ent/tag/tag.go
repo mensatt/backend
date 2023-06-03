@@ -23,17 +23,17 @@ const (
 	FieldPriority = "priority"
 	// FieldIsAllergy holds the string denoting the is_allergy field in the database.
 	FieldIsAllergy = "is_allergy"
-	// EdgeOccurrences holds the string denoting the occurrences edge name in mutations.
-	EdgeOccurrences = "occurrences"
+	// EdgeOccurrence holds the string denoting the occurrence edge name in mutations.
+	EdgeOccurrence = "occurrence"
 	// OccurrenceFieldID holds the string denoting the ID field of the Occurrence.
 	OccurrenceFieldID = "id"
 	// Table holds the table name of the tag in the database.
 	Table = "tag"
-	// OccurrencesTable is the table that holds the occurrences relation/edge. The primary key declared below.
-	OccurrencesTable = "tag_occurrences"
-	// OccurrencesInverseTable is the table name for the Occurrence entity.
+	// OccurrenceTable is the table that holds the occurrence relation/edge. The primary key declared below.
+	OccurrenceTable = "occurrence_tags"
+	// OccurrenceInverseTable is the table name for the Occurrence entity.
 	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
-	OccurrencesInverseTable = "occurrence"
+	OccurrenceInverseTable = "occurrence"
 )
 
 // Columns holds all SQL columns for tag fields.
@@ -47,9 +47,9 @@ var Columns = []string{
 }
 
 var (
-	// OccurrencesPrimaryKey and OccurrencesColumn2 are the table columns denoting the
-	// primary key for the occurrences relation (M2M).
-	OccurrencesPrimaryKey = []string{"tag_id", "occurrence_id"}
+	// OccurrencePrimaryKey and OccurrenceColumn2 are the table columns denoting the
+	// primary key for the occurrence relation (M2M).
+	OccurrencePrimaryKey = []string{"occurrence_id", "tag_id"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
