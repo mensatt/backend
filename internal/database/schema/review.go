@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -11,6 +13,13 @@ import (
 // Review holds the schema definition for the Review entity.
 type Review struct {
 	ent.Schema
+}
+
+// Annotations of the Review.
+func (Review) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "review"},
+	}
 }
 
 // Fields of the Review.

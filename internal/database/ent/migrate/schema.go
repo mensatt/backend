@@ -3,28 +3,29 @@
 package migrate
 
 import (
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql/schema"
 	"entgo.io/ent/schema/field"
 )
 
 var (
-	// DishesColumns holds the columns for the "dishes" table.
-	DishesColumns = []*schema.Column{
+	// DishColumns holds the columns for the "dish" table.
+	DishColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name_de", Type: field.TypeString, Unique: true},
 		{Name: "name_en", Type: field.TypeString, Nullable: true},
 		{Name: "occurrence_side_dishes", Type: field.TypeUUID, Nullable: true},
 	}
-	// DishesTable holds the schema information for the "dishes" table.
-	DishesTable = &schema.Table{
-		Name:       "dishes",
-		Columns:    DishesColumns,
-		PrimaryKey: []*schema.Column{DishesColumns[0]},
+	// DishTable holds the schema information for the "dish" table.
+	DishTable = &schema.Table{
+		Name:       "dish",
+		Columns:    DishColumns,
+		PrimaryKey: []*schema.Column{DishColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "dishes_occurrences_side_dishes",
-				Columns:    []*schema.Column{DishesColumns[3]},
-				RefColumns: []*schema.Column{OccurrencesColumns[0]},
+				Symbol:     "dish_occurrence_side_dishes",
+				Columns:    []*schema.Column{DishColumns[3]},
+				RefColumns: []*schema.Column{OccurrenceColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -42,47 +43,47 @@ var (
 		PrimaryKey: []*schema.Column{DishAliasColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "dish_alias_dishes_aliases",
+				Symbol:     "dish_alias_dish_aliases",
 				Columns:    []*schema.Column{DishAliasColumns[2]},
-				RefColumns: []*schema.Column{DishesColumns[0]},
+				RefColumns: []*schema.Column{DishColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// ImagesColumns holds the columns for the "images" table.
-	ImagesColumns = []*schema.Column{
+	// ImageColumns holds the columns for the "image" table.
+	ImageColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "image_hash", Type: field.TypeString},
 		{Name: "review", Type: field.TypeUUID},
 	}
-	// ImagesTable holds the schema information for the "images" table.
-	ImagesTable = &schema.Table{
-		Name:       "images",
-		Columns:    ImagesColumns,
-		PrimaryKey: []*schema.Column{ImagesColumns[0]},
+	// ImageTable holds the schema information for the "image" table.
+	ImageTable = &schema.Table{
+		Name:       "image",
+		Columns:    ImageColumns,
+		PrimaryKey: []*schema.Column{ImageColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "images_reviews_images",
-				Columns:    []*schema.Column{ImagesColumns[2]},
-				RefColumns: []*schema.Column{ReviewsColumns[0]},
+				Symbol:     "image_review_images",
+				Columns:    []*schema.Column{ImageColumns[2]},
+				RefColumns: []*schema.Column{ReviewColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// LocationsColumns holds the columns for the "locations" table.
-	LocationsColumns = []*schema.Column{
+	// LocationColumns holds the columns for the "location" table.
+	LocationColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "external_id", Type: field.TypeInt, Unique: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
 	}
-	// LocationsTable holds the schema information for the "locations" table.
-	LocationsTable = &schema.Table{
-		Name:       "locations",
-		Columns:    LocationsColumns,
-		PrimaryKey: []*schema.Column{LocationsColumns[0]},
+	// LocationTable holds the schema information for the "location" table.
+	LocationTable = &schema.Table{
+		Name:       "location",
+		Columns:    LocationColumns,
+		PrimaryKey: []*schema.Column{LocationColumns[0]},
 	}
-	// OccurrencesColumns holds the columns for the "occurrences" table.
-	OccurrencesColumns = []*schema.Column{
+	// OccurrenceColumns holds the columns for the "occurrence" table.
+	OccurrenceColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "date", Type: field.TypeTime},
 		{Name: "status", Type: field.TypeEnum, Enums: []string{"CONFIRMED", "APPROVED", "AWAITING_APPROVAL", "UPDATED", "PENDING_DELETION"}, Default: "AWAITING_APPROVAL"},
@@ -101,28 +102,28 @@ var (
 		{Name: "dish", Type: field.TypeUUID},
 		{Name: "location", Type: field.TypeUUID},
 	}
-	// OccurrencesTable holds the schema information for the "occurrences" table.
-	OccurrencesTable = &schema.Table{
-		Name:       "occurrences",
-		Columns:    OccurrencesColumns,
-		PrimaryKey: []*schema.Column{OccurrencesColumns[0]},
+	// OccurrenceTable holds the schema information for the "occurrence" table.
+	OccurrenceTable = &schema.Table{
+		Name:       "occurrence",
+		Columns:    OccurrenceColumns,
+		PrimaryKey: []*schema.Column{OccurrenceColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "occurrences_dishes_occurrences",
-				Columns:    []*schema.Column{OccurrencesColumns[15]},
-				RefColumns: []*schema.Column{DishesColumns[0]},
+				Symbol:     "occurrence_dish_occurrences",
+				Columns:    []*schema.Column{OccurrenceColumns[15]},
+				RefColumns: []*schema.Column{DishColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "occurrences_locations_occurrences",
-				Columns:    []*schema.Column{OccurrencesColumns[16]},
-				RefColumns: []*schema.Column{LocationsColumns[0]},
+				Symbol:     "occurrence_location_occurrences",
+				Columns:    []*schema.Column{OccurrenceColumns[16]},
+				RefColumns: []*schema.Column{LocationColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// ReviewsColumns holds the columns for the "reviews" table.
-	ReviewsColumns = []*schema.Column{
+	// ReviewColumns holds the columns for the "review" table.
+	ReviewColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "display_name", Type: field.TypeString, Nullable: true, Size: 32},
 		{Name: "stars", Type: field.TypeInt},
@@ -132,22 +133,22 @@ var (
 		{Name: "accepted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "occurrence", Type: field.TypeUUID},
 	}
-	// ReviewsTable holds the schema information for the "reviews" table.
-	ReviewsTable = &schema.Table{
-		Name:       "reviews",
-		Columns:    ReviewsColumns,
-		PrimaryKey: []*schema.Column{ReviewsColumns[0]},
+	// ReviewTable holds the schema information for the "review" table.
+	ReviewTable = &schema.Table{
+		Name:       "review",
+		Columns:    ReviewColumns,
+		PrimaryKey: []*schema.Column{ReviewColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "reviews_occurrences_reviews",
-				Columns:    []*schema.Column{ReviewsColumns[7]},
-				RefColumns: []*schema.Column{OccurrencesColumns[0]},
+				Symbol:     "review_occurrence_reviews",
+				Columns:    []*schema.Column{ReviewColumns[7]},
+				RefColumns: []*schema.Column{OccurrenceColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 	}
-	// TagsColumns holds the columns for the "tags" table.
-	TagsColumns = []*schema.Column{
+	// TagColumns holds the columns for the "tag" table.
+	TagColumns = []*schema.Column{
 		{Name: "key", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString},
@@ -155,25 +156,25 @@ var (
 		{Name: "priority", Type: field.TypeEnum, Enums: []string{"HIDE", "LOW", "MEDIUM", "HIGH"}, Default: "HIDE"},
 		{Name: "is_allergy", Type: field.TypeBool, Default: false},
 	}
-	// TagsTable holds the schema information for the "tags" table.
-	TagsTable = &schema.Table{
-		Name:       "tags",
-		Columns:    TagsColumns,
-		PrimaryKey: []*schema.Column{TagsColumns[0]},
+	// TagTable holds the schema information for the "tag" table.
+	TagTable = &schema.Table{
+		Name:       "tag",
+		Columns:    TagColumns,
+		PrimaryKey: []*schema.Column{TagColumns[0]},
 	}
-	// UsersColumns holds the columns for the "users" table.
-	UsersColumns = []*schema.Column{
+	// UserColumns holds the columns for the "user" table.
+	UserColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}
-	// UsersTable holds the schema information for the "users" table.
-	UsersTable = &schema.Table{
-		Name:       "users",
-		Columns:    UsersColumns,
-		PrimaryKey: []*schema.Column{UsersColumns[0]},
+	// UserTable holds the schema information for the "user" table.
+	UserTable = &schema.Table{
+		Name:       "user",
+		Columns:    UserColumns,
+		PrimaryKey: []*schema.Column{UserColumns[0]},
 	}
 	// TagOccurrencesColumns holds the columns for the "tag_occurrences" table.
 	TagOccurrencesColumns = []*schema.Column{
@@ -189,38 +190,62 @@ var (
 			{
 				Symbol:     "tag_occurrences_tag_id",
 				Columns:    []*schema.Column{TagOccurrencesColumns[0]},
-				RefColumns: []*schema.Column{TagsColumns[0]},
+				RefColumns: []*schema.Column{TagColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
 				Symbol:     "tag_occurrences_occurrence_id",
 				Columns:    []*schema.Column{TagOccurrencesColumns[1]},
-				RefColumns: []*schema.Column{OccurrencesColumns[0]},
+				RefColumns: []*schema.Column{OccurrenceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		DishesTable,
+		DishTable,
 		DishAliasTable,
-		ImagesTable,
-		LocationsTable,
-		OccurrencesTable,
-		ReviewsTable,
-		TagsTable,
-		UsersTable,
+		ImageTable,
+		LocationTable,
+		OccurrenceTable,
+		ReviewTable,
+		TagTable,
+		UserTable,
 		TagOccurrencesTable,
 	}
 )
 
 func init() {
-	DishesTable.ForeignKeys[0].RefTable = OccurrencesTable
-	DishAliasTable.ForeignKeys[0].RefTable = DishesTable
-	ImagesTable.ForeignKeys[0].RefTable = ReviewsTable
-	OccurrencesTable.ForeignKeys[0].RefTable = DishesTable
-	OccurrencesTable.ForeignKeys[1].RefTable = LocationsTable
-	ReviewsTable.ForeignKeys[0].RefTable = OccurrencesTable
-	TagOccurrencesTable.ForeignKeys[0].RefTable = TagsTable
-	TagOccurrencesTable.ForeignKeys[1].RefTable = OccurrencesTable
+	DishTable.ForeignKeys[0].RefTable = OccurrenceTable
+	DishTable.Annotation = &entsql.Annotation{
+		Table: "dish",
+	}
+	DishAliasTable.ForeignKeys[0].RefTable = DishTable
+	DishAliasTable.Annotation = &entsql.Annotation{
+		Table: "dish_alias",
+	}
+	ImageTable.ForeignKeys[0].RefTable = ReviewTable
+	ImageTable.Annotation = &entsql.Annotation{
+		Table: "image",
+	}
+	LocationTable.Annotation = &entsql.Annotation{
+		Table: "location",
+	}
+	OccurrenceTable.ForeignKeys[0].RefTable = DishTable
+	OccurrenceTable.ForeignKeys[1].RefTable = LocationTable
+	OccurrenceTable.Annotation = &entsql.Annotation{
+		Table: "occurrence",
+	}
+	ReviewTable.ForeignKeys[0].RefTable = OccurrenceTable
+	ReviewTable.Annotation = &entsql.Annotation{
+		Table: "review",
+	}
+	TagTable.Annotation = &entsql.Annotation{
+		Table: "tag",
+	}
+	UserTable.Annotation = &entsql.Annotation{
+		Table: "user",
+	}
+	TagOccurrencesTable.ForeignKeys[0].RefTable = TagTable
+	TagOccurrencesTable.ForeignKeys[1].RefTable = OccurrenceTable
 }

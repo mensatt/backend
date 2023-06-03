@@ -22,12 +22,12 @@ const (
 	// DishAliasFieldID holds the string denoting the ID field of the DishAlias.
 	DishAliasFieldID = "alias_name"
 	// Table holds the table name of the dish in the database.
-	Table = "dishes"
+	Table = "dish"
 	// OccurrencesTable is the table that holds the occurrences relation/edge.
-	OccurrencesTable = "occurrences"
+	OccurrencesTable = "occurrence"
 	// OccurrencesInverseTable is the table name for the Occurrence entity.
 	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
-	OccurrencesInverseTable = "occurrences"
+	OccurrencesInverseTable = "occurrence"
 	// OccurrencesColumn is the table column denoting the occurrences relation/edge.
 	OccurrencesColumn = "dish"
 	// AliasesTable is the table that holds the aliases relation/edge.
@@ -46,7 +46,7 @@ var Columns = []string{
 	FieldNameEn,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "dishes"
+// ForeignKeys holds the SQL foreign-keys that are owned by the "dish"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"occurrence_side_dishes",

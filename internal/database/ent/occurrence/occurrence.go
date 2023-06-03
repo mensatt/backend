@@ -55,38 +55,38 @@ const (
 	// TagFieldID holds the string denoting the ID field of the Tag.
 	TagFieldID = "key"
 	// Table holds the table name of the occurrence in the database.
-	Table = "occurrences"
+	Table = "occurrence"
 	// LocationTable is the table that holds the location relation/edge.
-	LocationTable = "occurrences"
+	LocationTable = "occurrence"
 	// LocationInverseTable is the table name for the Location entity.
 	// It exists in this package in order to avoid circular dependency with the "location" package.
-	LocationInverseTable = "locations"
+	LocationInverseTable = "location"
 	// LocationColumn is the table column denoting the location relation/edge.
 	LocationColumn = "location"
 	// DishTable is the table that holds the dish relation/edge.
-	DishTable = "occurrences"
+	DishTable = "occurrence"
 	// DishInverseTable is the table name for the Dish entity.
 	// It exists in this package in order to avoid circular dependency with the "dish" package.
-	DishInverseTable = "dishes"
+	DishInverseTable = "dish"
 	// DishColumn is the table column denoting the dish relation/edge.
 	DishColumn = "dish"
 	// TagTable is the table that holds the tag relation/edge. The primary key declared below.
 	TagTable = "tag_occurrences"
 	// TagInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
-	TagInverseTable = "tags"
+	TagInverseTable = "tag"
 	// SideDishesTable is the table that holds the side_dishes relation/edge.
-	SideDishesTable = "dishes"
+	SideDishesTable = "dish"
 	// SideDishesInverseTable is the table name for the Dish entity.
 	// It exists in this package in order to avoid circular dependency with the "dish" package.
-	SideDishesInverseTable = "dishes"
+	SideDishesInverseTable = "dish"
 	// SideDishesColumn is the table column denoting the side_dishes relation/edge.
 	SideDishesColumn = "occurrence_side_dishes"
 	// ReviewsTable is the table that holds the reviews relation/edge.
-	ReviewsTable = "reviews"
+	ReviewsTable = "review"
 	// ReviewsInverseTable is the table name for the Review entity.
 	// It exists in this package in order to avoid circular dependency with the "review" package.
-	ReviewsInverseTable = "reviews"
+	ReviewsInverseTable = "review"
 	// ReviewsColumn is the table column denoting the reviews relation/edge.
 	ReviewsColumn = "occurrence"
 )
@@ -110,7 +110,7 @@ var Columns = []string{
 	FieldPriceGuest,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "occurrences"
+// ForeignKeys holds the SQL foreign-keys that are owned by the "occurrence"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"dish",

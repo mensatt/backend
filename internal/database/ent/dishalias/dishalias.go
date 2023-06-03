@@ -19,7 +19,7 @@ const (
 	DishTable = "dish_alias"
 	// DishInverseTable is the table name for the Dish entity.
 	// It exists in this package in order to avoid circular dependency with the "dish" package.
-	DishInverseTable = "dishes"
+	DishInverseTable = "dish"
 	// DishColumn is the table column denoting the dish relation/edge.
 	DishColumn = "dish"
 )

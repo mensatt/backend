@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 )
@@ -9,6 +11,13 @@ import (
 // DishAlias holds the schema definition for the DishAlias entity.
 type DishAlias struct {
 	ent.Schema
+}
+
+// Annotations of the DishAlias.
+func (DishAlias) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "dish_alias"},
+	}
 }
 
 // Fields of the DishAlias.

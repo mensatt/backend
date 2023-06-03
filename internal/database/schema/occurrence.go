@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -10,6 +12,13 @@ import (
 // Occurrence holds the schema definition for the Occurrence entity.
 type Occurrence struct {
 	ent.Schema
+}
+
+// Annotations of the Occurrence.
+func (Occurrence) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "occurrence"},
+	}
 }
 
 // Fields of the Occurrence.
