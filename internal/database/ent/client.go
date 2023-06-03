@@ -730,15 +730,15 @@ func (c *OccurrenceClient) QueryDish(o *Occurrence) *DishQuery {
 	return query
 }
 
-// QueryTag queries the tag edge of a Occurrence.
-func (c *OccurrenceClient) QueryTag(o *Occurrence) *TagQuery {
+// QueryTags queries the tags edge of a Occurrence.
+func (c *OccurrenceClient) QueryTags(o *Occurrence) *TagQuery {
 	query := &TagQuery{config: c.config}
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := o.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(occurrence.Table, occurrence.FieldID, id),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, occurrence.TagTable, occurrence.TagPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, occurrence.TagsTable, occurrence.TagsPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
 		return fromV, nil
@@ -990,15 +990,15 @@ func (c *TagClient) GetX(ctx context.Context, id string) *Tag {
 	return obj
 }
 
-// QueryOccurrences queries the occurrences edge of a Tag.
-func (c *TagClient) QueryOccurrences(t *Tag) *OccurrenceQuery {
+// QueryOccurrence queries the occurrence edge of a Tag.
+func (c *TagClient) QueryOccurrence(t *Tag) *OccurrenceQuery {
 	query := &OccurrenceQuery{config: c.config}
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(tag.Table, tag.FieldID, id),
 			sqlgraph.To(occurrence.Table, occurrence.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, tag.OccurrencesTable, tag.OccurrencesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, tag.OccurrenceTable, tag.OccurrencePrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

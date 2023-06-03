@@ -400,14 +400,14 @@ func (ou *OccurrenceUpdate) SetDish(d *Dish) *OccurrenceUpdate {
 	return ou.SetDishID(d.ID)
 }
 
-// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (ou *OccurrenceUpdate) AddTagIDs(ids ...string) *OccurrenceUpdate {
 	ou.mutation.AddTagIDs(ids...)
 	return ou
 }
 
-// AddTag adds the "tag" edges to the Tag entity.
-func (ou *OccurrenceUpdate) AddTag(t ...*Tag) *OccurrenceUpdate {
+// AddTags adds the "tags" edges to the Tag entity.
+func (ou *OccurrenceUpdate) AddTags(t ...*Tag) *OccurrenceUpdate {
 	ids := make([]string, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -462,20 +462,20 @@ func (ou *OccurrenceUpdate) ClearDish() *OccurrenceUpdate {
 	return ou
 }
 
-// ClearTag clears all "tag" edges to the Tag entity.
-func (ou *OccurrenceUpdate) ClearTag() *OccurrenceUpdate {
-	ou.mutation.ClearTag()
+// ClearTags clears all "tags" edges to the Tag entity.
+func (ou *OccurrenceUpdate) ClearTags() *OccurrenceUpdate {
+	ou.mutation.ClearTags()
 	return ou
 }
 
-// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
 func (ou *OccurrenceUpdate) RemoveTagIDs(ids ...string) *OccurrenceUpdate {
 	ou.mutation.RemoveTagIDs(ids...)
 	return ou
 }
 
-// RemoveTag removes "tag" edges to Tag entities.
-func (ou *OccurrenceUpdate) RemoveTag(t ...*Tag) *OccurrenceUpdate {
+// RemoveTags removes "tags" edges to Tag entities.
+func (ou *OccurrenceUpdate) RemoveTags(t ...*Tag) *OccurrenceUpdate {
 	ids := make([]string, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -803,12 +803,12 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ou.mutation.TagCleared() {
+	if ou.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
+			Inverse: false,
+			Table:   occurrence.TagsTable,
+			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -819,12 +819,12 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ou.mutation.RemovedTagIDs(); len(nodes) > 0 && !ou.mutation.TagCleared() {
+	if nodes := ou.mutation.RemovedTagsIDs(); len(nodes) > 0 && !ou.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
+			Inverse: false,
+			Table:   occurrence.TagsTable,
+			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -838,12 +838,12 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ou.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := ou.mutation.TagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
+			Inverse: false,
+			Table:   occurrence.TagsTable,
+			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1350,14 +1350,14 @@ func (ouo *OccurrenceUpdateOne) SetDish(d *Dish) *OccurrenceUpdateOne {
 	return ouo.SetDishID(d.ID)
 }
 
-// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (ouo *OccurrenceUpdateOne) AddTagIDs(ids ...string) *OccurrenceUpdateOne {
 	ouo.mutation.AddTagIDs(ids...)
 	return ouo
 }
 
-// AddTag adds the "tag" edges to the Tag entity.
-func (ouo *OccurrenceUpdateOne) AddTag(t ...*Tag) *OccurrenceUpdateOne {
+// AddTags adds the "tags" edges to the Tag entity.
+func (ouo *OccurrenceUpdateOne) AddTags(t ...*Tag) *OccurrenceUpdateOne {
 	ids := make([]string, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -1412,20 +1412,20 @@ func (ouo *OccurrenceUpdateOne) ClearDish() *OccurrenceUpdateOne {
 	return ouo
 }
 
-// ClearTag clears all "tag" edges to the Tag entity.
-func (ouo *OccurrenceUpdateOne) ClearTag() *OccurrenceUpdateOne {
-	ouo.mutation.ClearTag()
+// ClearTags clears all "tags" edges to the Tag entity.
+func (ouo *OccurrenceUpdateOne) ClearTags() *OccurrenceUpdateOne {
+	ouo.mutation.ClearTags()
 	return ouo
 }
 
-// RemoveTagIDs removes the "tag" edge to Tag entities by IDs.
+// RemoveTagIDs removes the "tags" edge to Tag entities by IDs.
 func (ouo *OccurrenceUpdateOne) RemoveTagIDs(ids ...string) *OccurrenceUpdateOne {
 	ouo.mutation.RemoveTagIDs(ids...)
 	return ouo
 }
 
-// RemoveTag removes "tag" edges to Tag entities.
-func (ouo *OccurrenceUpdateOne) RemoveTag(t ...*Tag) *OccurrenceUpdateOne {
+// RemoveTags removes "tags" edges to Tag entities.
+func (ouo *OccurrenceUpdateOne) RemoveTags(t ...*Tag) *OccurrenceUpdateOne {
 	ids := make([]string, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -1783,12 +1783,12 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if ouo.mutation.TagCleared() {
+	if ouo.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
+			Inverse: false,
+			Table:   occurrence.TagsTable,
+			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1799,12 +1799,12 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ouo.mutation.RemovedTagIDs(); len(nodes) > 0 && !ouo.mutation.TagCleared() {
+	if nodes := ouo.mutation.RemovedTagsIDs(); len(nodes) > 0 && !ouo.mutation.TagsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
+			Inverse: false,
+			Table:   occurrence.TagsTable,
+			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -1818,12 +1818,12 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := ouo.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := ouo.mutation.TagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
+			Inverse: false,
+			Table:   occurrence.TagsTable,
+			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

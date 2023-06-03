@@ -253,14 +253,14 @@ func (oc *OccurrenceCreate) SetDish(d *Dish) *OccurrenceCreate {
 	return oc.SetDishID(d.ID)
 }
 
-// AddTagIDs adds the "tag" edge to the Tag entity by IDs.
+// AddTagIDs adds the "tags" edge to the Tag entity by IDs.
 func (oc *OccurrenceCreate) AddTagIDs(ids ...string) *OccurrenceCreate {
 	oc.mutation.AddTagIDs(ids...)
 	return oc
 }
 
-// AddTag adds the "tag" edges to the Tag entity.
-func (oc *OccurrenceCreate) AddTag(t ...*Tag) *OccurrenceCreate {
+// AddTags adds the "tags" edges to the Tag entity.
+func (oc *OccurrenceCreate) AddTags(t ...*Tag) *OccurrenceCreate {
 	ids := make([]string, len(t))
 	for i := range t {
 		ids[i] = t[i].ID
@@ -537,12 +537,12 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 		_node.dish = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := oc.mutation.TagIDs(); len(nodes) > 0 {
+	if nodes := oc.mutation.TagsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   occurrence.TagTable,
-			Columns: occurrence.TagPrimaryKey,
+			Inverse: false,
+			Table:   occurrence.TagsTable,
+			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -47,7 +47,7 @@ func (Occurrence) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("location", Location.Type).Ref("occurrences").Unique().Required(),
 		edge.From("dish", Dish.Type).Ref("occurrences").Unique().Required(),
-		edge.From("tag", Tag.Type).Ref("occurrences"),
+		edge.To("tags", Tag.Type),
 		edge.To("side_dishes", Dish.Type), // todo: create reverse edge
 		edge.To("reviews", Review.Type).StorageKey(edge.Column("occurrence")),
 	}

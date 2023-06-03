@@ -20,13 +20,13 @@ import (
 // TagQuery is the builder for querying Tag entities.
 type TagQuery struct {
 	config
-	limit           *int
-	offset          *int
-	unique          *bool
-	order           []OrderFunc
-	fields          []string
-	predicates      []predicate.Tag
-	withOccurrences *OccurrenceQuery
+	limit          *int
+	offset         *int
+	unique         *bool
+	order          []OrderFunc
+	fields         []string
+	predicates     []predicate.Tag
+	withOccurrence *OccurrenceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -63,8 +63,8 @@ func (tq *TagQuery) Order(o ...OrderFunc) *TagQuery {
 	return tq
 }
 
-// QueryOccurrences chains the current query on the "occurrences" edge.
-func (tq *TagQuery) QueryOccurrences() *OccurrenceQuery {
+// QueryOccurrence chains the current query on the "occurrence" edge.
+func (tq *TagQuery) QueryOccurrence() *OccurrenceQuery {
 	query := &OccurrenceQuery{config: tq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := tq.prepareQuery(ctx); err != nil {
@@ -77,7 +77,7 @@ func (tq *TagQuery) QueryOccurrences() *OccurrenceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(tag.Table, tag.FieldID, selector),
 			sqlgraph.To(occurrence.Table, occurrence.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, tag.OccurrencesTable, tag.OccurrencesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, true, tag.OccurrenceTable, tag.OccurrencePrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -261,12 +261,12 @@ func (tq *TagQuery) Clone() *TagQuery {
 		return nil
 	}
 	return &TagQuery{
-		config:          tq.config,
-		limit:           tq.limit,
-		offset:          tq.offset,
-		order:           append([]OrderFunc{}, tq.order...),
-		predicates:      append([]predicate.Tag{}, tq.predicates...),
-		withOccurrences: tq.withOccurrences.Clone(),
+		config:         tq.config,
+		limit:          tq.limit,
+		offset:         tq.offset,
+		order:          append([]OrderFunc{}, tq.order...),
+		predicates:     append([]predicate.Tag{}, tq.predicates...),
+		withOccurrence: tq.withOccurrence.Clone(),
 		// clone intermediate query.
 		sql:    tq.sql.Clone(),
 		path:   tq.path,
@@ -274,14 +274,14 @@ func (tq *TagQuery) Clone() *TagQuery {
 	}
 }
 
-// WithOccurrences tells the query-builder to eager-load the nodes that are connected to
-// the "occurrences" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TagQuery) WithOccurrences(opts ...func(*OccurrenceQuery)) *TagQuery {
+// WithOccurrence tells the query-builder to eager-load the nodes that are connected to
+// the "occurrence" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TagQuery) WithOccurrence(opts ...func(*OccurrenceQuery)) *TagQuery {
 	query := &OccurrenceQuery{config: tq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withOccurrences = query
+	tq.withOccurrence = query
 	return tq
 }
 
@@ -359,7 +359,7 @@ func (tq *TagQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tag, err
 		nodes       = []*Tag{}
 		_spec       = tq.querySpec()
 		loadedTypes = [1]bool{
-			tq.withOccurrences != nil,
+			tq.withOccurrence != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -380,17 +380,17 @@ func (tq *TagQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Tag, err
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := tq.withOccurrences; query != nil {
-		if err := tq.loadOccurrences(ctx, query, nodes,
-			func(n *Tag) { n.Edges.Occurrences = []*Occurrence{} },
-			func(n *Tag, e *Occurrence) { n.Edges.Occurrences = append(n.Edges.Occurrences, e) }); err != nil {
+	if query := tq.withOccurrence; query != nil {
+		if err := tq.loadOccurrence(ctx, query, nodes,
+			func(n *Tag) { n.Edges.Occurrence = []*Occurrence{} },
+			func(n *Tag, e *Occurrence) { n.Edges.Occurrence = append(n.Edges.Occurrence, e) }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (tq *TagQuery) loadOccurrences(ctx context.Context, query *OccurrenceQuery, nodes []*Tag, init func(*Tag), assign func(*Tag, *Occurrence)) error {
+func (tq *TagQuery) loadOccurrence(ctx context.Context, query *OccurrenceQuery, nodes []*Tag, init func(*Tag), assign func(*Tag, *Occurrence)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[string]*Tag)
 	nids := make(map[uuid.UUID]map[*Tag]struct{})
@@ -402,11 +402,11 @@ func (tq *TagQuery) loadOccurrences(ctx context.Context, query *OccurrenceQuery,
 		}
 	}
 	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(tag.OccurrencesTable)
-		s.Join(joinT).On(s.C(occurrence.FieldID), joinT.C(tag.OccurrencesPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(tag.OccurrencesPrimaryKey[0]), edgeIDs...))
+		joinT := sql.Table(tag.OccurrenceTable)
+		s.Join(joinT).On(s.C(occurrence.FieldID), joinT.C(tag.OccurrencePrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(tag.OccurrencePrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(tag.OccurrencesPrimaryKey[0]))
+		s.Select(joinT.C(tag.OccurrencePrimaryKey[1]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -440,7 +440,7 @@ func (tq *TagQuery) loadOccurrences(ctx context.Context, query *OccurrenceQuery,
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "occurrences" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "occurrence" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

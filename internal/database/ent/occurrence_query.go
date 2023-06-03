@@ -31,7 +31,7 @@ type OccurrenceQuery struct {
 	predicates     []predicate.Occurrence
 	withLocation   *LocationQuery
 	withDish       *DishQuery
-	withTag        *TagQuery
+	withTags       *TagQuery
 	withSideDishes *DishQuery
 	withReviews    *ReviewQuery
 	withFKs        bool
@@ -115,8 +115,8 @@ func (oq *OccurrenceQuery) QueryDish() *DishQuery {
 	return query
 }
 
-// QueryTag chains the current query on the "tag" edge.
-func (oq *OccurrenceQuery) QueryTag() *TagQuery {
+// QueryTags chains the current query on the "tags" edge.
+func (oq *OccurrenceQuery) QueryTags() *TagQuery {
 	query := &TagQuery{config: oq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oq.prepareQuery(ctx); err != nil {
@@ -129,7 +129,7 @@ func (oq *OccurrenceQuery) QueryTag() *TagQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(occurrence.Table, occurrence.FieldID, selector),
 			sqlgraph.To(tag.Table, tag.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, occurrence.TagTable, occurrence.TagPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2M, false, occurrence.TagsTable, occurrence.TagsPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(oq.driver.Dialect(), step)
 		return fromU, nil
@@ -364,7 +364,7 @@ func (oq *OccurrenceQuery) Clone() *OccurrenceQuery {
 		predicates:     append([]predicate.Occurrence{}, oq.predicates...),
 		withLocation:   oq.withLocation.Clone(),
 		withDish:       oq.withDish.Clone(),
-		withTag:        oq.withTag.Clone(),
+		withTags:       oq.withTags.Clone(),
 		withSideDishes: oq.withSideDishes.Clone(),
 		withReviews:    oq.withReviews.Clone(),
 		// clone intermediate query.
@@ -396,14 +396,14 @@ func (oq *OccurrenceQuery) WithDish(opts ...func(*DishQuery)) *OccurrenceQuery {
 	return oq
 }
 
-// WithTag tells the query-builder to eager-load the nodes that are connected to
-// the "tag" edge. The optional arguments are used to configure the query builder of the edge.
-func (oq *OccurrenceQuery) WithTag(opts ...func(*TagQuery)) *OccurrenceQuery {
+// WithTags tells the query-builder to eager-load the nodes that are connected to
+// the "tags" edge. The optional arguments are used to configure the query builder of the edge.
+func (oq *OccurrenceQuery) WithTags(opts ...func(*TagQuery)) *OccurrenceQuery {
 	query := &TagQuery{config: oq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	oq.withTag = query
+	oq.withTags = query
 	return oq
 }
 
@@ -506,7 +506,7 @@ func (oq *OccurrenceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*O
 		loadedTypes = [5]bool{
 			oq.withLocation != nil,
 			oq.withDish != nil,
-			oq.withTag != nil,
+			oq.withTags != nil,
 			oq.withSideDishes != nil,
 			oq.withReviews != nil,
 		}
@@ -547,10 +547,10 @@ func (oq *OccurrenceQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*O
 			return nil, err
 		}
 	}
-	if query := oq.withTag; query != nil {
-		if err := oq.loadTag(ctx, query, nodes,
-			func(n *Occurrence) { n.Edges.Tag = []*Tag{} },
-			func(n *Occurrence, e *Tag) { n.Edges.Tag = append(n.Edges.Tag, e) }); err != nil {
+	if query := oq.withTags; query != nil {
+		if err := oq.loadTags(ctx, query, nodes,
+			func(n *Occurrence) { n.Edges.Tags = []*Tag{} },
+			func(n *Occurrence, e *Tag) { n.Edges.Tags = append(n.Edges.Tags, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -629,7 +629,7 @@ func (oq *OccurrenceQuery) loadDish(ctx context.Context, query *DishQuery, nodes
 	}
 	return nil
 }
-func (oq *OccurrenceQuery) loadTag(ctx context.Context, query *TagQuery, nodes []*Occurrence, init func(*Occurrence), assign func(*Occurrence, *Tag)) error {
+func (oq *OccurrenceQuery) loadTags(ctx context.Context, query *TagQuery, nodes []*Occurrence, init func(*Occurrence), assign func(*Occurrence, *Tag)) error {
 	edgeIDs := make([]driver.Value, len(nodes))
 	byID := make(map[uuid.UUID]*Occurrence)
 	nids := make(map[string]map[*Occurrence]struct{})
@@ -641,11 +641,11 @@ func (oq *OccurrenceQuery) loadTag(ctx context.Context, query *TagQuery, nodes [
 		}
 	}
 	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(occurrence.TagTable)
-		s.Join(joinT).On(s.C(tag.FieldID), joinT.C(occurrence.TagPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(occurrence.TagPrimaryKey[1]), edgeIDs...))
+		joinT := sql.Table(occurrence.TagsTable)
+		s.Join(joinT).On(s.C(tag.FieldID), joinT.C(occurrence.TagsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(occurrence.TagsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
-		s.Select(joinT.C(occurrence.TagPrimaryKey[1]))
+		s.Select(joinT.C(occurrence.TagsPrimaryKey[0]))
 		s.AppendSelect(columns...)
 		s.SetDistinct(false)
 	})
@@ -679,7 +679,7 @@ func (oq *OccurrenceQuery) loadTag(ctx context.Context, query *TagQuery, nodes [
 	for _, n := range neighbors {
 		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "tag" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected "tags" node returned %v`, n.ID)
 		}
 		for kn := range nodes {
 			assign(kn, n)

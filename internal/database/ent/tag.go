@@ -33,20 +33,20 @@ type Tag struct {
 
 // TagEdges holds the relations/edges for other nodes in the graph.
 type TagEdges struct {
-	// Occurrences holds the value of the occurrences edge.
-	Occurrences []*Occurrence `json:"occurrences,omitempty"`
+	// Occurrence holds the value of the occurrence edge.
+	Occurrence []*Occurrence `json:"occurrence,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// OccurrencesOrErr returns the Occurrences value or an error if the edge
+// OccurrenceOrErr returns the Occurrence value or an error if the edge
 // was not loaded in eager-loading.
-func (e TagEdges) OccurrencesOrErr() ([]*Occurrence, error) {
+func (e TagEdges) OccurrenceOrErr() ([]*Occurrence, error) {
 	if e.loadedTypes[0] {
-		return e.Occurrences, nil
+		return e.Occurrence, nil
 	}
-	return nil, &NotLoadedError{edge: "occurrences"}
+	return nil, &NotLoadedError{edge: "occurrence"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -115,9 +115,9 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// QueryOccurrences queries the "occurrences" edge of the Tag entity.
-func (t *Tag) QueryOccurrences() *OccurrenceQuery {
-	return (&TagClient{config: t.config}).QueryOccurrences(t)
+// QueryOccurrence queries the "occurrence" edge of the Tag entity.
+func (t *Tag) QueryOccurrence() *OccurrenceQuery {
+	return (&TagClient{config: t.config}).QueryOccurrence(t)
 }
 
 // Update returns a builder for updating this Tag.

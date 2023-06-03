@@ -61,8 +61,8 @@ type OccurrenceEdges struct {
 	Location *Location `json:"location,omitempty"`
 	// Dish holds the value of the dish edge.
 	Dish *Dish `json:"dish,omitempty"`
-	// Tag holds the value of the tag edge.
-	Tag []*Tag `json:"tag,omitempty"`
+	// Tags holds the value of the tags edge.
+	Tags []*Tag `json:"tags,omitempty"`
 	// SideDishes holds the value of the side_dishes edge.
 	SideDishes []*Dish `json:"side_dishes,omitempty"`
 	// Reviews holds the value of the reviews edge.
@@ -98,13 +98,13 @@ func (e OccurrenceEdges) DishOrErr() (*Dish, error) {
 	return nil, &NotLoadedError{edge: "dish"}
 }
 
-// TagOrErr returns the Tag value or an error if the edge
+// TagsOrErr returns the Tags value or an error if the edge
 // was not loaded in eager-loading.
-func (e OccurrenceEdges) TagOrErr() ([]*Tag, error) {
+func (e OccurrenceEdges) TagsOrErr() ([]*Tag, error) {
 	if e.loadedTypes[2] {
-		return e.Tag, nil
+		return e.Tags, nil
 	}
-	return nil, &NotLoadedError{edge: "tag"}
+	return nil, &NotLoadedError{edge: "tags"}
 }
 
 // SideDishesOrErr returns the SideDishes value or an error if the edge
@@ -288,9 +288,9 @@ func (o *Occurrence) QueryDish() *DishQuery {
 	return (&OccurrenceClient{config: o.config}).QueryDish(o)
 }
 
-// QueryTag queries the "tag" edge of the Occurrence entity.
-func (o *Occurrence) QueryTag() *TagQuery {
-	return (&OccurrenceClient{config: o.config}).QueryTag(o)
+// QueryTags queries the "tags" edge of the Occurrence entity.
+func (o *Occurrence) QueryTags() *TagQuery {
+	return (&OccurrenceClient{config: o.config}).QueryTags(o)
 }
 
 // QuerySideDishes queries the "side_dishes" edge of the Occurrence entity.
