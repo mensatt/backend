@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -10,6 +12,13 @@ import (
 // Dish holds the schema definition for the Dish entity.
 type Dish struct {
 	ent.Schema
+}
+
+// Annotations of the Dish.
+func (Dish) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "dish"},
+	}
 }
 
 // Fields of the Dish.

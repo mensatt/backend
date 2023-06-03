@@ -28,12 +28,12 @@ const (
 	// OccurrenceFieldID holds the string denoting the ID field of the Occurrence.
 	OccurrenceFieldID = "id"
 	// Table holds the table name of the tag in the database.
-	Table = "tags"
+	Table = "tag"
 	// OccurrencesTable is the table that holds the occurrences relation/edge. The primary key declared below.
 	OccurrencesTable = "tag_occurrences"
 	// OccurrencesInverseTable is the table name for the Occurrence entity.
 	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
-	OccurrencesInverseTable = "occurrences"
+	OccurrencesInverseTable = "occurrence"
 )
 
 // Columns holds all SQL columns for tag fields.

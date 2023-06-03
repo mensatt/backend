@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -10,6 +12,13 @@ import (
 // Image holds the schema definition for the Image entity.
 type Image struct {
 	ent.Schema
+}
+
+// Annotations of the Image.
+func (Image) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "image"},
+	}
 }
 
 // Fields of the Image.

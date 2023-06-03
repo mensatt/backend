@@ -30,19 +30,19 @@ const (
 	// EdgeImages holds the string denoting the images edge name in mutations.
 	EdgeImages = "images"
 	// Table holds the table name of the review in the database.
-	Table = "reviews"
+	Table = "review"
 	// OccurrenceTable is the table that holds the occurrence relation/edge.
-	OccurrenceTable = "reviews"
+	OccurrenceTable = "review"
 	// OccurrenceInverseTable is the table name for the Occurrence entity.
 	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
-	OccurrenceInverseTable = "occurrences"
+	OccurrenceInverseTable = "occurrence"
 	// OccurrenceColumn is the table column denoting the occurrence relation/edge.
 	OccurrenceColumn = "occurrence"
 	// ImagesTable is the table that holds the images relation/edge.
-	ImagesTable = "images"
+	ImagesTable = "image"
 	// ImagesInverseTable is the table name for the Image entity.
 	// It exists in this package in order to avoid circular dependency with the "image" package.
-	ImagesInverseTable = "images"
+	ImagesInverseTable = "image"
 	// ImagesColumn is the table column denoting the images relation/edge.
 	ImagesColumn = "review"
 )
@@ -58,7 +58,7 @@ var Columns = []string{
 	FieldAcceptedAt,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "reviews"
+// ForeignKeys holds the SQL foreign-keys that are owned by the "review"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"occurrence",

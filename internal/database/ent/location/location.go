@@ -18,12 +18,12 @@ const (
 	// EdgeOccurrences holds the string denoting the occurrences edge name in mutations.
 	EdgeOccurrences = "occurrences"
 	// Table holds the table name of the location in the database.
-	Table = "locations"
+	Table = "location"
 	// OccurrencesTable is the table that holds the occurrences relation/edge.
-	OccurrencesTable = "occurrences"
+	OccurrencesTable = "occurrence"
 	// OccurrencesInverseTable is the table name for the Occurrence entity.
 	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
-	OccurrencesInverseTable = "occurrences"
+	OccurrencesInverseTable = "occurrence"
 	// OccurrencesColumn is the table column denoting the occurrences relation/edge.
 	OccurrencesColumn = "location"
 )

@@ -2,6 +2,8 @@ package schema
 
 import (
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
@@ -10,6 +12,13 @@ import (
 // Location holds the schema definition for the Location entity.
 type Location struct {
 	ent.Schema
+}
+
+// Annotations of the Location.
+func (Location) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Annotation{Table: "location"},
+	}
 }
 
 // Fields of the Location.

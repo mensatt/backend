@@ -16,12 +16,12 @@ const (
 	// EdgeReview holds the string denoting the review edge name in mutations.
 	EdgeReview = "review"
 	// Table holds the table name of the image in the database.
-	Table = "images"
+	Table = "image"
 	// ReviewTable is the table that holds the review relation/edge.
-	ReviewTable = "images"
+	ReviewTable = "image"
 	// ReviewInverseTable is the table name for the Review entity.
 	// It exists in this package in order to avoid circular dependency with the "review" package.
-	ReviewInverseTable = "reviews"
+	ReviewInverseTable = "review"
 	// ReviewColumn is the table column denoting the review relation/edge.
 	ReviewColumn = "review"
 )
@@ -32,7 +32,7 @@ var Columns = []string{
 	FieldImageHash,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "images"
+// ForeignKeys holds the SQL foreign-keys that are owned by the "image"
 // table and are not defined as standalone fields in the schema.
 var ForeignKeys = []string{
 	"review",
