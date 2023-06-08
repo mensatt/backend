@@ -27,7 +27,6 @@ func (Image) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
 		field.String("image_hash").NotEmpty(),
 	}
-
 }
 
 // Edges of the Image.
