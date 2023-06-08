@@ -169,8 +169,8 @@ var (
 	}
 	// OccurrenceTagsColumns holds the columns for the "occurrence_tags" table.
 	OccurrenceTagsColumns = []*schema.Column{
-		{Name: "occurrence_id", Type: field.TypeUUID},
-		{Name: "tag_id", Type: field.TypeString},
+		{Name: "occurrence", Type: field.TypeUUID},
+		{Name: "tag", Type: field.TypeString},
 	}
 	// OccurrenceTagsTable holds the schema information for the "occurrence_tags" table.
 	OccurrenceTagsTable = &schema.Table{
@@ -179,13 +179,13 @@ var (
 		PrimaryKey: []*schema.Column{OccurrenceTagsColumns[0], OccurrenceTagsColumns[1]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "occurrence_tags_occurrence_id",
+				Symbol:     "occurrence_tags_occurrence",
 				Columns:    []*schema.Column{OccurrenceTagsColumns[0]},
 				RefColumns: []*schema.Column{OccurrenceColumns[0]},
 				OnDelete:   schema.Cascade,
 			},
 			{
-				Symbol:     "occurrence_tags_tag_id",
+				Symbol:     "occurrence_tags_tag",
 				Columns:    []*schema.Column{OccurrenceTagsColumns[1]},
 				RefColumns: []*schema.Column{TagColumns[0]},
 				OnDelete:   schema.Cascade,

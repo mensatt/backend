@@ -118,7 +118,7 @@ var ForeignKeys = []string{
 var (
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
-	TagsPrimaryKey = []string{"occurrence_id", "tag_id"}
+	TagsPrimaryKey = []string{"occurrence", "tag"}
 	// SideDishesPrimaryKey and SideDishesColumn2 are the table columns denoting the
 	// primary key for the side_dishes relation (M2M).
 	SideDishesPrimaryKey = []string{"occurrence", "dish"}
