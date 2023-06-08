@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/mensatt/backend/internal/database/ent"
-	"github.com/mensatt/backend/internal/database/ent/dishalias"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/ent/user"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
@@ -92,14 +91,7 @@ func (r *mutationResolver) CreateDishAlias(ctx context.Context, input models.Cre
 
 // UpdateDishAlias is the resolver for the updateDishAlias field.
 func (r *mutationResolver) UpdateDishAlias(ctx context.Context, input models.UpdateDishAliasInput) (*ent.DishAlias, error) {
-	// find dish alias by name (as we use this as a primary key and not the id)
-	// update dish alias after wards
-	dishAlias, err := r.Database.DishAlias.Query().Where(dishalias.IDEQ(input.AliasName)).Only(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	queryBuilder := r.Database.DishAlias.UpdateOne(dishAlias)
+	queryBuilder := r.Database.DishAlias.UpdateOneID(input.AliasName)
 
 	// todo: fix changing the primary key
 	//if input.NewAliasName != nil {
@@ -115,9 +107,7 @@ func (r *mutationResolver) UpdateDishAlias(ctx context.Context, input models.Upd
 
 // DeleteDishAlias is the resolver for the deleteDishAlias field.
 func (r *mutationResolver) DeleteDishAlias(ctx context.Context, input models.DeleteDishAliasInput) (*ent.DishAlias, error) {
-	// find dish alias by name (as we use this as a primary key and not the id)
-	// delete dish alias after wards
-	dishAlias, err := r.Database.DishAlias.Query().Where(dishalias.IDEQ(input.AliasName)).Only(ctx)
+	dishAlias, err := r.Database.DishAlias.Get(ctx, input.AliasName)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +181,7 @@ func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.Cr
 	}
 
 	if len(input.Tags) > 0 {
-		//queryBuilder = queryBuilder.AddTagIDs(input.Tags...)  todo: add helper method for adding tags
+		queryBuilder = queryBuilder.AddTagIDs(input.Tags...)
 	}
 
 	return queryBuilder.Save(ctx)
@@ -375,7 +365,6 @@ func (r *mutationResolver) RemoveSideDishFromOccurrence(ctx context.Context, inp
 func (r *mutationResolver) CreateReview(ctx context.Context, input models.CreateReviewInput) (*ent.Review, error) {
 	queryBuilder := r.Database.Review.Create().
 		SetOccurrenceID(input.Occurrence).
-		//AddOccurrenceIDs(input.Occurrence).
 		SetStars(input.Stars)
 
 	if input.DisplayName != nil {
@@ -407,10 +396,6 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 	}
 
 	queryBuilder := r.Database.Review.UpdateOne(review)
-
-	//if input.Occurrence != nil {
-	//	queryBuilder = queryBuilder.ClearOccurrence().AddOccurrenceIDs(*input.Occurrence) // todo: check if there is a better way
-	//}
 
 	if input.Occurrence != nil {
 		queryBuilder = queryBuilder.SetOccurrenceID(*input.Occurrence)
