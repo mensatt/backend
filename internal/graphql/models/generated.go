@@ -134,11 +134,22 @@ type ReviewDataDish struct {
 	Metadata *ReviewMetadataDish `json:"metadata"`
 }
 
+type ReviewDataOccurrence struct {
+	Reviews  []*ent.Review             `json:"reviews"`
+	Images   []*ent.Image              `json:"images"`
+	Metadata *ReviewMetadataOccurrence `json:"metadata"`
+}
+
 type ReviewFilter struct {
 	Approved *bool `json:"approved,omitempty"`
 }
 
 type ReviewMetadataDish struct {
+	AverageStars *float64 `json:"averageStars,omitempty"`
+	ReviewCount  int      `json:"reviewCount"`
+}
+
+type ReviewMetadataOccurrence struct {
 	AverageStars *float64 `json:"averageStars,omitempty"`
 	ReviewCount  int      `json:"reviewCount"`
 }
