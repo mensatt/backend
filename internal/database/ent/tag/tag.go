@@ -49,7 +49,7 @@ var Columns = []string{
 var (
 	// OccurrencePrimaryKey and OccurrenceColumn2 are the table columns denoting the
 	// primary key for the occurrence relation (M2M).
-	OccurrencePrimaryKey = []string{"occurrence_id", "tag_id"}
+	OccurrencePrimaryKey = []string{"occurrence", "tag"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).
