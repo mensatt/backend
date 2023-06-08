@@ -258,15 +258,15 @@ func (c *DishClient) GetX(ctx context.Context, id uuid.UUID) *Dish {
 	return obj
 }
 
-// QueryOccurrences queries the occurrences edge of a Dish.
-func (c *DishClient) QueryOccurrences(d *Dish) *OccurrenceQuery {
+// QueryDishOccurrences queries the dish_occurrences edge of a Dish.
+func (c *DishClient) QueryDishOccurrences(d *Dish) *OccurrenceQuery {
 	query := &OccurrenceQuery{config: c.config}
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := d.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dish.Table, dish.FieldID, id),
 			sqlgraph.To(occurrence.Table, occurrence.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dish.OccurrencesTable, dish.OccurrencesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, dish.DishOccurrencesTable, dish.DishOccurrencesColumn),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -283,6 +283,22 @@ func (c *DishClient) QueryAliases(d *Dish) *DishAliasQuery {
 			sqlgraph.From(dish.Table, dish.FieldID, id),
 			sqlgraph.To(dishalias.Table, dishalias.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dish.AliasesTable, dish.AliasesColumn),
+		)
+		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySideDishOccurrence queries the side_dish_occurrence edge of a Dish.
+func (c *DishClient) QuerySideDishOccurrence(d *Dish) *OccurrenceQuery {
+	query := &OccurrenceQuery{config: c.config}
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := d.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dish.Table, dish.FieldID, id),
+			sqlgraph.To(occurrence.Table, occurrence.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dish.SideDishOccurrenceTable, dish.SideDishOccurrencePrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(d.driver.Dialect(), step)
 		return fromV, nil
@@ -754,7 +770,7 @@ func (c *OccurrenceClient) QuerySideDishes(o *Occurrence) *DishQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(occurrence.Table, occurrence.FieldID, id),
 			sqlgraph.To(dish.Table, dish.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, occurrence.SideDishesTable, occurrence.SideDishesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, occurrence.SideDishesTable, occurrence.SideDishesPrimaryKey...),
 		)
 		fromV = sqlgraph.Neighbors(o.driver.Dialect(), step)
 		return fromV, nil

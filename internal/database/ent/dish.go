@@ -22,28 +22,29 @@ type Dish struct {
 	NameEn *string `json:"name_en,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DishQuery when eager-loading is set.
-	Edges                  DishEdges `json:"edges"`
-	occurrence_side_dishes *uuid.UUID
+	Edges DishEdges `json:"edges"`
 }
 
 // DishEdges holds the relations/edges for other nodes in the graph.
 type DishEdges struct {
-	// Occurrences holds the value of the occurrences edge.
-	Occurrences []*Occurrence `json:"occurrences,omitempty"`
+	// DishOccurrences holds the value of the dish_occurrences edge.
+	DishOccurrences []*Occurrence `json:"dish_occurrences,omitempty"`
 	// Aliases holds the value of the aliases edge.
 	Aliases []*DishAlias `json:"aliases,omitempty"`
+	// SideDishOccurrence holds the value of the side_dish_occurrence edge.
+	SideDishOccurrence []*Occurrence `json:"side_dish_occurrence,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
-// OccurrencesOrErr returns the Occurrences value or an error if the edge
+// DishOccurrencesOrErr returns the DishOccurrences value or an error if the edge
 // was not loaded in eager-loading.
-func (e DishEdges) OccurrencesOrErr() ([]*Occurrence, error) {
+func (e DishEdges) DishOccurrencesOrErr() ([]*Occurrence, error) {
 	if e.loadedTypes[0] {
-		return e.Occurrences, nil
+		return e.DishOccurrences, nil
 	}
-	return nil, &NotLoadedError{edge: "occurrences"}
+	return nil, &NotLoadedError{edge: "dish_occurrences"}
 }
 
 // AliasesOrErr returns the Aliases value or an error if the edge
@@ -55,6 +56,15 @@ func (e DishEdges) AliasesOrErr() ([]*DishAlias, error) {
 	return nil, &NotLoadedError{edge: "aliases"}
 }
 
+// SideDishOccurrenceOrErr returns the SideDishOccurrence value or an error if the edge
+// was not loaded in eager-loading.
+func (e DishEdges) SideDishOccurrenceOrErr() ([]*Occurrence, error) {
+	if e.loadedTypes[2] {
+		return e.SideDishOccurrence, nil
+	}
+	return nil, &NotLoadedError{edge: "side_dish_occurrence"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Dish) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -64,8 +74,6 @@ func (*Dish) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case dish.FieldID:
 			values[i] = new(uuid.UUID)
-		case dish.ForeignKeys[0]: // occurrence_side_dishes
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Dish", columns[i])
 		}
@@ -100,26 +108,24 @@ func (d *Dish) assignValues(columns []string, values []any) error {
 				d.NameEn = new(string)
 				*d.NameEn = value.String
 			}
-		case dish.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field occurrence_side_dishes", values[i])
-			} else if value.Valid {
-				d.occurrence_side_dishes = new(uuid.UUID)
-				*d.occurrence_side_dishes = *value.S.(*uuid.UUID)
-			}
 		}
 	}
 	return nil
 }
 
-// QueryOccurrences queries the "occurrences" edge of the Dish entity.
-func (d *Dish) QueryOccurrences() *OccurrenceQuery {
-	return (&DishClient{config: d.config}).QueryOccurrences(d)
+// QueryDishOccurrences queries the "dish_occurrences" edge of the Dish entity.
+func (d *Dish) QueryDishOccurrences() *OccurrenceQuery {
+	return (&DishClient{config: d.config}).QueryDishOccurrences(d)
 }
 
 // QueryAliases queries the "aliases" edge of the Dish entity.
 func (d *Dish) QueryAliases() *DishAliasQuery {
 	return (&DishClient{config: d.config}).QueryAliases(d)
+}
+
+// QuerySideDishOccurrence queries the "side_dish_occurrence" edge of the Dish entity.
+func (d *Dish) QuerySideDishOccurrence() *OccurrenceQuery {
+	return (&DishClient{config: d.config}).QuerySideDishOccurrence(d)
 }
 
 // Update returns a builder for updating this Dish.

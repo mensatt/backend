@@ -21,15 +21,15 @@ import (
 // DishQuery is the builder for querying Dish entities.
 type DishQuery struct {
 	config
-	limit           *int
-	offset          *int
-	unique          *bool
-	order           []OrderFunc
-	fields          []string
-	predicates      []predicate.Dish
-	withOccurrences *OccurrenceQuery
-	withAliases     *DishAliasQuery
-	withFKs         bool
+	limit                  *int
+	offset                 *int
+	unique                 *bool
+	order                  []OrderFunc
+	fields                 []string
+	predicates             []predicate.Dish
+	withDishOccurrences    *OccurrenceQuery
+	withAliases            *DishAliasQuery
+	withSideDishOccurrence *OccurrenceQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -66,8 +66,8 @@ func (dq *DishQuery) Order(o ...OrderFunc) *DishQuery {
 	return dq
 }
 
-// QueryOccurrences chains the current query on the "occurrences" edge.
-func (dq *DishQuery) QueryOccurrences() *OccurrenceQuery {
+// QueryDishOccurrences chains the current query on the "dish_occurrences" edge.
+func (dq *DishQuery) QueryDishOccurrences() *OccurrenceQuery {
 	query := &OccurrenceQuery{config: dq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
@@ -80,7 +80,7 @@ func (dq *DishQuery) QueryOccurrences() *OccurrenceQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(dish.Table, dish.FieldID, selector),
 			sqlgraph.To(occurrence.Table, occurrence.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, dish.OccurrencesTable, dish.OccurrencesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, dish.DishOccurrencesTable, dish.DishOccurrencesColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -103,6 +103,28 @@ func (dq *DishQuery) QueryAliases() *DishAliasQuery {
 			sqlgraph.From(dish.Table, dish.FieldID, selector),
 			sqlgraph.To(dishalias.Table, dishalias.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, dish.AliasesTable, dish.AliasesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySideDishOccurrence chains the current query on the "side_dish_occurrence" edge.
+func (dq *DishQuery) QuerySideDishOccurrence() *OccurrenceQuery {
+	query := &OccurrenceQuery{config: dq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := dq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := dq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(dish.Table, dish.FieldID, selector),
+			sqlgraph.To(occurrence.Table, occurrence.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, dish.SideDishOccurrenceTable, dish.SideDishOccurrencePrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(dq.driver.Dialect(), step)
 		return fromU, nil
@@ -286,13 +308,14 @@ func (dq *DishQuery) Clone() *DishQuery {
 		return nil
 	}
 	return &DishQuery{
-		config:          dq.config,
-		limit:           dq.limit,
-		offset:          dq.offset,
-		order:           append([]OrderFunc{}, dq.order...),
-		predicates:      append([]predicate.Dish{}, dq.predicates...),
-		withOccurrences: dq.withOccurrences.Clone(),
-		withAliases:     dq.withAliases.Clone(),
+		config:                 dq.config,
+		limit:                  dq.limit,
+		offset:                 dq.offset,
+		order:                  append([]OrderFunc{}, dq.order...),
+		predicates:             append([]predicate.Dish{}, dq.predicates...),
+		withDishOccurrences:    dq.withDishOccurrences.Clone(),
+		withAliases:            dq.withAliases.Clone(),
+		withSideDishOccurrence: dq.withSideDishOccurrence.Clone(),
 		// clone intermediate query.
 		sql:    dq.sql.Clone(),
 		path:   dq.path,
@@ -300,14 +323,14 @@ func (dq *DishQuery) Clone() *DishQuery {
 	}
 }
 
-// WithOccurrences tells the query-builder to eager-load the nodes that are connected to
-// the "occurrences" edge. The optional arguments are used to configure the query builder of the edge.
-func (dq *DishQuery) WithOccurrences(opts ...func(*OccurrenceQuery)) *DishQuery {
+// WithDishOccurrences tells the query-builder to eager-load the nodes that are connected to
+// the "dish_occurrences" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DishQuery) WithDishOccurrences(opts ...func(*OccurrenceQuery)) *DishQuery {
 	query := &OccurrenceQuery{config: dq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	dq.withOccurrences = query
+	dq.withDishOccurrences = query
 	return dq
 }
 
@@ -319,6 +342,17 @@ func (dq *DishQuery) WithAliases(opts ...func(*DishAliasQuery)) *DishQuery {
 		opt(query)
 	}
 	dq.withAliases = query
+	return dq
+}
+
+// WithSideDishOccurrence tells the query-builder to eager-load the nodes that are connected to
+// the "side_dish_occurrence" edge. The optional arguments are used to configure the query builder of the edge.
+func (dq *DishQuery) WithSideDishOccurrence(opts ...func(*OccurrenceQuery)) *DishQuery {
+	query := &OccurrenceQuery{config: dq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	dq.withSideDishOccurrence = query
 	return dq
 }
 
@@ -394,16 +428,13 @@ func (dq *DishQuery) prepareQuery(ctx context.Context) error {
 func (dq *DishQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dish, error) {
 	var (
 		nodes       = []*Dish{}
-		withFKs     = dq.withFKs
 		_spec       = dq.querySpec()
-		loadedTypes = [2]bool{
-			dq.withOccurrences != nil,
+		loadedTypes = [3]bool{
+			dq.withDishOccurrences != nil,
 			dq.withAliases != nil,
+			dq.withSideDishOccurrence != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, dish.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Dish).scanValues(nil, columns)
 	}
@@ -422,10 +453,10 @@ func (dq *DishQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dish, e
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := dq.withOccurrences; query != nil {
-		if err := dq.loadOccurrences(ctx, query, nodes,
-			func(n *Dish) { n.Edges.Occurrences = []*Occurrence{} },
-			func(n *Dish, e *Occurrence) { n.Edges.Occurrences = append(n.Edges.Occurrences, e) }); err != nil {
+	if query := dq.withDishOccurrences; query != nil {
+		if err := dq.loadDishOccurrences(ctx, query, nodes,
+			func(n *Dish) { n.Edges.DishOccurrences = []*Occurrence{} },
+			func(n *Dish, e *Occurrence) { n.Edges.DishOccurrences = append(n.Edges.DishOccurrences, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -436,10 +467,17 @@ func (dq *DishQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Dish, e
 			return nil, err
 		}
 	}
+	if query := dq.withSideDishOccurrence; query != nil {
+		if err := dq.loadSideDishOccurrence(ctx, query, nodes,
+			func(n *Dish) { n.Edges.SideDishOccurrence = []*Occurrence{} },
+			func(n *Dish, e *Occurrence) { n.Edges.SideDishOccurrence = append(n.Edges.SideDishOccurrence, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
 }
 
-func (dq *DishQuery) loadOccurrences(ctx context.Context, query *OccurrenceQuery, nodes []*Dish, init func(*Dish), assign func(*Dish, *Occurrence)) error {
+func (dq *DishQuery) loadDishOccurrences(ctx context.Context, query *OccurrenceQuery, nodes []*Dish, init func(*Dish), assign func(*Dish, *Occurrence)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Dish)
 	for i := range nodes {
@@ -451,7 +489,7 @@ func (dq *DishQuery) loadOccurrences(ctx context.Context, query *OccurrenceQuery
 	}
 	query.withFKs = true
 	query.Where(predicate.Occurrence(func(s *sql.Selector) {
-		s.Where(sql.InValues(dish.OccurrencesColumn, fks...))
+		s.Where(sql.InValues(dish.DishOccurrencesColumn, fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -498,6 +536,64 @@ func (dq *DishQuery) loadAliases(ctx context.Context, query *DishAliasQuery, nod
 			return fmt.Errorf(`unexpected foreign-key "dish" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
+	}
+	return nil
+}
+func (dq *DishQuery) loadSideDishOccurrence(ctx context.Context, query *OccurrenceQuery, nodes []*Dish, init func(*Dish), assign func(*Dish, *Occurrence)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Dish)
+	nids := make(map[uuid.UUID]map[*Dish]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(dish.SideDishOccurrenceTable)
+		s.Join(joinT).On(s.C(occurrence.FieldID), joinT.C(dish.SideDishOccurrencePrimaryKey[0]))
+		s.Where(sql.InValues(joinT.C(dish.SideDishOccurrencePrimaryKey[1]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(dish.SideDishOccurrencePrimaryKey[1]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(uuid.UUID)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := *values[0].(*uuid.UUID)
+			inValue := *values[1].(*uuid.UUID)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*Dish]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "side_dish_occurrence" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

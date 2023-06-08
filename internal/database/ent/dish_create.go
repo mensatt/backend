@@ -59,19 +59,19 @@ func (dc *DishCreate) SetNillableID(u *uuid.UUID) *DishCreate {
 	return dc
 }
 
-// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
-func (dc *DishCreate) AddOccurrenceIDs(ids ...uuid.UUID) *DishCreate {
-	dc.mutation.AddOccurrenceIDs(ids...)
+// AddDishOccurrenceIDs adds the "dish_occurrences" edge to the Occurrence entity by IDs.
+func (dc *DishCreate) AddDishOccurrenceIDs(ids ...uuid.UUID) *DishCreate {
+	dc.mutation.AddDishOccurrenceIDs(ids...)
 	return dc
 }
 
-// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
-func (dc *DishCreate) AddOccurrences(o ...*Occurrence) *DishCreate {
+// AddDishOccurrences adds the "dish_occurrences" edges to the Occurrence entity.
+func (dc *DishCreate) AddDishOccurrences(o ...*Occurrence) *DishCreate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return dc.AddOccurrenceIDs(ids...)
+	return dc.AddDishOccurrenceIDs(ids...)
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by IDs.
@@ -87,6 +87,21 @@ func (dc *DishCreate) AddAliases(d ...*DishAlias) *DishCreate {
 		ids[i] = d[i].ID
 	}
 	return dc.AddAliasIDs(ids...)
+}
+
+// AddSideDishOccurrenceIDs adds the "side_dish_occurrence" edge to the Occurrence entity by IDs.
+func (dc *DishCreate) AddSideDishOccurrenceIDs(ids ...uuid.UUID) *DishCreate {
+	dc.mutation.AddSideDishOccurrenceIDs(ids...)
+	return dc
+}
+
+// AddSideDishOccurrence adds the "side_dish_occurrence" edges to the Occurrence entity.
+func (dc *DishCreate) AddSideDishOccurrence(o ...*Occurrence) *DishCreate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return dc.AddSideDishOccurrenceIDs(ids...)
 }
 
 // Mutation returns the DishMutation object of the builder.
@@ -232,12 +247,12 @@ func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 		_spec.SetField(dish.FieldNameEn, field.TypeString, value)
 		_node.NameEn = &value
 	}
-	if nodes := dc.mutation.OccurrencesIDs(); len(nodes) > 0 {
+	if nodes := dc.mutation.DishOccurrencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dish.OccurrencesTable,
-			Columns: []string{dish.OccurrencesColumn},
+			Table:   dish.DishOccurrencesTable,
+			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -262,6 +277,25 @@ func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeString,
 					Column: dishalias.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := dc.mutation.SideDishOccurrenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dish.SideDishOccurrenceTable,
+			Columns: dish.SideDishOccurrencePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
 				},
 			},
 		}

@@ -56,19 +56,19 @@ func (du *DishUpdate) ClearNameEn() *DishUpdate {
 	return du
 }
 
-// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
-func (du *DishUpdate) AddOccurrenceIDs(ids ...uuid.UUID) *DishUpdate {
-	du.mutation.AddOccurrenceIDs(ids...)
+// AddDishOccurrenceIDs adds the "dish_occurrences" edge to the Occurrence entity by IDs.
+func (du *DishUpdate) AddDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdate {
+	du.mutation.AddDishOccurrenceIDs(ids...)
 	return du
 }
 
-// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
-func (du *DishUpdate) AddOccurrences(o ...*Occurrence) *DishUpdate {
+// AddDishOccurrences adds the "dish_occurrences" edges to the Occurrence entity.
+func (du *DishUpdate) AddDishOccurrences(o ...*Occurrence) *DishUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return du.AddOccurrenceIDs(ids...)
+	return du.AddDishOccurrenceIDs(ids...)
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by IDs.
@@ -86,30 +86,45 @@ func (du *DishUpdate) AddAliases(d ...*DishAlias) *DishUpdate {
 	return du.AddAliasIDs(ids...)
 }
 
+// AddSideDishOccurrenceIDs adds the "side_dish_occurrence" edge to the Occurrence entity by IDs.
+func (du *DishUpdate) AddSideDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdate {
+	du.mutation.AddSideDishOccurrenceIDs(ids...)
+	return du
+}
+
+// AddSideDishOccurrence adds the "side_dish_occurrence" edges to the Occurrence entity.
+func (du *DishUpdate) AddSideDishOccurrence(o ...*Occurrence) *DishUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return du.AddSideDishOccurrenceIDs(ids...)
+}
+
 // Mutation returns the DishMutation object of the builder.
 func (du *DishUpdate) Mutation() *DishMutation {
 	return du.mutation
 }
 
-// ClearOccurrences clears all "occurrences" edges to the Occurrence entity.
-func (du *DishUpdate) ClearOccurrences() *DishUpdate {
-	du.mutation.ClearOccurrences()
+// ClearDishOccurrences clears all "dish_occurrences" edges to the Occurrence entity.
+func (du *DishUpdate) ClearDishOccurrences() *DishUpdate {
+	du.mutation.ClearDishOccurrences()
 	return du
 }
 
-// RemoveOccurrenceIDs removes the "occurrences" edge to Occurrence entities by IDs.
-func (du *DishUpdate) RemoveOccurrenceIDs(ids ...uuid.UUID) *DishUpdate {
-	du.mutation.RemoveOccurrenceIDs(ids...)
+// RemoveDishOccurrenceIDs removes the "dish_occurrences" edge to Occurrence entities by IDs.
+func (du *DishUpdate) RemoveDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdate {
+	du.mutation.RemoveDishOccurrenceIDs(ids...)
 	return du
 }
 
-// RemoveOccurrences removes "occurrences" edges to Occurrence entities.
-func (du *DishUpdate) RemoveOccurrences(o ...*Occurrence) *DishUpdate {
+// RemoveDishOccurrences removes "dish_occurrences" edges to Occurrence entities.
+func (du *DishUpdate) RemoveDishOccurrences(o ...*Occurrence) *DishUpdate {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return du.RemoveOccurrenceIDs(ids...)
+	return du.RemoveDishOccurrenceIDs(ids...)
 }
 
 // ClearAliases clears all "aliases" edges to the DishAlias entity.
@@ -131,6 +146,27 @@ func (du *DishUpdate) RemoveAliases(d ...*DishAlias) *DishUpdate {
 		ids[i] = d[i].ID
 	}
 	return du.RemoveAliasIDs(ids...)
+}
+
+// ClearSideDishOccurrence clears all "side_dish_occurrence" edges to the Occurrence entity.
+func (du *DishUpdate) ClearSideDishOccurrence() *DishUpdate {
+	du.mutation.ClearSideDishOccurrence()
+	return du
+}
+
+// RemoveSideDishOccurrenceIDs removes the "side_dish_occurrence" edge to Occurrence entities by IDs.
+func (du *DishUpdate) RemoveSideDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdate {
+	du.mutation.RemoveSideDishOccurrenceIDs(ids...)
+	return du
+}
+
+// RemoveSideDishOccurrence removes "side_dish_occurrence" edges to Occurrence entities.
+func (du *DishUpdate) RemoveSideDishOccurrence(o ...*Occurrence) *DishUpdate {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return du.RemoveSideDishOccurrenceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -235,12 +271,12 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if du.mutation.NameEnCleared() {
 		_spec.ClearField(dish.FieldNameEn, field.TypeString)
 	}
-	if du.mutation.OccurrencesCleared() {
+	if du.mutation.DishOccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dish.OccurrencesTable,
-			Columns: []string{dish.OccurrencesColumn},
+			Table:   dish.DishOccurrencesTable,
+			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -251,12 +287,12 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.RemovedOccurrencesIDs(); len(nodes) > 0 && !du.mutation.OccurrencesCleared() {
+	if nodes := du.mutation.RemovedDishOccurrencesIDs(); len(nodes) > 0 && !du.mutation.DishOccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dish.OccurrencesTable,
-			Columns: []string{dish.OccurrencesColumn},
+			Table:   dish.DishOccurrencesTable,
+			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -270,12 +306,12 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := du.mutation.OccurrencesIDs(); len(nodes) > 0 {
+	if nodes := du.mutation.DishOccurrencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dish.OccurrencesTable,
-			Columns: []string{dish.OccurrencesColumn},
+			Table:   dish.DishOccurrencesTable,
+			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -343,6 +379,60 @@ func (du *DishUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if du.mutation.SideDishOccurrenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dish.SideDishOccurrenceTable,
+			Columns: dish.SideDishOccurrencePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.RemovedSideDishOccurrenceIDs(); len(nodes) > 0 && !du.mutation.SideDishOccurrenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dish.SideDishOccurrenceTable,
+			Columns: dish.SideDishOccurrencePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := du.mutation.SideDishOccurrenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dish.SideDishOccurrenceTable,
+			Columns: dish.SideDishOccurrencePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{dish.Label}
@@ -388,19 +478,19 @@ func (duo *DishUpdateOne) ClearNameEn() *DishUpdateOne {
 	return duo
 }
 
-// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
-func (duo *DishUpdateOne) AddOccurrenceIDs(ids ...uuid.UUID) *DishUpdateOne {
-	duo.mutation.AddOccurrenceIDs(ids...)
+// AddDishOccurrenceIDs adds the "dish_occurrences" edge to the Occurrence entity by IDs.
+func (duo *DishUpdateOne) AddDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdateOne {
+	duo.mutation.AddDishOccurrenceIDs(ids...)
 	return duo
 }
 
-// AddOccurrences adds the "occurrences" edges to the Occurrence entity.
-func (duo *DishUpdateOne) AddOccurrences(o ...*Occurrence) *DishUpdateOne {
+// AddDishOccurrences adds the "dish_occurrences" edges to the Occurrence entity.
+func (duo *DishUpdateOne) AddDishOccurrences(o ...*Occurrence) *DishUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return duo.AddOccurrenceIDs(ids...)
+	return duo.AddDishOccurrenceIDs(ids...)
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by IDs.
@@ -418,30 +508,45 @@ func (duo *DishUpdateOne) AddAliases(d ...*DishAlias) *DishUpdateOne {
 	return duo.AddAliasIDs(ids...)
 }
 
+// AddSideDishOccurrenceIDs adds the "side_dish_occurrence" edge to the Occurrence entity by IDs.
+func (duo *DishUpdateOne) AddSideDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdateOne {
+	duo.mutation.AddSideDishOccurrenceIDs(ids...)
+	return duo
+}
+
+// AddSideDishOccurrence adds the "side_dish_occurrence" edges to the Occurrence entity.
+func (duo *DishUpdateOne) AddSideDishOccurrence(o ...*Occurrence) *DishUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return duo.AddSideDishOccurrenceIDs(ids...)
+}
+
 // Mutation returns the DishMutation object of the builder.
 func (duo *DishUpdateOne) Mutation() *DishMutation {
 	return duo.mutation
 }
 
-// ClearOccurrences clears all "occurrences" edges to the Occurrence entity.
-func (duo *DishUpdateOne) ClearOccurrences() *DishUpdateOne {
-	duo.mutation.ClearOccurrences()
+// ClearDishOccurrences clears all "dish_occurrences" edges to the Occurrence entity.
+func (duo *DishUpdateOne) ClearDishOccurrences() *DishUpdateOne {
+	duo.mutation.ClearDishOccurrences()
 	return duo
 }
 
-// RemoveOccurrenceIDs removes the "occurrences" edge to Occurrence entities by IDs.
-func (duo *DishUpdateOne) RemoveOccurrenceIDs(ids ...uuid.UUID) *DishUpdateOne {
-	duo.mutation.RemoveOccurrenceIDs(ids...)
+// RemoveDishOccurrenceIDs removes the "dish_occurrences" edge to Occurrence entities by IDs.
+func (duo *DishUpdateOne) RemoveDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdateOne {
+	duo.mutation.RemoveDishOccurrenceIDs(ids...)
 	return duo
 }
 
-// RemoveOccurrences removes "occurrences" edges to Occurrence entities.
-func (duo *DishUpdateOne) RemoveOccurrences(o ...*Occurrence) *DishUpdateOne {
+// RemoveDishOccurrences removes "dish_occurrences" edges to Occurrence entities.
+func (duo *DishUpdateOne) RemoveDishOccurrences(o ...*Occurrence) *DishUpdateOne {
 	ids := make([]uuid.UUID, len(o))
 	for i := range o {
 		ids[i] = o[i].ID
 	}
-	return duo.RemoveOccurrenceIDs(ids...)
+	return duo.RemoveDishOccurrenceIDs(ids...)
 }
 
 // ClearAliases clears all "aliases" edges to the DishAlias entity.
@@ -463,6 +568,27 @@ func (duo *DishUpdateOne) RemoveAliases(d ...*DishAlias) *DishUpdateOne {
 		ids[i] = d[i].ID
 	}
 	return duo.RemoveAliasIDs(ids...)
+}
+
+// ClearSideDishOccurrence clears all "side_dish_occurrence" edges to the Occurrence entity.
+func (duo *DishUpdateOne) ClearSideDishOccurrence() *DishUpdateOne {
+	duo.mutation.ClearSideDishOccurrence()
+	return duo
+}
+
+// RemoveSideDishOccurrenceIDs removes the "side_dish_occurrence" edge to Occurrence entities by IDs.
+func (duo *DishUpdateOne) RemoveSideDishOccurrenceIDs(ids ...uuid.UUID) *DishUpdateOne {
+	duo.mutation.RemoveSideDishOccurrenceIDs(ids...)
+	return duo
+}
+
+// RemoveSideDishOccurrence removes "side_dish_occurrence" edges to Occurrence entities.
+func (duo *DishUpdateOne) RemoveSideDishOccurrence(o ...*Occurrence) *DishUpdateOne {
+	ids := make([]uuid.UUID, len(o))
+	for i := range o {
+		ids[i] = o[i].ID
+	}
+	return duo.RemoveSideDishOccurrenceIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -597,12 +723,12 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 	if duo.mutation.NameEnCleared() {
 		_spec.ClearField(dish.FieldNameEn, field.TypeString)
 	}
-	if duo.mutation.OccurrencesCleared() {
+	if duo.mutation.DishOccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dish.OccurrencesTable,
-			Columns: []string{dish.OccurrencesColumn},
+			Table:   dish.DishOccurrencesTable,
+			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -613,12 +739,12 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.RemovedOccurrencesIDs(); len(nodes) > 0 && !duo.mutation.OccurrencesCleared() {
+	if nodes := duo.mutation.RemovedDishOccurrencesIDs(); len(nodes) > 0 && !duo.mutation.DishOccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dish.OccurrencesTable,
-			Columns: []string{dish.OccurrencesColumn},
+			Table:   dish.DishOccurrencesTable,
+			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -632,12 +758,12 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := duo.mutation.OccurrencesIDs(); len(nodes) > 0 {
+	if nodes := duo.mutation.DishOccurrencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   dish.OccurrencesTable,
-			Columns: []string{dish.OccurrencesColumn},
+			Table:   dish.DishOccurrencesTable,
+			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -697,6 +823,60 @@ func (duo *DishUpdateOne) sqlSave(ctx context.Context) (_node *Dish, err error) 
 				IDSpec: &sqlgraph.FieldSpec{
 					Type:   field.TypeString,
 					Column: dishalias.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if duo.mutation.SideDishOccurrenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dish.SideDishOccurrenceTable,
+			Columns: dish.SideDishOccurrencePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.RemovedSideDishOccurrenceIDs(); len(nodes) > 0 && !duo.mutation.SideDishOccurrenceCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dish.SideDishOccurrenceTable,
+			Columns: dish.SideDishOccurrencePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := duo.mutation.SideDishOccurrenceIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   dish.SideDishOccurrenceTable,
+			Columns: dish.SideDishOccurrencePrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: occurrence.FieldID,
 				},
 			},
 		}

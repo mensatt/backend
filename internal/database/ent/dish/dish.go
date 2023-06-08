@@ -15,21 +15,23 @@ const (
 	FieldNameDe = "name_de"
 	// FieldNameEn holds the string denoting the name_en field in the database.
 	FieldNameEn = "name_en"
-	// EdgeOccurrences holds the string denoting the occurrences edge name in mutations.
-	EdgeOccurrences = "occurrences"
+	// EdgeDishOccurrences holds the string denoting the dish_occurrences edge name in mutations.
+	EdgeDishOccurrences = "dish_occurrences"
 	// EdgeAliases holds the string denoting the aliases edge name in mutations.
 	EdgeAliases = "aliases"
+	// EdgeSideDishOccurrence holds the string denoting the side_dish_occurrence edge name in mutations.
+	EdgeSideDishOccurrence = "side_dish_occurrence"
 	// DishAliasFieldID holds the string denoting the ID field of the DishAlias.
 	DishAliasFieldID = "alias_name"
 	// Table holds the table name of the dish in the database.
 	Table = "dish"
-	// OccurrencesTable is the table that holds the occurrences relation/edge.
-	OccurrencesTable = "occurrence"
-	// OccurrencesInverseTable is the table name for the Occurrence entity.
+	// DishOccurrencesTable is the table that holds the dish_occurrences relation/edge.
+	DishOccurrencesTable = "occurrence"
+	// DishOccurrencesInverseTable is the table name for the Occurrence entity.
 	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
-	OccurrencesInverseTable = "occurrence"
-	// OccurrencesColumn is the table column denoting the occurrences relation/edge.
-	OccurrencesColumn = "dish"
+	DishOccurrencesInverseTable = "occurrence"
+	// DishOccurrencesColumn is the table column denoting the dish_occurrences relation/edge.
+	DishOccurrencesColumn = "dish"
 	// AliasesTable is the table that holds the aliases relation/edge.
 	AliasesTable = "dish_alias"
 	// AliasesInverseTable is the table name for the DishAlias entity.
@@ -37,6 +39,11 @@ const (
 	AliasesInverseTable = "dish_alias"
 	// AliasesColumn is the table column denoting the aliases relation/edge.
 	AliasesColumn = "dish"
+	// SideDishOccurrenceTable is the table that holds the side_dish_occurrence relation/edge. The primary key declared below.
+	SideDishOccurrenceTable = "occurrence_side_dishes"
+	// SideDishOccurrenceInverseTable is the table name for the Occurrence entity.
+	// It exists in this package in order to avoid circular dependency with the "occurrence" package.
+	SideDishOccurrenceInverseTable = "occurrence"
 )
 
 // Columns holds all SQL columns for dish fields.
@@ -46,21 +53,16 @@ var Columns = []string{
 	FieldNameEn,
 }
 
-// ForeignKeys holds the SQL foreign-keys that are owned by the "dish"
-// table and are not defined as standalone fields in the schema.
-var ForeignKeys = []string{
-	"occurrence_side_dishes",
-}
+var (
+	// SideDishOccurrencePrimaryKey and SideDishOccurrenceColumn2 are the table columns denoting the
+	// primary key for the side_dish_occurrence relation (M2M).
+	SideDishOccurrencePrimaryKey = []string{"occurrence", "dish"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
-			return true
-		}
-	}
-	for i := range ForeignKeys {
-		if column == ForeignKeys[i] {
 			return true
 		}
 	}
