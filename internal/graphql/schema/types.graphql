@@ -27,7 +27,7 @@ type Dish {
     nameDe: String!
     nameEn: String
     aliases: [DishAlias!]!
-    #    reviewData(filter: ReviewFilter): ReviewDataDish!
+    reviewData(filter: ReviewFilter): ReviewDataDish!
 }
 
 type ReviewDataDish {
@@ -73,20 +73,19 @@ type Occurrence {
     priceStaff: Int
     priceGuest: Int
     tags: [Tag!]!
-    #    reviewData(filter: ReviewFilter): ReviewDataOccurrence!
+    reviewData(filter: ReviewFilter): ReviewDataOccurrence!
 }
 
-#type ReviewDataOccurrence {
-#    reviews: [Review!]!
-#    # also present in reviews, but easier to access here
-#    images: [Image!]!
-#    metadata: ReviewMetadataOccurrence!
-#}
+type ReviewDataOccurrence {
+    reviews: [Review!]!
+    images: [Image!]!  # also present in reviews, but easier to access here
+    metadata: ReviewMetadataOccurrence!
+}
 
-#type ReviewMetadataOccurrence {
-#    averageStars: Float
-#    reviewCount: Int!
-#}
+type ReviewMetadataOccurrence {
+    averageStars: Float
+    reviewCount: Int!
+}
 
 type OccurrenceTag {
     occurrence: Occurrence!

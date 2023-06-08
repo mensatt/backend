@@ -9,13 +9,57 @@ import (
 	"fmt"
 
 	"github.com/mensatt/backend/internal/database/ent"
+	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/image"
+	"github.com/mensatt/backend/internal/database/ent/occurrence"
+	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
+	"github.com/mensatt/backend/internal/graphql/models"
 )
 
 // Aliases is the resolver for the aliases field.
 func (r *dishResolver) Aliases(ctx context.Context, obj *ent.Dish) ([]*ent.DishAlias, error) {
 	return r.Database.Dish.QueryAliases(obj).All(ctx)
+}
+
+// ReviewData is the resolver for the reviewData field.
+func (r *dishResolver) ReviewData(ctx context.Context, obj *ent.Dish, filter *models.ReviewFilter) (*models.ReviewDataDish, error) {
+	queryBuilder := r.Database.Review.Query().Where(review.HasOccurrenceWith(occurrence.HasDishWith(dish.ID(obj.ID))))
+
+	if filter != nil {
+		if *filter.Approved {
+			queryBuilder.Where(review.AcceptedAtNotNil())
+		} else {
+			queryBuilder.Where(review.AcceptedAtIsNil())
+		}
+	}
+
+	reviews, err := queryBuilder.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	images, err := r.Database.Image.Query().Where(image.HasReviewWith(review.HasOccurrenceWith(occurrence.HasDishWith(dish.ID(obj.ID))))).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	averageStars := 0.0
+	for _, review := range reviews {
+		averageStars += float64(review.Stars)
+	}
+	if len(reviews) > 0 {
+		averageStars /= float64(len(reviews))
+	}
+
+	return &models.ReviewDataDish{
+		Reviews: reviews,
+		Images:  images,
+		Metadata: &models.ReviewMetadataDish{
+			AverageStars: &averageStars,
+			ReviewCount:  len(reviews),
+		},
+	}, nil
 }
 
 // Dish is the resolver for the dish field.
@@ -61,6 +105,46 @@ func (r *occurrenceResolver) SideDishes(ctx context.Context, obj *ent.Occurrence
 // Tags is the resolver for the tags field.
 func (r *occurrenceResolver) Tags(ctx context.Context, obj *ent.Occurrence) ([]*ent.Tag, error) {
 	return r.Database.Occurrence.QueryTags(obj).All(ctx)
+}
+
+// ReviewData is the resolver for the reviewData field.
+func (r *occurrenceResolver) ReviewData(ctx context.Context, obj *ent.Occurrence, filter *models.ReviewFilter) (*models.ReviewDataOccurrence, error) {
+	queryBuilder := r.Database.Review.Query().Where(review.HasOccurrenceWith(occurrence.ID(obj.ID)))
+
+	if filter != nil {
+		if *filter.Approved {
+			queryBuilder.Where(review.AcceptedAtNotNil())
+		} else {
+			queryBuilder.Where(review.AcceptedAtIsNil())
+		}
+	}
+
+	reviews, err := queryBuilder.All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	images, err := r.Database.Image.Query().Where(image.HasReviewWith(review.HasOccurrenceWith(occurrence.ID(obj.ID)))).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	averageStars := 0.0
+	for _, review := range reviews {
+		averageStars += float64(review.Stars)
+	}
+	if len(reviews) > 0 {
+		averageStars /= float64(len(reviews))
+	}
+
+	return &models.ReviewDataOccurrence{
+		Reviews: reviews,
+		Images:  images,
+		Metadata: &models.ReviewMetadataOccurrence{
+			AverageStars: &averageStars,
+			ReviewCount:  len(reviews),
+		},
+	}, nil
 }
 
 // Occurrence is the resolver for the occurrence field.

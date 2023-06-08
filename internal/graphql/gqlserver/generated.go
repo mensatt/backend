@@ -58,10 +58,11 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Dish struct {
-		Aliases func(childComplexity int) int
-		ID      func(childComplexity int) int
-		NameDe  func(childComplexity int) int
-		NameEn  func(childComplexity int) int
+		Aliases    func(childComplexity int) int
+		ID         func(childComplexity int) int
+		NameDe     func(childComplexity int) int
+		NameEn     func(childComplexity int) int
+		ReviewData func(childComplexity int, filter *models.ReviewFilter) int
 	}
 
 	DishAlias struct {
@@ -119,6 +120,7 @@ type ComplexityRoot struct {
 		PriceStaff    func(childComplexity int) int
 		PriceStudent  func(childComplexity int) int
 		Protein       func(childComplexity int) int
+		ReviewData    func(childComplexity int, filter *models.ReviewFilter) int
 		Salt          func(childComplexity int) int
 		SaturatedFat  func(childComplexity int) int
 		SideDishes    func(childComplexity int) int
@@ -166,7 +168,18 @@ type ComplexityRoot struct {
 		Reviews  func(childComplexity int) int
 	}
 
+	ReviewDataOccurrence struct {
+		Images   func(childComplexity int) int
+		Metadata func(childComplexity int) int
+		Reviews  func(childComplexity int) int
+	}
+
 	ReviewMetadataDish struct {
+		AverageStars func(childComplexity int) int
+		ReviewCount  func(childComplexity int) int
+	}
+
+	ReviewMetadataOccurrence struct {
 		AverageStars func(childComplexity int) int
 		ReviewCount  func(childComplexity int) int
 	}
@@ -194,6 +207,7 @@ type ComplexityRoot struct {
 
 type DishResolver interface {
 	Aliases(ctx context.Context, obj *ent.Dish) ([]*ent.DishAlias, error)
+	ReviewData(ctx context.Context, obj *ent.Dish, filter *models.ReviewFilter) (*models.ReviewDataDish, error)
 }
 type DishAliasResolver interface {
 	Dish(ctx context.Context, obj *ent.DishAlias) (*ent.Dish, error)
@@ -231,6 +245,7 @@ type OccurrenceResolver interface {
 	SideDishes(ctx context.Context, obj *ent.Occurrence) ([]*ent.Dish, error)
 
 	Tags(ctx context.Context, obj *ent.Occurrence) ([]*ent.Tag, error)
+	ReviewData(ctx context.Context, obj *ent.Occurrence, filter *models.ReviewFilter) (*models.ReviewDataOccurrence, error)
 }
 type QueryResolver interface {
 	CurrentUser(ctx context.Context) (*ent.User, error)
@@ -293,6 +308,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Dish.NameEn(childComplexity), true
+
+	case "Dish.reviewData":
+		if e.complexity.Dish.ReviewData == nil {
+			break
+		}
+
+		args, err := ec.field_Dish_reviewData_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Dish.ReviewData(childComplexity, args["filter"].(*models.ReviewFilter)), true
 
 	case "DishAlias.aliasName":
 		if e.complexity.DishAlias.AliasName == nil {
@@ -683,6 +710,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Occurrence.Protein(childComplexity), true
 
+	case "Occurrence.reviewData":
+		if e.complexity.Occurrence.ReviewData == nil {
+			break
+		}
+
+		args, err := ec.field_Occurrence_reviewData_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Occurrence.ReviewData(childComplexity, args["filter"].(*models.ReviewFilter)), true
+
 	case "Occurrence.salt":
 		if e.complexity.Occurrence.Salt == nil {
 			break
@@ -908,6 +947,27 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ReviewDataDish.Reviews(childComplexity), true
 
+	case "ReviewDataOccurrence.images":
+		if e.complexity.ReviewDataOccurrence.Images == nil {
+			break
+		}
+
+		return e.complexity.ReviewDataOccurrence.Images(childComplexity), true
+
+	case "ReviewDataOccurrence.metadata":
+		if e.complexity.ReviewDataOccurrence.Metadata == nil {
+			break
+		}
+
+		return e.complexity.ReviewDataOccurrence.Metadata(childComplexity), true
+
+	case "ReviewDataOccurrence.reviews":
+		if e.complexity.ReviewDataOccurrence.Reviews == nil {
+			break
+		}
+
+		return e.complexity.ReviewDataOccurrence.Reviews(childComplexity), true
+
 	case "ReviewMetadataDish.averageStars":
 		if e.complexity.ReviewMetadataDish.AverageStars == nil {
 			break
@@ -921,6 +981,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.ReviewMetadataDish.ReviewCount(childComplexity), true
+
+	case "ReviewMetadataOccurrence.averageStars":
+		if e.complexity.ReviewMetadataOccurrence.AverageStars == nil {
+			break
+		}
+
+		return e.complexity.ReviewMetadataOccurrence.AverageStars(childComplexity), true
+
+	case "ReviewMetadataOccurrence.reviewCount":
+		if e.complexity.ReviewMetadataOccurrence.ReviewCount == nil {
+			break
+		}
+
+		return e.complexity.ReviewMetadataOccurrence.ReviewCount(childComplexity), true
 
 	case "Tag.description":
 		if e.complexity.Tag.Description == nil {
@@ -1383,7 +1457,7 @@ type Dish {
     nameDe: String!
     nameEn: String
     aliases: [DishAlias!]!
-    #    reviewData(filter: ReviewFilter): ReviewDataDish!
+    reviewData(filter: ReviewFilter): ReviewDataDish!
 }
 
 type ReviewDataDish {
@@ -1429,20 +1503,19 @@ type Occurrence {
     priceStaff: Int
     priceGuest: Int
     tags: [Tag!]!
-    #    reviewData(filter: ReviewFilter): ReviewDataOccurrence!
+    reviewData(filter: ReviewFilter): ReviewDataOccurrence!
 }
 
-#type ReviewDataOccurrence {
-#    reviews: [Review!]!
-#    # also present in reviews, but easier to access here
-#    images: [Image!]!
-#    metadata: ReviewMetadataOccurrence!
-#}
+type ReviewDataOccurrence {
+    reviews: [Review!]!
+    images: [Image!]!  # also present in reviews, but easier to access here
+    metadata: ReviewMetadataOccurrence!
+}
 
-#type ReviewMetadataOccurrence {
-#    averageStars: Float
-#    reviewCount: Int!
-#}
+type ReviewMetadataOccurrence {
+    averageStars: Float
+    reviewCount: Int!
+}
 
 type OccurrenceTag {
     occurrence: Occurrence!
@@ -1490,6 +1563,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) field_Dish_reviewData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *models.ReviewFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalOReviewFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewFilter(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Mutation_addImagesToReview_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1776,6 +1864,21 @@ func (ec *executionContext) field_Mutation_updateReview_args(ctx context.Context
 	return args, nil
 }
 
+func (ec *executionContext) field_Occurrence_reviewData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *models.ReviewFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalOReviewFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewFilter(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -2055,6 +2158,69 @@ func (ec *executionContext) fieldContext_Dish_aliases(ctx context.Context, field
 	return fc, nil
 }
 
+func (ec *executionContext) _Dish_reviewData(ctx context.Context, field graphql.CollectedField, obj *ent.Dish) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Dish_reviewData(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Dish().ReviewData(rctx, obj, fc.Args["filter"].(*models.ReviewFilter))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.ReviewDataDish)
+	fc.Result = res
+	return ec.marshalNReviewDataDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewDataDish(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Dish_reviewData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Dish",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "reviews":
+				return ec.fieldContext_ReviewDataDish_reviews(ctx, field)
+			case "images":
+				return ec.fieldContext_ReviewDataDish_images(ctx, field)
+			case "metadata":
+				return ec.fieldContext_ReviewDataDish_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ReviewDataDish", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Dish_reviewData_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _DishAlias_dish(ctx context.Context, field graphql.CollectedField, obj *ent.DishAlias) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_DishAlias_dish(ctx, field)
 	if err != nil {
@@ -2102,6 +2268,8 @@ func (ec *executionContext) fieldContext_DishAlias_dish(ctx context.Context, fie
 				return ec.fieldContext_Dish_nameEn(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -2736,6 +2904,8 @@ func (ec *executionContext) fieldContext_Mutation_createDish(ctx context.Context
 				return ec.fieldContext_Dish_nameEn(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -2821,6 +2991,8 @@ func (ec *executionContext) fieldContext_Mutation_updateDish(ctx context.Context
 				return ec.fieldContext_Dish_nameEn(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -3185,6 +3357,8 @@ func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
 			case "tags":
 				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Occurrence_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -3300,6 +3474,8 @@ func (ec *executionContext) fieldContext_Mutation_updateOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
 			case "tags":
 				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Occurrence_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -3415,6 +3591,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
 			case "tags":
 				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Occurrence_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -4305,6 +4483,8 @@ func (ec *executionContext) fieldContext_Occurrence_dish(ctx context.Context, fi
 				return ec.fieldContext_Dish_nameEn(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -4359,6 +4539,8 @@ func (ec *executionContext) fieldContext_Occurrence_sideDishes(ctx context.Conte
 				return ec.fieldContext_Dish_nameEn(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -5004,6 +5186,69 @@ func (ec *executionContext) fieldContext_Occurrence_tags(ctx context.Context, fi
 	return fc, nil
 }
 
+func (ec *executionContext) _Occurrence_reviewData(ctx context.Context, field graphql.CollectedField, obj *ent.Occurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Occurrence_reviewData(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Occurrence().ReviewData(rctx, obj, fc.Args["filter"].(*models.ReviewFilter))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.ReviewDataOccurrence)
+	fc.Result = res
+	return ec.marshalNReviewDataOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewDataOccurrence(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Occurrence_reviewData(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "reviews":
+				return ec.fieldContext_ReviewDataOccurrence_reviews(ctx, field)
+			case "images":
+				return ec.fieldContext_ReviewDataOccurrence_images(ctx, field)
+			case "metadata":
+				return ec.fieldContext_ReviewDataOccurrence_metadata(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ReviewDataOccurrence", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Occurrence_reviewData_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _OccurrenceSideDish_occurrence(ctx context.Context, field graphql.CollectedField, obj *models.OccurrenceSideDish) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_OccurrenceSideDish_occurrence(ctx, field)
 	if err != nil {
@@ -5081,6 +5326,8 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_occurrence(ctx conte
 				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
 			case "tags":
 				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Occurrence_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -5135,6 +5382,8 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_dish(ctx context.Con
 				return ec.fieldContext_Dish_nameEn(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -5219,6 +5468,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_occurrence(ctx context.Co
 				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
 			case "tags":
 				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Occurrence_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -5436,6 +5687,8 @@ func (ec *executionContext) fieldContext_Query_dishes(ctx context.Context, field
 				return ec.fieldContext_Dish_nameEn(ctx, field)
 			case "aliases":
 				return ec.fieldContext_Dish_aliases(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Dish_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
@@ -5520,6 +5773,8 @@ func (ec *executionContext) fieldContext_Query_occurrences(ctx context.Context, 
 				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
 			case "tags":
 				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Occurrence_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -6027,6 +6282,8 @@ func (ec *executionContext) fieldContext_Review_occurrence(ctx context.Context, 
 				return ec.fieldContext_Occurrence_priceGuest(ctx, field)
 			case "tags":
 				return ec.fieldContext_Occurrence_tags(ctx, field)
+			case "reviewData":
+				return ec.fieldContext_Occurrence_reviewData(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -6511,6 +6768,174 @@ func (ec *executionContext) fieldContext_ReviewDataDish_metadata(ctx context.Con
 	return fc, nil
 }
 
+func (ec *executionContext) _ReviewDataOccurrence_reviews(ctx context.Context, field graphql.CollectedField, obj *models.ReviewDataOccurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReviewDataOccurrence_reviews(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Reviews, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Review)
+	fc.Result = res
+	return ec.marshalNReview2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐReviewᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReviewDataOccurrence_reviews(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewDataOccurrence",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Review_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Review_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
+			case "stars":
+				return ec.fieldContext_Review_stars(ctx, field)
+			case "text":
+				return ec.fieldContext_Review_text(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Review_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Review_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Review_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReviewDataOccurrence_images(ctx context.Context, field graphql.CollectedField, obj *models.ReviewDataOccurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReviewDataOccurrence_images(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Images, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.([]*ent.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐImageᚄ(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReviewDataOccurrence_images(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewDataOccurrence",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Image_id(ctx, field)
+			case "hash":
+				return ec.fieldContext_Image_hash(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
+			case "imageUrl":
+				return ec.fieldContext_Image_imageUrl(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReviewDataOccurrence_metadata(ctx context.Context, field graphql.CollectedField, obj *models.ReviewDataOccurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReviewDataOccurrence_metadata(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Metadata, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*models.ReviewMetadataOccurrence)
+	fc.Result = res
+	return ec.marshalNReviewMetadataOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewMetadataOccurrence(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReviewDataOccurrence_metadata(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewDataOccurrence",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "averageStars":
+				return ec.fieldContext_ReviewMetadataOccurrence_averageStars(ctx, field)
+			case "reviewCount":
+				return ec.fieldContext_ReviewMetadataOccurrence_reviewCount(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type ReviewMetadataOccurrence", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _ReviewMetadataDish_averageStars(ctx context.Context, field graphql.CollectedField, obj *models.ReviewMetadataDish) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_ReviewMetadataDish_averageStars(ctx, field)
 	if err != nil {
@@ -6586,6 +7011,91 @@ func (ec *executionContext) _ReviewMetadataDish_reviewCount(ctx context.Context,
 func (ec *executionContext) fieldContext_ReviewMetadataDish_reviewCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "ReviewMetadataDish",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReviewMetadataOccurrence_averageStars(ctx context.Context, field graphql.CollectedField, obj *models.ReviewMetadataOccurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReviewMetadataOccurrence_averageStars(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.AverageStars, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*float64)
+	fc.Result = res
+	return ec.marshalOFloat2ᚖfloat64(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReviewMetadataOccurrence_averageStars(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewMetadataOccurrence",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Float does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _ReviewMetadataOccurrence_reviewCount(ctx context.Context, field graphql.CollectedField, obj *models.ReviewMetadataOccurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_ReviewMetadataOccurrence_reviewCount(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ReviewCount, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_ReviewMetadataOccurrence_reviewCount(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "ReviewMetadataOccurrence",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
@@ -10034,6 +10544,26 @@ func (ec *executionContext) _Dish(ctx context.Context, sel ast.SelectionSet, obj
 				return innerFunc(ctx)
 
 			})
+		case "reviewData":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Dish_reviewData(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10603,6 +11133,26 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 				return innerFunc(ctx)
 
 			})
+		case "reviewData":
+			field := field
+
+			innerFunc := func(ctx context.Context) (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Occurrence_reviewData(ctx, field, obj)
+				if res == graphql.Null {
+					atomic.AddUint32(&invalids, 1)
+				}
+				return res
+			}
+
+			out.Concurrently(i, func() graphql.Marshaler {
+				return innerFunc(ctx)
+
+			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -11047,6 +11597,48 @@ func (ec *executionContext) _ReviewDataDish(ctx context.Context, sel ast.Selecti
 	return out
 }
 
+var reviewDataOccurrenceImplementors = []string{"ReviewDataOccurrence"}
+
+func (ec *executionContext) _ReviewDataOccurrence(ctx context.Context, sel ast.SelectionSet, obj *models.ReviewDataOccurrence) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reviewDataOccurrenceImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReviewDataOccurrence")
+		case "reviews":
+
+			out.Values[i] = ec._ReviewDataOccurrence_reviews(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "images":
+
+			out.Values[i] = ec._ReviewDataOccurrence_images(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		case "metadata":
+
+			out.Values[i] = ec._ReviewDataOccurrence_metadata(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
 var reviewMetadataDishImplementors = []string{"ReviewMetadataDish"}
 
 func (ec *executionContext) _ReviewMetadataDish(ctx context.Context, sel ast.SelectionSet, obj *models.ReviewMetadataDish) graphql.Marshaler {
@@ -11064,6 +11656,38 @@ func (ec *executionContext) _ReviewMetadataDish(ctx context.Context, sel ast.Sel
 		case "reviewCount":
 
 			out.Values[i] = ec._ReviewMetadataDish_reviewCount(ctx, field, obj)
+
+			if out.Values[i] == graphql.Null {
+				invalids++
+			}
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch()
+	if invalids > 0 {
+		return graphql.Null
+	}
+	return out
+}
+
+var reviewMetadataOccurrenceImplementors = []string{"ReviewMetadataOccurrence"}
+
+func (ec *executionContext) _ReviewMetadataOccurrence(ctx context.Context, sel ast.SelectionSet, obj *models.ReviewMetadataOccurrence) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, reviewMetadataOccurrenceImplementors)
+	out := graphql.NewFieldSet(fields)
+	var invalids uint32
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("ReviewMetadataOccurrence")
+		case "averageStars":
+
+			out.Values[i] = ec._ReviewMetadataOccurrence_averageStars(ctx, field, obj)
+
+		case "reviewCount":
+
+			out.Values[i] = ec._ReviewMetadataOccurrence_reviewCount(ctx, field, obj)
 
 			if out.Values[i] == graphql.Null {
 				invalids++
@@ -12081,6 +12705,34 @@ func (ec *executionContext) marshalNReview2ᚖgithubᚗcomᚋmensattᚋbackend�
 	return ec._Review(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNReviewDataDish2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewDataDish(ctx context.Context, sel ast.SelectionSet, v models.ReviewDataDish) graphql.Marshaler {
+	return ec._ReviewDataDish(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNReviewDataDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewDataDish(ctx context.Context, sel ast.SelectionSet, v *models.ReviewDataDish) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ReviewDataDish(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNReviewDataOccurrence2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewDataOccurrence(ctx context.Context, sel ast.SelectionSet, v models.ReviewDataOccurrence) graphql.Marshaler {
+	return ec._ReviewDataOccurrence(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNReviewDataOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewDataOccurrence(ctx context.Context, sel ast.SelectionSet, v *models.ReviewDataOccurrence) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ReviewDataOccurrence(ctx, sel, v)
+}
+
 func (ec *executionContext) marshalNReviewMetadataDish2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewMetadataDish(ctx context.Context, sel ast.SelectionSet, v *models.ReviewMetadataDish) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -12089,6 +12741,16 @@ func (ec *executionContext) marshalNReviewMetadataDish2ᚖgithubᚗcomᚋmensatt
 		return graphql.Null
 	}
 	return ec._ReviewMetadataDish(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalNReviewMetadataOccurrence2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewMetadataOccurrence(ctx context.Context, sel ast.SelectionSet, v *models.ReviewMetadataOccurrence) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._ReviewMetadataOccurrence(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
