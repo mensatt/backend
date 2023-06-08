@@ -75,13 +75,11 @@ const (
 	// TagsInverseTable is the table name for the Tag entity.
 	// It exists in this package in order to avoid circular dependency with the "tag" package.
 	TagsInverseTable = "tag"
-	// SideDishesTable is the table that holds the side_dishes relation/edge.
-	SideDishesTable = "dish"
+	// SideDishesTable is the table that holds the side_dishes relation/edge. The primary key declared below.
+	SideDishesTable = "occurrence_side_dishes"
 	// SideDishesInverseTable is the table name for the Dish entity.
 	// It exists in this package in order to avoid circular dependency with the "dish" package.
 	SideDishesInverseTable = "dish"
-	// SideDishesColumn is the table column denoting the side_dishes relation/edge.
-	SideDishesColumn = "occurrence_side_dishes"
 	// ReviewsTable is the table that holds the reviews relation/edge.
 	ReviewsTable = "review"
 	// ReviewsInverseTable is the table name for the Review entity.
@@ -121,6 +119,9 @@ var (
 	// TagsPrimaryKey and TagsColumn2 are the table columns denoting the
 	// primary key for the tags relation (M2M).
 	TagsPrimaryKey = []string{"occurrence_id", "tag_id"}
+	// SideDishesPrimaryKey and SideDishesColumn2 are the table columns denoting the
+	// primary key for the side_dishes relation (M2M).
+	SideDishesPrimaryKey = []string{"occurrence", "dish"}
 )
 
 // ValidColumn reports if the column name is valid (part of the table columns).

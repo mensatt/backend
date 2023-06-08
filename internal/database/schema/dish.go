@@ -33,7 +33,8 @@ func (Dish) Fields() []ent.Field {
 // Edges of the Dish.
 func (Dish) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("occurrences", Occurrence.Type).StorageKey(edge.Column("dish")),
+		edge.To("dish_occurrences", Occurrence.Type).StorageKey(edge.Column("dish")),
 		edge.To("aliases", DishAlias.Type).StorageKey(edge.Column("dish")),
+		edge.From("side_dish_occurrence", Occurrence.Type).Ref("side_dishes"),
 	}
 }

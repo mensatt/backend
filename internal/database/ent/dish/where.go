@@ -306,25 +306,25 @@ func NameEnContainsFold(v string) predicate.Dish {
 	})
 }
 
-// HasOccurrences applies the HasEdge predicate on the "occurrences" edge.
-func HasOccurrences() predicate.Dish {
+// HasDishOccurrences applies the HasEdge predicate on the "dish_occurrences" edge.
+func HasDishOccurrences() predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OccurrencesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, OccurrencesTable, OccurrencesColumn),
+			sqlgraph.To(DishOccurrencesTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DishOccurrencesTable, DishOccurrencesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasOccurrencesWith applies the HasEdge predicate on the "occurrences" edge with a given conditions (other predicates).
-func HasOccurrencesWith(preds ...predicate.Occurrence) predicate.Dish {
+// HasDishOccurrencesWith applies the HasEdge predicate on the "dish_occurrences" edge with a given conditions (other predicates).
+func HasDishOccurrencesWith(preds ...predicate.Occurrence) predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(OccurrencesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, OccurrencesTable, OccurrencesColumn),
+			sqlgraph.To(DishOccurrencesInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, DishOccurrencesTable, DishOccurrencesColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -353,6 +353,34 @@ func HasAliasesWith(preds ...predicate.DishAlias) predicate.Dish {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(AliasesInverseTable, DishAliasFieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, AliasesTable, AliasesColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSideDishOccurrence applies the HasEdge predicate on the "side_dish_occurrence" edge.
+func HasSideDishOccurrence() predicate.Dish {
+	return predicate.Dish(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SideDishOccurrenceTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, SideDishOccurrenceTable, SideDishOccurrencePrimaryKey...),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSideDishOccurrenceWith applies the HasEdge predicate on the "side_dish_occurrence" edge with a given conditions (other predicates).
+func HasSideDishOccurrenceWith(preds ...predicate.Occurrence) predicate.Dish {
+	return predicate.Dish(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(SideDishOccurrenceInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, SideDishOccurrenceTable, SideDishOccurrencePrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

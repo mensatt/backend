@@ -151,7 +151,7 @@ func (oq *OccurrenceQuery) QuerySideDishes() *DishQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(occurrence.Table, occurrence.FieldID, selector),
 			sqlgraph.To(dish.Table, dish.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, occurrence.SideDishesTable, occurrence.SideDishesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, occurrence.SideDishesTable, occurrence.SideDishesPrimaryKey...),
 		)
 		fromU = sqlgraph.SetNeighbors(oq.driver.Dialect(), step)
 		return fromU, nil
@@ -688,33 +688,60 @@ func (oq *OccurrenceQuery) loadTags(ctx context.Context, query *TagQuery, nodes 
 	return nil
 }
 func (oq *OccurrenceQuery) loadSideDishes(ctx context.Context, query *DishQuery, nodes []*Occurrence, init func(*Occurrence), assign func(*Occurrence, *Dish)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Occurrence)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*Occurrence)
+	nids := make(map[uuid.UUID]map[*Occurrence]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
 		if init != nil {
-			init(nodes[i])
+			init(node)
 		}
 	}
-	query.withFKs = true
-	query.Where(predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.InValues(occurrence.SideDishesColumn, fks...))
-	}))
-	neighbors, err := query.All(ctx)
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(occurrence.SideDishesTable)
+		s.Join(joinT).On(s.C(dish.FieldID), joinT.C(occurrence.SideDishesPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(occurrence.SideDishesPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(occurrence.SideDishesPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+		assign := spec.Assign
+		values := spec.ScanValues
+		spec.ScanValues = func(columns []string) ([]any, error) {
+			values, err := values(columns[1:])
+			if err != nil {
+				return nil, err
+			}
+			return append([]any{new(uuid.UUID)}, values...), nil
+		}
+		spec.Assign = func(columns []string, values []any) error {
+			outValue := *values[0].(*uuid.UUID)
+			inValue := *values[1].(*uuid.UUID)
+			if nids[inValue] == nil {
+				nids[inValue] = map[*Occurrence]struct{}{byID[outValue]: {}}
+				return assign(columns[1:], values[1:])
+			}
+			nids[inValue][byID[outValue]] = struct{}{}
+			return nil
+		}
+	})
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.occurrence_side_dishes
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "occurrence_side_dishes" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
+		nodes, ok := nids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "occurrence_side_dishes" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected "side_dishes" node returned %v`, n.ID)
 		}
-		assign(node, n)
+		for kn := range nodes {
+			assign(kn, n)
+		}
 	}
 	return nil
 }

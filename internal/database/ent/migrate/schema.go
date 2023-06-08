@@ -14,21 +14,12 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "name_de", Type: field.TypeString, Unique: true},
 		{Name: "name_en", Type: field.TypeString, Nullable: true},
-		{Name: "occurrence_side_dishes", Type: field.TypeUUID, Nullable: true},
 	}
 	// DishTable holds the schema information for the "dish" table.
 	DishTable = &schema.Table{
 		Name:       "dish",
 		Columns:    DishColumns,
 		PrimaryKey: []*schema.Column{DishColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "dish_occurrence_side_dishes",
-				Columns:    []*schema.Column{DishColumns[3]},
-				RefColumns: []*schema.Column{OccurrenceColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
 	}
 	// DishAliasColumns holds the columns for the "dish_alias" table.
 	DishAliasColumns = []*schema.Column{
@@ -109,7 +100,7 @@ var (
 		PrimaryKey: []*schema.Column{OccurrenceColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "occurrence_dish_occurrences",
+				Symbol:     "occurrence_dish_dish_occurrences",
 				Columns:    []*schema.Column{OccurrenceColumns[15]},
 				RefColumns: []*schema.Column{DishColumns[0]},
 				OnDelete:   schema.NoAction,
@@ -201,6 +192,31 @@ var (
 			},
 		},
 	}
+	// OccurrenceSideDishesColumns holds the columns for the "occurrence_side_dishes" table.
+	OccurrenceSideDishesColumns = []*schema.Column{
+		{Name: "occurrence", Type: field.TypeUUID},
+		{Name: "dish", Type: field.TypeUUID},
+	}
+	// OccurrenceSideDishesTable holds the schema information for the "occurrence_side_dishes" table.
+	OccurrenceSideDishesTable = &schema.Table{
+		Name:       "occurrence_side_dishes",
+		Columns:    OccurrenceSideDishesColumns,
+		PrimaryKey: []*schema.Column{OccurrenceSideDishesColumns[0], OccurrenceSideDishesColumns[1]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "occurrence_side_dishes_occurrence",
+				Columns:    []*schema.Column{OccurrenceSideDishesColumns[0]},
+				RefColumns: []*schema.Column{OccurrenceColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+			{
+				Symbol:     "occurrence_side_dishes_dish",
+				Columns:    []*schema.Column{OccurrenceSideDishesColumns[1]},
+				RefColumns: []*schema.Column{DishColumns[0]},
+				OnDelete:   schema.Cascade,
+			},
+		},
+	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		DishTable,
@@ -212,11 +228,11 @@ var (
 		TagTable,
 		UserTable,
 		OccurrenceTagsTable,
+		OccurrenceSideDishesTable,
 	}
 )
 
 func init() {
-	DishTable.ForeignKeys[0].RefTable = OccurrenceTable
 	DishTable.Annotation = &entsql.Annotation{
 		Table: "dish",
 	}
@@ -248,4 +264,6 @@ func init() {
 	}
 	OccurrenceTagsTable.ForeignKeys[0].RefTable = OccurrenceTable
 	OccurrenceTagsTable.ForeignKeys[1].RefTable = TagTable
+	OccurrenceSideDishesTable.ForeignKeys[0].RefTable = OccurrenceTable
+	OccurrenceSideDishesTable.ForeignKeys[1].RefTable = DishTable
 }

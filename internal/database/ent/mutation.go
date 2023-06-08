@@ -46,21 +46,24 @@ const (
 // DishMutation represents an operation that mutates the Dish nodes in the graph.
 type DishMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	name_de            *string
-	name_en            *string
-	clearedFields      map[string]struct{}
-	occurrences        map[uuid.UUID]struct{}
-	removedoccurrences map[uuid.UUID]struct{}
-	clearedoccurrences bool
-	aliases            map[string]struct{}
-	removedaliases     map[string]struct{}
-	clearedaliases     bool
-	done               bool
-	oldValue           func(context.Context) (*Dish, error)
-	predicates         []predicate.Dish
+	op                          Op
+	typ                         string
+	id                          *uuid.UUID
+	name_de                     *string
+	name_en                     *string
+	clearedFields               map[string]struct{}
+	dish_occurrences            map[uuid.UUID]struct{}
+	removeddish_occurrences     map[uuid.UUID]struct{}
+	cleareddish_occurrences     bool
+	aliases                     map[string]struct{}
+	removedaliases              map[string]struct{}
+	clearedaliases              bool
+	side_dish_occurrence        map[uuid.UUID]struct{}
+	removedside_dish_occurrence map[uuid.UUID]struct{}
+	clearedside_dish_occurrence bool
+	done                        bool
+	oldValue                    func(context.Context) (*Dish, error)
+	predicates                  []predicate.Dish
 }
 
 var _ ent.Mutation = (*DishMutation)(nil)
@@ -252,58 +255,58 @@ func (m *DishMutation) ResetNameEn() {
 	delete(m.clearedFields, dish.FieldNameEn)
 }
 
-// AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by ids.
-func (m *DishMutation) AddOccurrenceIDs(ids ...uuid.UUID) {
-	if m.occurrences == nil {
-		m.occurrences = make(map[uuid.UUID]struct{})
+// AddDishOccurrenceIDs adds the "dish_occurrences" edge to the Occurrence entity by ids.
+func (m *DishMutation) AddDishOccurrenceIDs(ids ...uuid.UUID) {
+	if m.dish_occurrences == nil {
+		m.dish_occurrences = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		m.occurrences[ids[i]] = struct{}{}
+		m.dish_occurrences[ids[i]] = struct{}{}
 	}
 }
 
-// ClearOccurrences clears the "occurrences" edge to the Occurrence entity.
-func (m *DishMutation) ClearOccurrences() {
-	m.clearedoccurrences = true
+// ClearDishOccurrences clears the "dish_occurrences" edge to the Occurrence entity.
+func (m *DishMutation) ClearDishOccurrences() {
+	m.cleareddish_occurrences = true
 }
 
-// OccurrencesCleared reports if the "occurrences" edge to the Occurrence entity was cleared.
-func (m *DishMutation) OccurrencesCleared() bool {
-	return m.clearedoccurrences
+// DishOccurrencesCleared reports if the "dish_occurrences" edge to the Occurrence entity was cleared.
+func (m *DishMutation) DishOccurrencesCleared() bool {
+	return m.cleareddish_occurrences
 }
 
-// RemoveOccurrenceIDs removes the "occurrences" edge to the Occurrence entity by IDs.
-func (m *DishMutation) RemoveOccurrenceIDs(ids ...uuid.UUID) {
-	if m.removedoccurrences == nil {
-		m.removedoccurrences = make(map[uuid.UUID]struct{})
+// RemoveDishOccurrenceIDs removes the "dish_occurrences" edge to the Occurrence entity by IDs.
+func (m *DishMutation) RemoveDishOccurrenceIDs(ids ...uuid.UUID) {
+	if m.removeddish_occurrences == nil {
+		m.removeddish_occurrences = make(map[uuid.UUID]struct{})
 	}
 	for i := range ids {
-		delete(m.occurrences, ids[i])
-		m.removedoccurrences[ids[i]] = struct{}{}
+		delete(m.dish_occurrences, ids[i])
+		m.removeddish_occurrences[ids[i]] = struct{}{}
 	}
 }
 
-// RemovedOccurrences returns the removed IDs of the "occurrences" edge to the Occurrence entity.
-func (m *DishMutation) RemovedOccurrencesIDs() (ids []uuid.UUID) {
-	for id := range m.removedoccurrences {
+// RemovedDishOccurrences returns the removed IDs of the "dish_occurrences" edge to the Occurrence entity.
+func (m *DishMutation) RemovedDishOccurrencesIDs() (ids []uuid.UUID) {
+	for id := range m.removeddish_occurrences {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// OccurrencesIDs returns the "occurrences" edge IDs in the mutation.
-func (m *DishMutation) OccurrencesIDs() (ids []uuid.UUID) {
-	for id := range m.occurrences {
+// DishOccurrencesIDs returns the "dish_occurrences" edge IDs in the mutation.
+func (m *DishMutation) DishOccurrencesIDs() (ids []uuid.UUID) {
+	for id := range m.dish_occurrences {
 		ids = append(ids, id)
 	}
 	return
 }
 
-// ResetOccurrences resets all changes to the "occurrences" edge.
-func (m *DishMutation) ResetOccurrences() {
-	m.occurrences = nil
-	m.clearedoccurrences = false
-	m.removedoccurrences = nil
+// ResetDishOccurrences resets all changes to the "dish_occurrences" edge.
+func (m *DishMutation) ResetDishOccurrences() {
+	m.dish_occurrences = nil
+	m.cleareddish_occurrences = false
+	m.removeddish_occurrences = nil
 }
 
 // AddAliasIDs adds the "aliases" edge to the DishAlias entity by ids.
@@ -358,6 +361,60 @@ func (m *DishMutation) ResetAliases() {
 	m.aliases = nil
 	m.clearedaliases = false
 	m.removedaliases = nil
+}
+
+// AddSideDishOccurrenceIDs adds the "side_dish_occurrence" edge to the Occurrence entity by ids.
+func (m *DishMutation) AddSideDishOccurrenceIDs(ids ...uuid.UUID) {
+	if m.side_dish_occurrence == nil {
+		m.side_dish_occurrence = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.side_dish_occurrence[ids[i]] = struct{}{}
+	}
+}
+
+// ClearSideDishOccurrence clears the "side_dish_occurrence" edge to the Occurrence entity.
+func (m *DishMutation) ClearSideDishOccurrence() {
+	m.clearedside_dish_occurrence = true
+}
+
+// SideDishOccurrenceCleared reports if the "side_dish_occurrence" edge to the Occurrence entity was cleared.
+func (m *DishMutation) SideDishOccurrenceCleared() bool {
+	return m.clearedside_dish_occurrence
+}
+
+// RemoveSideDishOccurrenceIDs removes the "side_dish_occurrence" edge to the Occurrence entity by IDs.
+func (m *DishMutation) RemoveSideDishOccurrenceIDs(ids ...uuid.UUID) {
+	if m.removedside_dish_occurrence == nil {
+		m.removedside_dish_occurrence = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.side_dish_occurrence, ids[i])
+		m.removedside_dish_occurrence[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedSideDishOccurrence returns the removed IDs of the "side_dish_occurrence" edge to the Occurrence entity.
+func (m *DishMutation) RemovedSideDishOccurrenceIDs() (ids []uuid.UUID) {
+	for id := range m.removedside_dish_occurrence {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// SideDishOccurrenceIDs returns the "side_dish_occurrence" edge IDs in the mutation.
+func (m *DishMutation) SideDishOccurrenceIDs() (ids []uuid.UUID) {
+	for id := range m.side_dish_occurrence {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetSideDishOccurrence resets all changes to the "side_dish_occurrence" edge.
+func (m *DishMutation) ResetSideDishOccurrence() {
+	m.side_dish_occurrence = nil
+	m.clearedside_dish_occurrence = false
+	m.removedside_dish_occurrence = nil
 }
 
 // Where appends a list predicates to the DishMutation builder.
@@ -504,12 +561,15 @@ func (m *DishMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *DishMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.occurrences != nil {
-		edges = append(edges, dish.EdgeOccurrences)
+	edges := make([]string, 0, 3)
+	if m.dish_occurrences != nil {
+		edges = append(edges, dish.EdgeDishOccurrences)
 	}
 	if m.aliases != nil {
 		edges = append(edges, dish.EdgeAliases)
+	}
+	if m.side_dish_occurrence != nil {
+		edges = append(edges, dish.EdgeSideDishOccurrence)
 	}
 	return edges
 }
@@ -518,9 +578,9 @@ func (m *DishMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *DishMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case dish.EdgeOccurrences:
-		ids := make([]ent.Value, 0, len(m.occurrences))
-		for id := range m.occurrences {
+	case dish.EdgeDishOccurrences:
+		ids := make([]ent.Value, 0, len(m.dish_occurrences))
+		for id := range m.dish_occurrences {
 			ids = append(ids, id)
 		}
 		return ids
@@ -530,18 +590,27 @@ func (m *DishMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dish.EdgeSideDishOccurrence:
+		ids := make([]ent.Value, 0, len(m.side_dish_occurrence))
+		for id := range m.side_dish_occurrence {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *DishMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.removedoccurrences != nil {
-		edges = append(edges, dish.EdgeOccurrences)
+	edges := make([]string, 0, 3)
+	if m.removeddish_occurrences != nil {
+		edges = append(edges, dish.EdgeDishOccurrences)
 	}
 	if m.removedaliases != nil {
 		edges = append(edges, dish.EdgeAliases)
+	}
+	if m.removedside_dish_occurrence != nil {
+		edges = append(edges, dish.EdgeSideDishOccurrence)
 	}
 	return edges
 }
@@ -550,9 +619,9 @@ func (m *DishMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *DishMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case dish.EdgeOccurrences:
-		ids := make([]ent.Value, 0, len(m.removedoccurrences))
-		for id := range m.removedoccurrences {
+	case dish.EdgeDishOccurrences:
+		ids := make([]ent.Value, 0, len(m.removeddish_occurrences))
+		for id := range m.removeddish_occurrences {
 			ids = append(ids, id)
 		}
 		return ids
@@ -562,18 +631,27 @@ func (m *DishMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case dish.EdgeSideDishOccurrence:
+		ids := make([]ent.Value, 0, len(m.removedside_dish_occurrence))
+		for id := range m.removedside_dish_occurrence {
+			ids = append(ids, id)
+		}
+		return ids
 	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *DishMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedoccurrences {
-		edges = append(edges, dish.EdgeOccurrences)
+	edges := make([]string, 0, 3)
+	if m.cleareddish_occurrences {
+		edges = append(edges, dish.EdgeDishOccurrences)
 	}
 	if m.clearedaliases {
 		edges = append(edges, dish.EdgeAliases)
+	}
+	if m.clearedside_dish_occurrence {
+		edges = append(edges, dish.EdgeSideDishOccurrence)
 	}
 	return edges
 }
@@ -582,10 +660,12 @@ func (m *DishMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *DishMutation) EdgeCleared(name string) bool {
 	switch name {
-	case dish.EdgeOccurrences:
-		return m.clearedoccurrences
+	case dish.EdgeDishOccurrences:
+		return m.cleareddish_occurrences
 	case dish.EdgeAliases:
 		return m.clearedaliases
+	case dish.EdgeSideDishOccurrence:
+		return m.clearedside_dish_occurrence
 	}
 	return false
 }
@@ -602,11 +682,14 @@ func (m *DishMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *DishMutation) ResetEdge(name string) error {
 	switch name {
-	case dish.EdgeOccurrences:
-		m.ResetOccurrences()
+	case dish.EdgeDishOccurrences:
+		m.ResetDishOccurrences()
 		return nil
 	case dish.EdgeAliases:
 		m.ResetAliases()
+		return nil
+	case dish.EdgeSideDishOccurrence:
+		m.ResetSideDishOccurrence()
 		return nil
 	}
 	return fmt.Errorf("unknown Dish edge %s", name)

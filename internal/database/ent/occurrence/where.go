@@ -1302,7 +1302,7 @@ func HasSideDishes() predicate.Occurrence {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SideDishesTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SideDishesTable, SideDishesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, SideDishesTable, SideDishesPrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -1314,7 +1314,7 @@ func HasSideDishesWith(preds ...predicate.Dish) predicate.Occurrence {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(SideDishesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, SideDishesTable, SideDishesColumn),
+			sqlgraph.Edge(sqlgraph.M2M, false, SideDishesTable, SideDishesPrimaryKey...),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

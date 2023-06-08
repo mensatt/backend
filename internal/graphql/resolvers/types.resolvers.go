@@ -25,7 +25,7 @@ func (r *dishAliasResolver) Dish(ctx context.Context, obj *ent.DishAlias) (*ent.
 
 // AliasName is the resolver for the aliasName field.
 func (r *dishAliasResolver) AliasName(ctx context.Context, obj *ent.DishAlias) (string, error) {
-	panic(fmt.Errorf("not implemented: AliasName - aliasName"))
+	return obj.ID, nil
 }
 
 // Hash is the resolver for the hash field.
@@ -75,7 +75,7 @@ func (r *reviewResolver) Images(ctx context.Context, obj *ent.Review) ([]*ent.Im
 
 // Key is the resolver for the key field.
 func (r *tagResolver) Key(ctx context.Context, obj *ent.Tag) (string, error) {
-	panic(fmt.Errorf("not implemented: Key - key"))
+	return obj.ID, nil
 }
 
 // Dish returns gqlserver.DishResolver implementation.
