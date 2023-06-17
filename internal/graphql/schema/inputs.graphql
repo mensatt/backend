@@ -44,13 +44,6 @@ input CreateDishAliasInput {
     dish: UUID!
 }
 
-input UpdateDishAliasInput {
-    aliasName: String!
-    newAliasName: String
-    normalizedAliasName: String
-    dish: UUID
-}
-
 input DeleteDishAliasInput {
     aliasName: String!
 }

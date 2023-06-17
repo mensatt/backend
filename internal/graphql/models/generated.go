@@ -155,13 +155,6 @@ type ReviewMetadataOccurrence struct {
 	ReviewCount  int      `json:"reviewCount"`
 }
 
-type UpdateDishAliasInput struct {
-	AliasName           string     `json:"aliasName"`
-	NewAliasName        *string    `json:"newAliasName,omitempty"`
-	NormalizedAliasName *string    `json:"normalizedAliasName,omitempty"`
-	Dish                *uuid.UUID `json:"dish,omitempty"`
-}
-
 type UpdateDishInput struct {
 	ID     uuid.UUID `json:"id"`
 	NameDe *string   `json:"nameDe,omitempty"`

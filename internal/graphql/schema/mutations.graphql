@@ -12,7 +12,6 @@ type Mutation {
 
     # DishAlias
     createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated
-    updateDishAlias(input: UpdateDishAliasInput!): DishAlias! @authenticated
     deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @authenticated
 
     # Occurrence

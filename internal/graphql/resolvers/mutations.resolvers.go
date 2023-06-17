@@ -89,22 +89,6 @@ func (r *mutationResolver) CreateDishAlias(ctx context.Context, input models.Cre
 		Save(ctx)
 }
 
-// UpdateDishAlias is the resolver for the updateDishAlias field.
-func (r *mutationResolver) UpdateDishAlias(ctx context.Context, input models.UpdateDishAliasInput) (*ent.DishAlias, error) {
-	queryBuilder := r.Database.DishAlias.UpdateOneID(input.AliasName)
-
-	// todo: fix changing the primary key
-	//if input.NewAliasName != nil {
-	//	queryBuilder = queryBuilder.SetAliasName(*input.NewAliasName)
-	//}
-
-	if input.NormalizedAliasName != nil {
-		queryBuilder = queryBuilder.SetNormalizedAliasName(*input.NormalizedAliasName)
-	}
-
-	return queryBuilder.Save(ctx)
-}
-
 // DeleteDishAlias is the resolver for the deleteDishAlias field.
 func (r *mutationResolver) DeleteDishAlias(ctx context.Context, input models.DeleteDishAliasInput) (*ent.DishAlias, error) {
 	dishAlias, err := r.Database.DishAlias.Get(ctx, input.AliasName)
