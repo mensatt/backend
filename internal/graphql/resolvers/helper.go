@@ -3,6 +3,8 @@ package resolvers
 import (
 	"context"
 	ent "github.com/mensatt/backend/internal/database/ent"
+	"github.com/mensatt/backend/internal/database/ent/dish"
+	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/graphql/models"
@@ -52,32 +54,12 @@ func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image
 	return nil
 }
 
-//func approvedBoolToNullTime(approved bool) sql.NullTime {
-//	if approved {
-//		return sql.NullTime{Valid: true, Time: time.Now()}
-//	}
-//	return sql.NullTime{Valid: false}
-//}
-//
-//func pgtypeNumericToFloat(numeric pgtype.Numeric) (*float64, error) {
-//	if numeric.Status == pgtype.Null {
-//		return nil, nil
-//	}
-//
-//	var f float64
-//	err := numeric.AssignTo(&f)
-//	return &f, err
-//}
-//
-//func boolPointerToNullBool(b *bool) sql.NullBool {
-//	if b == nil {
-//		return sql.NullBool{Valid: false}
-//	}
-//	return sql.NullBool{Valid: true, Bool: *b}
-//}
-
 func (r *queryResolver) filteredOccurrences(ctx context.Context, filter *models.OccurrenceFilter) ([]*ent.Occurrence, error) {
 	queryBuilder := r.Database.Occurrence.Query()
+
+	if filter.Dish != nil {
+		queryBuilder = queryBuilder.Where(occurrence.HasDishWith(dish.IDIn(filter.Dish...)))
+	}
 
 	if filter.Status != nil {
 		queryBuilder = queryBuilder.Where(occurrence.StatusEQ(*filter.Status))
@@ -92,7 +74,7 @@ func (r *queryResolver) filteredOccurrences(ctx context.Context, filter *models.
 	}
 
 	if filter.Location != nil {
-		// todo: implement location filter
+		queryBuilder = queryBuilder.Where(occurrence.HasLocationWith(location.IDEQ(*filter.Location)))
 	}
 
 	return queryBuilder.All(ctx)

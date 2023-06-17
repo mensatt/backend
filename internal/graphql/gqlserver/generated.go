@@ -1304,6 +1304,7 @@ input RemoveSideDishFromOccurrenceInput {
 }
 
 input OccurrenceFilter {
+    dish: [UUID!]
     status: OccurrenceStatus
     startDate: Date
     endDate: Date
@@ -10031,13 +10032,21 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"status", "startDate", "endDate", "location"}
+	fieldsInOrder := [...]string{"dish", "status", "startDate", "endDate", "location"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "dish":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
+			it.Dish, err = ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
 		case "status":
 			var err error
 
