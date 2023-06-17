@@ -2,12 +2,15 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"entgo.io/ent/dialect"
+	entsql "entgo.io/ent/dialect/sql"
 	"fmt"
 	"github.com/getsentry/sentry-go"
-	_ "github.com/lib/pq"
-	"github.com/mensatt/backend/internal/database/ent"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/mensatt/backend/internal/database/seeds"
+
+	"github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/pkg/imageuploader"
 	"github.com/mensatt/backend/pkg/server"
 	"github.com/mensatt/backend/pkg/utils"
@@ -32,6 +35,7 @@ func main() {
 	config := server.Config{
 		Host:           utils.MustGet("HOST"),
 		Port:           utils.MustGetInt32("PORT"),
+		MaxConnections: utils.MustGetInt32("MAX_CONNECTIONS"),
 		ServiceVersion: utils.MustGet("SERVER_PATH_VERSION"),
 		DebugEnabled:   utils.MustGetBool("DEBUG_ENABLED"),
 		JWT: utils.JWTKeyStoreConfig{
@@ -80,19 +84,25 @@ func main() {
 	if err != nil {
 		log.Fatalln("Database password secret could not be retrieved:", err)
 	}
+
 	databaseUrl := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable", username, password, utils.MustGet("DATABASE_HOST"), utils.MustGet("DATABASE_NAME"))
 
 	// Connect to database
-	client, err := ent.Open(dialect.Postgres, databaseUrl)
+	db, err := sql.Open("pgx", databaseUrl)
 	if err != nil {
 		log.Fatalln("Error opening database connection:", err)
 	}
-	defer func(client *ent.Client) {
-		err := client.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
 		if err != nil {
 			log.Fatalln("Error closing database connection:", err)
 		}
-	}(client)
+	}(db)
+
+	db.SetMaxOpenConns(int(config.MaxConnections))
+
+	driver := entsql.OpenDB(dialect.Postgres, db)
+	client := ent.NewClient(ent.Driver(driver))
 
 	ctx := context.Background()
 

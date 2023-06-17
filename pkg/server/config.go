@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Host           string
 	Port           int32
+	MaxConnections int32
 	ServiceVersion string
 	DebugEnabled   bool
 	JWT            utils.JWTKeyStoreConfig
