@@ -102,11 +102,12 @@ type LoginUserInput struct {
 }
 
 type OccurrenceFilter struct {
-	Dish      []uuid.UUID              `json:"dish,omitempty"`
-	Status    *schema.OccurrenceStatus `json:"status,omitempty"`
-	StartDate *time.Time               `json:"startDate,omitempty"`
-	EndDate   *time.Time               `json:"endDate,omitempty"`
-	Location  *uuid.UUID               `json:"location,omitempty"`
+	Occurrences []uuid.UUID              `json:"occurrences,omitempty"`
+	Dishes      []uuid.UUID              `json:"dishes,omitempty"`
+	Status      *schema.OccurrenceStatus `json:"status,omitempty"`
+	StartDate   *time.Time               `json:"startDate,omitempty"`
+	EndDate     *time.Time               `json:"endDate,omitempty"`
+	Location    *uuid.UUID               `json:"location,omitempty"`
 }
 
 type OccurrenceSideDish struct {
