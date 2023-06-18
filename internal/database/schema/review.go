@@ -39,6 +39,8 @@ func (Review) Fields() []ent.Field {
 func (Review) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("occurrence", Occurrence.Type).Ref("reviews").Unique().Required(),
-		edge.To("images", Image.Type).StorageKey(edge.Column("review")),
+		edge.To("images", Image.Type).StorageKey(edge.Column("review")).Annotations(entsql.Annotation{
+			OnDelete: entsql.Cascade,
+		}),
 	}
 }

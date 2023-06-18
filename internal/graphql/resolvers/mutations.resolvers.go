@@ -369,7 +369,7 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 		}
 	}
 
-	return review, err
+	return review, err // todo: handle this entire mutation using a transaction
 }
 
 // UpdateReview is the resolver for the updateReview field.
@@ -415,12 +415,13 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 	if err != nil {
 		return nil, err
 	}
-	err = r.deleteImages(ctx, images)
+
+	err = r.Database.Review.DeleteOne(review).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.Database.Review.DeleteOne(review).Exec(ctx)
+	err = r.deleteImages(ctx, images)
 	if err != nil {
 		return nil, err
 	}
@@ -440,7 +441,7 @@ func (r *mutationResolver) AddImagesToReview(ctx context.Context, input models.A
 		return nil, err
 	}
 
-	return review.Update().AddImages(images...).Save(ctx)
+	return review.Update().AddImages(images...).Save(ctx) // todo: perhaps use transaction here or delete images on error
 }
 
 // DeleteImageFromReview is the resolver for the deleteImageFromReview field.
@@ -460,7 +461,7 @@ func (r *mutationResolver) DeleteImageFromReview(ctx context.Context, input mode
 		return nil, err
 	}
 
-	return image, review.Update().RemoveImages(image).Exec(ctx)
+	return image, review.Update().RemoveImages(image).Exec(ctx) // todo: perhaps use transaction here or keep images on error
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.
