@@ -94,6 +94,13 @@ func Name(v string) predicate.Location {
 	})
 }
 
+// Visible applies equality check predicate on the "visible" field. It's identical to VisibleEQ.
+func Visible(v bool) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldVisible), v))
+	})
+}
+
 // ExternalIDEQ applies the EQ predicate on the "external_id" field.
 func ExternalIDEQ(v int) predicate.Location {
 	return predicate.Location(func(s *sql.Selector) {
@@ -254,6 +261,20 @@ func NameEqualFold(v string) predicate.Location {
 func NameContainsFold(v string) predicate.Location {
 	return predicate.Location(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldName), v))
+	})
+}
+
+// VisibleEQ applies the EQ predicate on the "visible" field.
+func VisibleEQ(v bool) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldVisible), v))
+	})
+}
+
+// VisibleNEQ applies the NEQ predicate on the "visible" field.
+func VisibleNEQ(v bool) predicate.Location {
+	return predicate.Location(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldVisible), v))
 	})
 }
 

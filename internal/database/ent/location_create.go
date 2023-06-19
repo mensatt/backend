@@ -36,6 +36,20 @@ func (lc *LocationCreate) SetName(s string) *LocationCreate {
 	return lc
 }
 
+// SetVisible sets the "visible" field.
+func (lc *LocationCreate) SetVisible(b bool) *LocationCreate {
+	lc.mutation.SetVisible(b)
+	return lc
+}
+
+// SetNillableVisible sets the "visible" field if the given value is not nil.
+func (lc *LocationCreate) SetNillableVisible(b *bool) *LocationCreate {
+	if b != nil {
+		lc.SetVisible(*b)
+	}
+	return lc
+}
+
 // SetID sets the "id" field.
 func (lc *LocationCreate) SetID(u uuid.UUID) *LocationCreate {
 	lc.mutation.SetID(u)
@@ -142,6 +156,10 @@ func (lc *LocationCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (lc *LocationCreate) defaults() {
+	if _, ok := lc.mutation.Visible(); !ok {
+		v := location.DefaultVisible
+		lc.mutation.SetVisible(v)
+	}
 	if _, ok := lc.mutation.ID(); !ok {
 		v := location.DefaultID()
 		lc.mutation.SetID(v)
@@ -160,6 +178,9 @@ func (lc *LocationCreate) check() error {
 		if err := location.NameValidator(v); err != nil {
 			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Location.name": %w`, err)}
 		}
+	}
+	if _, ok := lc.mutation.Visible(); !ok {
+		return &ValidationError{Name: "visible", err: errors.New(`ent: missing required field "Location.visible"`)}
 	}
 	return nil
 }
@@ -205,6 +226,10 @@ func (lc *LocationCreate) createSpec() (*Location, *sqlgraph.CreateSpec) {
 	if value, ok := lc.mutation.Name(); ok {
 		_spec.SetField(location.FieldName, field.TypeString, value)
 		_node.Name = value
+	}
+	if value, ok := lc.mutation.Visible(); ok {
+		_spec.SetField(location.FieldVisible, field.TypeBool, value)
+		_node.Visible = value
 	}
 	if nodes := lc.mutation.OccurrencesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -307,6 +332,18 @@ func (u *LocationUpsert) UpdateName() *LocationUpsert {
 	return u
 }
 
+// SetVisible sets the "visible" field.
+func (u *LocationUpsert) SetVisible(v bool) *LocationUpsert {
+	u.Set(location.FieldVisible, v)
+	return u
+}
+
+// UpdateVisible sets the "visible" field to the value that was provided on create.
+func (u *LocationUpsert) UpdateVisible() *LocationUpsert {
+	u.SetExcluded(location.FieldVisible)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -387,6 +424,20 @@ func (u *LocationUpsertOne) SetName(v string) *LocationUpsertOne {
 func (u *LocationUpsertOne) UpdateName() *LocationUpsertOne {
 	return u.Update(func(s *LocationUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetVisible sets the "visible" field.
+func (u *LocationUpsertOne) SetVisible(v bool) *LocationUpsertOne {
+	return u.Update(func(s *LocationUpsert) {
+		s.SetVisible(v)
+	})
+}
+
+// UpdateVisible sets the "visible" field to the value that was provided on create.
+func (u *LocationUpsertOne) UpdateVisible() *LocationUpsertOne {
+	return u.Update(func(s *LocationUpsert) {
+		s.UpdateVisible()
 	})
 }
 
@@ -633,6 +684,20 @@ func (u *LocationUpsertBulk) SetName(v string) *LocationUpsertBulk {
 func (u *LocationUpsertBulk) UpdateName() *LocationUpsertBulk {
 	return u.Update(func(s *LocationUpsert) {
 		s.UpdateName()
+	})
+}
+
+// SetVisible sets the "visible" field.
+func (u *LocationUpsertBulk) SetVisible(v bool) *LocationUpsertBulk {
+	return u.Update(func(s *LocationUpsert) {
+		s.SetVisible(v)
+	})
+}
+
+// UpdateVisible sets the "visible" field to the value that was provided on create.
+func (u *LocationUpsertBulk) UpdateVisible() *LocationUpsertBulk {
+	return u.Update(func(s *LocationUpsert) {
+		s.UpdateVisible()
 	})
 }
 

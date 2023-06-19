@@ -20,6 +20,8 @@ type Location struct {
 	ExternalID int `json:"external_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
+	// Visible holds the value of the "visible" field.
+	Visible bool `json:"visible,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the LocationQuery when eager-loading is set.
 	Edges LocationEdges `json:"edges"`
@@ -48,6 +50,8 @@ func (*Location) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case location.FieldVisible:
+			values[i] = new(sql.NullBool)
 		case location.FieldExternalID:
 			values[i] = new(sql.NullInt64)
 		case location.FieldName:
@@ -87,6 +91,12 @@ func (l *Location) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				l.Name = value.String
 			}
+		case location.FieldVisible:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field visible", values[i])
+			} else if value.Valid {
+				l.Visible = value.Bool
+			}
 		}
 	}
 	return nil
@@ -125,6 +135,9 @@ func (l *Location) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(l.Name)
+	builder.WriteString(", ")
+	builder.WriteString("visible=")
+	builder.WriteString(fmt.Sprintf("%v", l.Visible))
 	builder.WriteByte(')')
 	return builder.String()
 }
