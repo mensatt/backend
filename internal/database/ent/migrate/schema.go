@@ -57,7 +57,7 @@ var (
 				Symbol:     "image_review_images",
 				Columns:    []*schema.Column{ImageColumns[2]},
 				RefColumns: []*schema.Column{ReviewColumns[0]},
-				OnDelete:   schema.NoAction,
+				OnDelete:   schema.Cascade,
 			},
 		},
 	}

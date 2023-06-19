@@ -1,6 +1,7 @@
 package server
 
 import (
+	"github.com/davidbyttow/govips/v2/vips"
 	ent "github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/images"
 	"log"
@@ -24,8 +25,7 @@ func Run(config *Config, client *ent.Client) error {
 	if err != nil {
 		return err
 	}
-
-	//database := db.NewExtended(pool)
+	defer vips.Shutdown() // Shutdown libvips on exit
 
 	if !config.DebugEnabled {
 		gin.SetMode(gin.ReleaseMode)

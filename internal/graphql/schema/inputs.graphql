@@ -116,7 +116,8 @@ input RemoveSideDishFromOccurrenceInput {
 }
 
 input OccurrenceFilter {
-    dish: [UUID!]
+    occurrences: [UUID!]
+    dishes: [UUID!]
     status: OccurrenceStatus
     startDate: Date
     endDate: Date

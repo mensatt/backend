@@ -47,6 +47,8 @@ func NewImageUploader(params Config) (*ImageUploader, error) {
 		return nil, err
 	}
 
+	vips.Startup(nil)
+
 	return &ImageUploader{
 		imageDirectory: params.ImageDirectory,
 		maxImageSize:   int(params.MaxImageSizeMB) * 1024 * 1024,
@@ -62,10 +64,6 @@ func (iu *ImageUploader) ValidateAndStoreImage(image []byte) (uuid.UUID, string,
 	if !isImageValid(image) {
 		return uuid.Nil, "", fmt.Errorf("image is invalid or format not accepted")
 	}
-
-	// todo: check if this is the correct place and proper lifecycle for vips
-	vips.Startup(nil)
-	defer vips.Shutdown()
 
 	vipsImage, err := vips.NewImageFromBuffer(image)
 	defer vipsImage.Close()
