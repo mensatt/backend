@@ -66,6 +66,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "external_id", Type: field.TypeInt, Unique: true},
 		{Name: "name", Type: field.TypeString, Unique: true},
+		{Name: "visible", Type: field.TypeBool, Default: false},
 	}
 	// LocationTable holds the schema information for the "location" table.
 	LocationTable = &schema.Table{

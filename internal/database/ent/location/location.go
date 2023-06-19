@@ -15,6 +15,8 @@ const (
 	FieldExternalID = "external_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
+	// FieldVisible holds the string denoting the visible field in the database.
+	FieldVisible = "visible"
 	// EdgeOccurrences holds the string denoting the occurrences edge name in mutations.
 	EdgeOccurrences = "occurrences"
 	// Table holds the table name of the location in the database.
@@ -33,6 +35,7 @@ var Columns = []string{
 	FieldID,
 	FieldExternalID,
 	FieldName,
+	FieldVisible,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -48,6 +51,8 @@ func ValidColumn(column string) bool {
 var (
 	// NameValidator is a validator for the "name" field. It is called by the builders before save.
 	NameValidator func(string) error
+	// DefaultVisible holds the default value on creation for the "visible" field.
+	DefaultVisible bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

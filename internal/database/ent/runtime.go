@@ -57,6 +57,10 @@ func init() {
 	locationDescName := locationFields[2].Descriptor()
 	// location.NameValidator is a validator for the "name" field. It is called by the builders before save.
 	location.NameValidator = locationDescName.Validators[0].(func(string) error)
+	// locationDescVisible is the schema descriptor for visible field.
+	locationDescVisible := locationFields[3].Descriptor()
+	// location.DefaultVisible holds the default value on creation for the visible field.
+	location.DefaultVisible = locationDescVisible.Default.(bool)
 	// locationDescID is the schema descriptor for id field.
 	locationDescID := locationFields[0].Descriptor()
 	// location.DefaultID holds the default value on creation for the id field.

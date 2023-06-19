@@ -51,6 +51,7 @@ type Location {
     id: UUID!
     externalId: Int!
     name: String!
+    visible: Boolean!
 }
 
 type Occurrence {

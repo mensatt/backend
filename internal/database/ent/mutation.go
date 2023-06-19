@@ -1472,6 +1472,7 @@ type LocationMutation struct {
 	external_id        *int
 	addexternal_id     *int
 	name               *string
+	visible            *bool
 	clearedFields      map[string]struct{}
 	occurrences        map[uuid.UUID]struct{}
 	removedoccurrences map[uuid.UUID]struct{}
@@ -1677,6 +1678,42 @@ func (m *LocationMutation) ResetName() {
 	m.name = nil
 }
 
+// SetVisible sets the "visible" field.
+func (m *LocationMutation) SetVisible(b bool) {
+	m.visible = &b
+}
+
+// Visible returns the value of the "visible" field in the mutation.
+func (m *LocationMutation) Visible() (r bool, exists bool) {
+	v := m.visible
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldVisible returns the old "visible" field's value of the Location entity.
+// If the Location object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *LocationMutation) OldVisible(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldVisible is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldVisible requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldVisible: %w", err)
+	}
+	return oldValue.Visible, nil
+}
+
+// ResetVisible resets all changes to the "visible" field.
+func (m *LocationMutation) ResetVisible() {
+	m.visible = nil
+}
+
 // AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by ids.
 func (m *LocationMutation) AddOccurrenceIDs(ids ...uuid.UUID) {
 	if m.occurrences == nil {
@@ -1750,12 +1787,15 @@ func (m *LocationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *LocationMutation) Fields() []string {
-	fields := make([]string, 0, 2)
+	fields := make([]string, 0, 3)
 	if m.external_id != nil {
 		fields = append(fields, location.FieldExternalID)
 	}
 	if m.name != nil {
 		fields = append(fields, location.FieldName)
+	}
+	if m.visible != nil {
+		fields = append(fields, location.FieldVisible)
 	}
 	return fields
 }
@@ -1769,6 +1809,8 @@ func (m *LocationMutation) Field(name string) (ent.Value, bool) {
 		return m.ExternalID()
 	case location.FieldName:
 		return m.Name()
+	case location.FieldVisible:
+		return m.Visible()
 	}
 	return nil, false
 }
@@ -1782,6 +1824,8 @@ func (m *LocationMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldExternalID(ctx)
 	case location.FieldName:
 		return m.OldName(ctx)
+	case location.FieldVisible:
+		return m.OldVisible(ctx)
 	}
 	return nil, fmt.Errorf("unknown Location field %s", name)
 }
@@ -1804,6 +1848,13 @@ func (m *LocationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetName(v)
+		return nil
+	case location.FieldVisible:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetVisible(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Location field %s", name)
@@ -1874,6 +1925,9 @@ func (m *LocationMutation) ResetField(name string) error {
 		return nil
 	case location.FieldName:
 		m.ResetName()
+		return nil
+	case location.FieldVisible:
+		m.ResetVisible()
 		return nil
 	}
 	return fmt.Errorf("unknown Location field %s", name)

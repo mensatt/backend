@@ -27,6 +27,7 @@ func (Location) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
 		field.Int("external_id").Unique(),
 		field.String("name").Unique().NotEmpty(),
+		field.Bool("visible").Default(false),
 	}
 }
 

@@ -48,6 +48,20 @@ func (lu *LocationUpdate) SetName(s string) *LocationUpdate {
 	return lu
 }
 
+// SetVisible sets the "visible" field.
+func (lu *LocationUpdate) SetVisible(b bool) *LocationUpdate {
+	lu.mutation.SetVisible(b)
+	return lu
+}
+
+// SetNillableVisible sets the "visible" field if the given value is not nil.
+func (lu *LocationUpdate) SetNillableVisible(b *bool) *LocationUpdate {
+	if b != nil {
+		lu.SetVisible(*b)
+	}
+	return lu
+}
+
 // AddOccurrenceIDs adds the "occurrences" edge to the Occurrence entity by IDs.
 func (lu *LocationUpdate) AddOccurrenceIDs(ids ...uuid.UUID) *LocationUpdate {
 	lu.mutation.AddOccurrenceIDs(ids...)
@@ -186,6 +200,9 @@ func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := lu.mutation.Name(); ok {
 		_spec.SetField(location.FieldName, field.TypeString, value)
 	}
+	if value, ok := lu.mutation.Visible(); ok {
+		_spec.SetField(location.FieldVisible, field.TypeBool, value)
+	}
 	if lu.mutation.OccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -275,6 +292,20 @@ func (luo *LocationUpdateOne) AddExternalID(i int) *LocationUpdateOne {
 // SetName sets the "name" field.
 func (luo *LocationUpdateOne) SetName(s string) *LocationUpdateOne {
 	luo.mutation.SetName(s)
+	return luo
+}
+
+// SetVisible sets the "visible" field.
+func (luo *LocationUpdateOne) SetVisible(b bool) *LocationUpdateOne {
+	luo.mutation.SetVisible(b)
+	return luo
+}
+
+// SetNillableVisible sets the "visible" field if the given value is not nil.
+func (luo *LocationUpdateOne) SetNillableVisible(b *bool) *LocationUpdateOne {
+	if b != nil {
+		luo.SetVisible(*b)
+	}
 	return luo
 }
 
@@ -445,6 +476,9 @@ func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err
 	}
 	if value, ok := luo.mutation.Name(); ok {
 		_spec.SetField(location.FieldName, field.TypeString, value)
+	}
+	if value, ok := luo.mutation.Visible(); ok {
+		_spec.SetField(location.FieldVisible, field.TypeBool, value)
 	}
 	if luo.mutation.OccurrencesCleared() {
 		edge := &sqlgraph.EdgeSpec{
