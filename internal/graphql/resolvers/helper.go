@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	ent "github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/location"
@@ -11,30 +12,42 @@ import (
 	"io"
 )
 
-func (r *mutationResolver) storeImages(ctx context.Context, review *ent.Review, images []*models.ImageInput) ([]*ent.Image, error) {
+func (r *mutationResolver) storeImages(tx *ent.Tx, ctx context.Context, review *ent.Review, images []*models.ImageInput) ([]*ent.Image, error) {
 	var imageEntities []*ent.Image
 	for _, image := range images {
 		if image.Image.Size > int64(r.ImageUploader.GetMaxImageSize()) {
-			continue // todo: perhaps error?
+			return nil, fmt.Errorf("image size is too large") // let the caller handle the transaction rollback
 		}
 
 		imageBytes, err := io.ReadAll(image.Image.File)
 		if err != nil {
-			return nil, err
+			return nil, err // let the caller handle the transaction rollback
 		}
 
 		imageUUID, imageHash, err := r.ImageUploader.ValidateAndStoreImage(imageBytes)
 		if err != nil {
-			return nil, err
+			return nil, err // let the caller handle the transaction rollback
 		}
 
-		imageEntity, err := r.Database.Image.Create().
+		// on tx rollback remove image
+		tx.OnRollback(func(next ent.Rollbacker) ent.Rollbacker {
+			return ent.RollbackFunc(func(ctx context.Context, tx *ent.Tx) error {
+				err := r.ImageUploader.RemoveImage(imageUUID)
+				if err != nil {
+					return err
+				}
+
+				return next.Rollback(ctx, tx)
+			})
+		})
+
+		imageEntity, err := tx.Image.Create().
 			SetID(imageUUID).
 			SetImageHash(imageHash).
 			SetReview(review).
 			Save(ctx)
 		if err != nil {
-			return nil, err
+			return nil, err // let the caller handle the transaction rollback
 		}
 
 		imageEntities = append(imageEntities, imageEntity)
