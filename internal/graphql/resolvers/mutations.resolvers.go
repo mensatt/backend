@@ -438,12 +438,13 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 		return nil, err
 	}
 
+	// remove the images from the db (cascaded via review) before deleting it from the disk
 	err = r.Database.Review.DeleteOne(review).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	err = r.deleteImages(ctx, images) // TODO: if a single image fails to delete, there will be remaining images in the fs
+	err = r.deleteImages(ctx, images) // if a single image fails to delete, the remaining images will be kept
 	if err != nil {
 		return nil, err
 	}
@@ -510,12 +511,18 @@ func (r *mutationResolver) DeleteImageFromReview(ctx context.Context, input mode
 		return nil, err
 	}
 
-	err = r.deleteImages(ctx, []*ent.Image{image})
+	// remove the image from the review before deleting it from the disk
+	err = review.Update().RemoveImages(image).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	return image, review.Update().RemoveImages(image).Exec(ctx) // todo: perhaps use transaction here or keep images on error
+	err = r.deleteImages(ctx, []*ent.Image{image}) // if the image fails to delete, the db entry will still be removed
+	if err != nil {
+		return nil, err
+	}
+
+	return image, nil
 }
 
 // Mutation returns gqlserver.MutationResolver implementation.
