@@ -7,6 +7,7 @@ package resolvers
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/mensatt/backend/internal/database/ent"
@@ -347,7 +348,12 @@ func (r *mutationResolver) RemoveSideDishFromOccurrence(ctx context.Context, inp
 
 // CreateReview is the resolver for the createReview field.
 func (r *mutationResolver) CreateReview(ctx context.Context, input models.CreateReviewInput) (*ent.Review, error) {
-	queryBuilder := r.Database.Review.Create().
+	tx, err := r.Database.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+
+	queryBuilder := tx.Review.Create().
 		SetOccurrenceID(input.Occurrence).
 		SetStars(input.Stars)
 
@@ -360,16 +366,32 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 	}
 
 	review, err := queryBuilder.Save(ctx)
+	if err != nil {
+		txErr := tx.Rollback()
+		if txErr != nil {
+			return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+		}
+		return nil, err
+	}
 
 	// Process & store images
-	if err == nil && input.Images != nil {
-		_, err := r.storeImages(ctx, review, input.Images) // only require error (if no error: images are stored)
+	if input.Images != nil {
+		_, err := r.storeImages(tx, ctx, review, input.Images) // only require error (if no error: images are stored)
 		if err != nil {
+			txErr := tx.Rollback()
+			if txErr != nil {
+				return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+			}
 			return nil, err
 		}
 	}
 
-	return review, err // todo: handle this entire mutation using a transaction
+	err = tx.Commit()
+	if err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return review, err
 }
 
 // UpdateReview is the resolver for the updateReview field.
@@ -421,7 +443,7 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 		return nil, err
 	}
 
-	err = r.deleteImages(ctx, images)
+	err = r.deleteImages(ctx, images) // TODO: if a single image fails to delete, there will be remaining images in the fs
 	if err != nil {
 		return nil, err
 	}
@@ -431,17 +453,49 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 
 // AddImagesToReview is the resolver for the addImagesToReview field.
 func (r *mutationResolver) AddImagesToReview(ctx context.Context, input models.AddImagesToReviewInput) (*ent.Review, error) {
-	review, err := r.Database.Review.Get(ctx, input.Review)
+	// start a transaction
+	tx, err := r.Database.Tx(ctx)
 	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+
+	// get the review we want to add images to
+	review, err := tx.Review.Get(ctx, input.Review)
+	if err != nil {
+		txErr := tx.Rollback()
+		if txErr != nil {
+			return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+		}
 		return nil, err
 	}
 
-	images, err := r.storeImages(ctx, review, input.Images)
+	// store the images
+	images, err := r.storeImages(tx, ctx, review, input.Images)
 	if err != nil {
+		txErr := tx.Rollback()
+		if txErr != nil {
+			return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+		}
 		return nil, err
 	}
 
-	return review.Update().AddImages(images...).Save(ctx) // todo: perhaps use transaction here or delete images on error
+	// add the images to the review (in db)
+	updatedReview, err := review.Update().AddImages(images...).Save(ctx)
+	if err != nil {
+		txErr := tx.Rollback()
+		if txErr != nil {
+			return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+		}
+		return nil, err
+	}
+
+	// commit the transaction
+	err = tx.Commit()
+	if err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	return updatedReview, nil
 }
 
 // DeleteImageFromReview is the resolver for the deleteImageFromReview field.
