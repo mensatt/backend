@@ -149,50 +149,8 @@ func (rc *ReviewCreate) Mutation() *ReviewMutation {
 
 // Save creates the Review in the database.
 func (rc *ReviewCreate) Save(ctx context.Context) (*Review, error) {
-	var (
-		err  error
-		node *Review
-	)
 	rc.defaults()
-	if len(rc.hooks) == 0 {
-		if err = rc.check(); err != nil {
-			return nil, err
-		}
-		node, err = rc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ReviewMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = rc.check(); err != nil {
-				return nil, err
-			}
-			rc.mutation = mutation
-			if node, err = rc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(rc.hooks) - 1; i >= 0; i-- {
-			if rc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = rc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, rc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Review)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from ReviewMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, rc.sqlSave, rc.mutation, rc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -266,6 +224,9 @@ func (rc *ReviewCreate) check() error {
 }
 
 func (rc *ReviewCreate) sqlSave(ctx context.Context) (*Review, error) {
+	if err := rc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := rc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, rc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -280,19 +241,15 @@ func (rc *ReviewCreate) sqlSave(ctx context.Context) (*Review, error) {
 			return nil, err
 		}
 	}
+	rc.mutation.id = &_node.ID
+	rc.mutation.done = true
 	return _node, nil
 }
 
 func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Review{config: rc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: review.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: review.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(review.Table, sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = rc.conflict
 	if id, ok := rc.mutation.ID(); ok {
@@ -331,10 +288,7 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -351,10 +305,7 @@ func (rc *ReviewCreate) createSpec() (*Review, *sqlgraph.CreateSpec) {
 			Columns: []string{review.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -710,8 +661,8 @@ func (rcb *ReviewCreateBulk) Save(ctx context.Context) ([]*Review, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, rcb.builders[i+1].mutation)
 				} else {

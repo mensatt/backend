@@ -305,50 +305,8 @@ func (oc *OccurrenceCreate) Mutation() *OccurrenceMutation {
 
 // Save creates the Occurrence in the database.
 func (oc *OccurrenceCreate) Save(ctx context.Context) (*Occurrence, error) {
-	var (
-		err  error
-		node *Occurrence
-	)
 	oc.defaults()
-	if len(oc.hooks) == 0 {
-		if err = oc.check(); err != nil {
-			return nil, err
-		}
-		node, err = oc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*OccurrenceMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = oc.check(); err != nil {
-				return nil, err
-			}
-			oc.mutation = mutation
-			if node, err = oc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(oc.hooks) - 1; i >= 0; i-- {
-			if oc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = oc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, oc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Occurrence)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from OccurrenceMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, oc.sqlSave, oc.mutation, oc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -408,6 +366,9 @@ func (oc *OccurrenceCreate) check() error {
 }
 
 func (oc *OccurrenceCreate) sqlSave(ctx context.Context) (*Occurrence, error) {
+	if err := oc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := oc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, oc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -422,19 +383,15 @@ func (oc *OccurrenceCreate) sqlSave(ctx context.Context) (*Occurrence, error) {
 			return nil, err
 		}
 	}
+	oc.mutation.id = &_node.ID
+	oc.mutation.done = true
 	return _node, nil
 }
 
 func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Occurrence{config: oc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: occurrence.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: occurrence.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(occurrence.Table, sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = oc.conflict
 	if id, ok := oc.mutation.ID(); ok {
@@ -505,10 +462,7 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: location.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -525,10 +479,7 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -545,10 +496,7 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: tag.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -564,10 +512,7 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 			Columns: occurrence.SideDishesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -583,10 +528,7 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 			Columns: []string{occurrence.ReviewsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1433,8 +1375,8 @@ func (ocb *OccurrenceCreateBulk) Save(ctx context.Context) ([]*Occurrence, error
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, ocb.builders[i+1].mutation)
 				} else {

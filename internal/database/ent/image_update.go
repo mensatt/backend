@@ -59,40 +59,7 @@ func (iu *ImageUpdate) ClearReview() *ImageUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (iu *ImageUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(iu.hooks) == 0 {
-		if err = iu.check(); err != nil {
-			return 0, err
-		}
-		affected, err = iu.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ImageMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = iu.check(); err != nil {
-				return 0, err
-			}
-			iu.mutation = mutation
-			affected, err = iu.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(iu.hooks) - 1; i >= 0; i-- {
-			if iu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = iu.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, iu.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks(ctx, iu.sqlSave, iu.mutation, iu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -131,16 +98,10 @@ func (iu *ImageUpdate) check() error {
 }
 
 func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   image.Table,
-			Columns: image.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: image.FieldID,
-			},
-		},
+	if err := iu.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(image.Table, image.Columns, sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID))
 	if ps := iu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -159,10 +120,7 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{image.ReviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -175,10 +133,7 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{image.ReviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -194,6 +149,7 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	iu.mutation.done = true
 	return n, nil
 }
 
@@ -233,6 +189,12 @@ func (iuo *ImageUpdateOne) ClearReview() *ImageUpdateOne {
 	return iuo
 }
 
+// Where appends a list predicates to the ImageUpdate builder.
+func (iuo *ImageUpdateOne) Where(ps ...predicate.Image) *ImageUpdateOne {
+	iuo.mutation.Where(ps...)
+	return iuo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (iuo *ImageUpdateOne) Select(field string, fields ...string) *ImageUpdateOne {
@@ -242,46 +204,7 @@ func (iuo *ImageUpdateOne) Select(field string, fields ...string) *ImageUpdateOn
 
 // Save executes the query and returns the updated Image entity.
 func (iuo *ImageUpdateOne) Save(ctx context.Context) (*Image, error) {
-	var (
-		err  error
-		node *Image
-	)
-	if len(iuo.hooks) == 0 {
-		if err = iuo.check(); err != nil {
-			return nil, err
-		}
-		node, err = iuo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ImageMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = iuo.check(); err != nil {
-				return nil, err
-			}
-			iuo.mutation = mutation
-			node, err = iuo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(iuo.hooks) - 1; i >= 0; i-- {
-			if iuo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = iuo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, iuo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Image)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from ImageMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, iuo.sqlSave, iuo.mutation, iuo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -320,16 +243,10 @@ func (iuo *ImageUpdateOne) check() error {
 }
 
 func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   image.Table,
-			Columns: image.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: image.FieldID,
-			},
-		},
+	if err := iuo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(image.Table, image.Columns, sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID))
 	id, ok := iuo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Image.id" for update`)}
@@ -365,10 +282,7 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			Columns: []string{image.ReviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -381,10 +295,7 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 			Columns: []string{image.ReviewColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -403,5 +314,6 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 		}
 		return nil, err
 	}
+	iuo.mutation.done = true
 	return _node, nil
 }

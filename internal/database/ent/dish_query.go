@@ -21,11 +21,9 @@ import (
 // DishQuery is the builder for querying Dish entities.
 type DishQuery struct {
 	config
-	limit                  *int
-	offset                 *int
-	unique                 *bool
-	order                  []OrderFunc
-	fields                 []string
+	ctx                    *QueryContext
+	order                  []dish.OrderOption
+	inters                 []Interceptor
 	predicates             []predicate.Dish
 	withDishOccurrences    *OccurrenceQuery
 	withAliases            *DishAliasQuery
@@ -41,34 +39,34 @@ func (dq *DishQuery) Where(ps ...predicate.Dish) *DishQuery {
 	return dq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (dq *DishQuery) Limit(limit int) *DishQuery {
-	dq.limit = &limit
+	dq.ctx.Limit = &limit
 	return dq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (dq *DishQuery) Offset(offset int) *DishQuery {
-	dq.offset = &offset
+	dq.ctx.Offset = &offset
 	return dq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (dq *DishQuery) Unique(unique bool) *DishQuery {
-	dq.unique = &unique
+	dq.ctx.Unique = &unique
 	return dq
 }
 
-// Order adds an order step to the query.
-func (dq *DishQuery) Order(o ...OrderFunc) *DishQuery {
+// Order specifies how the records should be ordered.
+func (dq *DishQuery) Order(o ...dish.OrderOption) *DishQuery {
 	dq.order = append(dq.order, o...)
 	return dq
 }
 
 // QueryDishOccurrences chains the current query on the "dish_occurrences" edge.
 func (dq *DishQuery) QueryDishOccurrences() *OccurrenceQuery {
-	query := &OccurrenceQuery{config: dq.config}
+	query := (&OccurrenceClient{config: dq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -90,7 +88,7 @@ func (dq *DishQuery) QueryDishOccurrences() *OccurrenceQuery {
 
 // QueryAliases chains the current query on the "aliases" edge.
 func (dq *DishQuery) QueryAliases() *DishAliasQuery {
-	query := &DishAliasQuery{config: dq.config}
+	query := (&DishAliasClient{config: dq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -112,7 +110,7 @@ func (dq *DishQuery) QueryAliases() *DishAliasQuery {
 
 // QuerySideDishOccurrence chains the current query on the "side_dish_occurrence" edge.
 func (dq *DishQuery) QuerySideDishOccurrence() *OccurrenceQuery {
-	query := &OccurrenceQuery{config: dq.config}
+	query := (&OccurrenceClient{config: dq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := dq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -135,7 +133,7 @@ func (dq *DishQuery) QuerySideDishOccurrence() *OccurrenceQuery {
 // First returns the first Dish entity from the query.
 // Returns a *NotFoundError when no Dish was found.
 func (dq *DishQuery) First(ctx context.Context) (*Dish, error) {
-	nodes, err := dq.Limit(1).All(ctx)
+	nodes, err := dq.Limit(1).All(setContextOp(ctx, dq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +156,7 @@ func (dq *DishQuery) FirstX(ctx context.Context) *Dish {
 // Returns a *NotFoundError when no Dish ID was found.
 func (dq *DishQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = dq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = dq.Limit(1).IDs(setContextOp(ctx, dq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -181,7 +179,7 @@ func (dq *DishQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one Dish entity is found.
 // Returns a *NotFoundError when no Dish entities are found.
 func (dq *DishQuery) Only(ctx context.Context) (*Dish, error) {
-	nodes, err := dq.Limit(2).All(ctx)
+	nodes, err := dq.Limit(2).All(setContextOp(ctx, dq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -209,7 +207,7 @@ func (dq *DishQuery) OnlyX(ctx context.Context) *Dish {
 // Returns a *NotFoundError when no entities are found.
 func (dq *DishQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = dq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = dq.Limit(2).IDs(setContextOp(ctx, dq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -234,10 +232,12 @@ func (dq *DishQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of Dishes.
 func (dq *DishQuery) All(ctx context.Context) ([]*Dish, error) {
+	ctx = setContextOp(ctx, dq.ctx, "All")
 	if err := dq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return dq.sqlAll(ctx)
+	qr := querierAll[[]*Dish, *DishQuery]()
+	return withInterceptors[[]*Dish](ctx, dq, qr, dq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -250,9 +250,12 @@ func (dq *DishQuery) AllX(ctx context.Context) []*Dish {
 }
 
 // IDs executes the query and returns a list of Dish IDs.
-func (dq *DishQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := dq.Select(dish.FieldID).Scan(ctx, &ids); err != nil {
+func (dq *DishQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if dq.ctx.Unique == nil && dq.path != nil {
+		dq.Unique(true)
+	}
+	ctx = setContextOp(ctx, dq.ctx, "IDs")
+	if err = dq.Select(dish.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -269,10 +272,11 @@ func (dq *DishQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (dq *DishQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, dq.ctx, "Count")
 	if err := dq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return dq.sqlCount(ctx)
+	return withInterceptors[int](ctx, dq, querierCount[*DishQuery](), dq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -286,10 +290,15 @@ func (dq *DishQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (dq *DishQuery) Exist(ctx context.Context) (bool, error) {
-	if err := dq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, dq.ctx, "Exist")
+	switch _, err := dq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return dq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -309,24 +318,23 @@ func (dq *DishQuery) Clone() *DishQuery {
 	}
 	return &DishQuery{
 		config:                 dq.config,
-		limit:                  dq.limit,
-		offset:                 dq.offset,
-		order:                  append([]OrderFunc{}, dq.order...),
+		ctx:                    dq.ctx.Clone(),
+		order:                  append([]dish.OrderOption{}, dq.order...),
+		inters:                 append([]Interceptor{}, dq.inters...),
 		predicates:             append([]predicate.Dish{}, dq.predicates...),
 		withDishOccurrences:    dq.withDishOccurrences.Clone(),
 		withAliases:            dq.withAliases.Clone(),
 		withSideDishOccurrence: dq.withSideDishOccurrence.Clone(),
 		// clone intermediate query.
-		sql:    dq.sql.Clone(),
-		path:   dq.path,
-		unique: dq.unique,
+		sql:  dq.sql.Clone(),
+		path: dq.path,
 	}
 }
 
 // WithDishOccurrences tells the query-builder to eager-load the nodes that are connected to
 // the "dish_occurrences" edge. The optional arguments are used to configure the query builder of the edge.
 func (dq *DishQuery) WithDishOccurrences(opts ...func(*OccurrenceQuery)) *DishQuery {
-	query := &OccurrenceQuery{config: dq.config}
+	query := (&OccurrenceClient{config: dq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -337,7 +345,7 @@ func (dq *DishQuery) WithDishOccurrences(opts ...func(*OccurrenceQuery)) *DishQu
 // WithAliases tells the query-builder to eager-load the nodes that are connected to
 // the "aliases" edge. The optional arguments are used to configure the query builder of the edge.
 func (dq *DishQuery) WithAliases(opts ...func(*DishAliasQuery)) *DishQuery {
-	query := &DishAliasQuery{config: dq.config}
+	query := (&DishAliasClient{config: dq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -348,7 +356,7 @@ func (dq *DishQuery) WithAliases(opts ...func(*DishAliasQuery)) *DishQuery {
 // WithSideDishOccurrence tells the query-builder to eager-load the nodes that are connected to
 // the "side_dish_occurrence" edge. The optional arguments are used to configure the query builder of the edge.
 func (dq *DishQuery) WithSideDishOccurrence(opts ...func(*OccurrenceQuery)) *DishQuery {
-	query := &OccurrenceQuery{config: dq.config}
+	query := (&OccurrenceClient{config: dq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -371,16 +379,11 @@ func (dq *DishQuery) WithSideDishOccurrence(opts ...func(*OccurrenceQuery)) *Dis
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (dq *DishQuery) GroupBy(field string, fields ...string) *DishGroupBy {
-	grbuild := &DishGroupBy{config: dq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := dq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return dq.sqlQuery(ctx), nil
-	}
+	dq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &DishGroupBy{build: dq}
+	grbuild.flds = &dq.ctx.Fields
 	grbuild.label = dish.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -397,11 +400,11 @@ func (dq *DishQuery) GroupBy(field string, fields ...string) *DishGroupBy {
 //		Select(dish.FieldNameDe).
 //		Scan(ctx, &v)
 func (dq *DishQuery) Select(fields ...string) *DishSelect {
-	dq.fields = append(dq.fields, fields...)
-	selbuild := &DishSelect{DishQuery: dq}
-	selbuild.label = dish.Label
-	selbuild.flds, selbuild.scan = &dq.fields, selbuild.Scan
-	return selbuild
+	dq.ctx.Fields = append(dq.ctx.Fields, fields...)
+	sbuild := &DishSelect{DishQuery: dq}
+	sbuild.label = dish.Label
+	sbuild.flds, sbuild.scan = &dq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a DishSelect configured with the given aggregations.
@@ -410,7 +413,17 @@ func (dq *DishQuery) Aggregate(fns ...AggregateFunc) *DishSelect {
 }
 
 func (dq *DishQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range dq.fields {
+	for _, inter := range dq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, dq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range dq.ctx.Fields {
 		if !dish.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -489,7 +502,7 @@ func (dq *DishQuery) loadDishOccurrences(ctx context.Context, query *OccurrenceQ
 	}
 	query.withFKs = true
 	query.Where(predicate.Occurrence(func(s *sql.Selector) {
-		s.Where(sql.InValues(dish.DishOccurrencesColumn, fks...))
+		s.Where(sql.InValues(s.C(dish.DishOccurrencesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -502,7 +515,7 @@ func (dq *DishQuery) loadDishOccurrences(ctx context.Context, query *OccurrenceQ
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "dish" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "dish" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -520,7 +533,7 @@ func (dq *DishQuery) loadAliases(ctx context.Context, query *DishAliasQuery, nod
 	}
 	query.withFKs = true
 	query.Where(predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.InValues(dish.AliasesColumn, fks...))
+		s.Where(sql.InValues(s.C(dish.AliasesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -533,7 +546,7 @@ func (dq *DishQuery) loadAliases(ctx context.Context, query *DishAliasQuery, nod
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "dish" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "dish" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -562,27 +575,30 @@ func (dq *DishQuery) loadSideDishOccurrence(ctx context.Context, query *Occurren
 	if err := query.prepareQuery(ctx); err != nil {
 		return err
 	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
 			}
-			return append([]any{new(uuid.UUID)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := *values[0].(*uuid.UUID)
-			inValue := *values[1].(*uuid.UUID)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Dish]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Dish]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
 			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
+		})
 	})
+	neighbors, err := withInterceptors[[]*Occurrence](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
@@ -600,41 +616,22 @@ func (dq *DishQuery) loadSideDishOccurrence(ctx context.Context, query *Occurren
 
 func (dq *DishQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := dq.querySpec()
-	_spec.Node.Columns = dq.fields
-	if len(dq.fields) > 0 {
-		_spec.Unique = dq.unique != nil && *dq.unique
+	_spec.Node.Columns = dq.ctx.Fields
+	if len(dq.ctx.Fields) > 0 {
+		_spec.Unique = dq.ctx.Unique != nil && *dq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, dq.driver, _spec)
 }
 
-func (dq *DishQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := dq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (dq *DishQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   dish.Table,
-			Columns: dish.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: dish.FieldID,
-			},
-		},
-		From:   dq.sql,
-		Unique: true,
-	}
-	if unique := dq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(dish.Table, dish.Columns, sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID))
+	_spec.From = dq.sql
+	if unique := dq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if dq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := dq.fields; len(fields) > 0 {
+	if fields := dq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, dish.FieldID)
 		for i := range fields {
@@ -650,10 +647,10 @@ func (dq *DishQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := dq.limit; limit != nil {
+	if limit := dq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := dq.offset; offset != nil {
+	if offset := dq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := dq.order; len(ps) > 0 {
@@ -669,7 +666,7 @@ func (dq *DishQuery) querySpec() *sqlgraph.QuerySpec {
 func (dq *DishQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(dq.driver.Dialect())
 	t1 := builder.Table(dish.Table)
-	columns := dq.fields
+	columns := dq.ctx.Fields
 	if len(columns) == 0 {
 		columns = dish.Columns
 	}
@@ -678,7 +675,7 @@ func (dq *DishQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = dq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if dq.unique != nil && *dq.unique {
+	if dq.ctx.Unique != nil && *dq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, p := range dq.predicates {
@@ -687,12 +684,12 @@ func (dq *DishQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range dq.order {
 		p(selector)
 	}
-	if offset := dq.offset; offset != nil {
+	if offset := dq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := dq.limit; limit != nil {
+	if limit := dq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -700,13 +697,8 @@ func (dq *DishQuery) sqlQuery(ctx context.Context) *sql.Selector {
 
 // DishGroupBy is the group-by builder for Dish entities.
 type DishGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *DishQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -715,58 +707,46 @@ func (dgb *DishGroupBy) Aggregate(fns ...AggregateFunc) *DishGroupBy {
 	return dgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (dgb *DishGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := dgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, dgb.build.ctx, "GroupBy")
+	if err := dgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	dgb.sql = query
-	return dgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*DishQuery, *DishGroupBy](ctx, dgb.build, dgb, dgb.build.inters, v)
 }
 
-func (dgb *DishGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range dgb.fields {
-		if !dish.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (dgb *DishGroupBy) sqlScan(ctx context.Context, root *DishQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(dgb.fns))
+	for _, fn := range dgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := dgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*dgb.flds)+len(dgb.fns))
+		for _, f := range *dgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*dgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := dgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := dgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (dgb *DishGroupBy) sqlQuery() *sql.Selector {
-	selector := dgb.sql.Select()
-	aggregation := make([]string, 0, len(dgb.fns))
-	for _, fn := range dgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(dgb.fields)+len(dgb.fns))
-		for _, f := range dgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(dgb.fields...)...)
-}
-
 // DishSelect is the builder for selecting fields of Dish entities.
 type DishSelect struct {
 	*DishQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -777,26 +757,27 @@ func (ds *DishSelect) Aggregate(fns ...AggregateFunc) *DishSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (ds *DishSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, ds.ctx, "Select")
 	if err := ds.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ds.sql = ds.DishQuery.sqlQuery(ctx)
-	return ds.sqlScan(ctx, v)
+	return scanWithInterceptors[*DishQuery, *DishSelect](ctx, ds.DishQuery, ds, ds.inters, v)
 }
 
-func (ds *DishSelect) sqlScan(ctx context.Context, v any) error {
+func (ds *DishSelect) sqlScan(ctx context.Context, root *DishQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(ds.fns))
 	for _, fn := range ds.fns {
-		aggregation = append(aggregation, fn(ds.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*ds.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		ds.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		ds.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := ds.sql.Query()
+	query, args := selector.Query()
 	if err := ds.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

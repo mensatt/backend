@@ -10,179 +10,127 @@ import (
 
 // ID filters vertices based on their ID field.
 func ID(id string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.DishAlias(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.DishAlias(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
 func IDNEQ(id string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldID), id))
-	})
+	return predicate.DishAlias(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.In(s.C(FieldID), v...))
-	})
+	return predicate.DishAlias(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.NotIn(s.C(FieldID), v...))
-	})
+	return predicate.DishAlias(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
 func IDGT(id string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldID), id))
-	})
+	return predicate.DishAlias(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
 func IDGTE(id string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldID), id))
-	})
+	return predicate.DishAlias(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
 func IDLT(id string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldID), id))
-	})
+	return predicate.DishAlias(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldID), id))
-	})
+	return predicate.DishAlias(sql.FieldLTE(FieldID, id))
+}
+
+// IDEqualFold applies the EqualFold predicate on the ID field.
+func IDEqualFold(id string) predicate.DishAlias {
+	return predicate.DishAlias(sql.FieldEqualFold(FieldID, id))
+}
+
+// IDContainsFold applies the ContainsFold predicate on the ID field.
+func IDContainsFold(id string) predicate.DishAlias {
+	return predicate.DishAlias(sql.FieldContainsFold(FieldID, id))
 }
 
 // NormalizedAliasName applies equality check predicate on the "normalized_alias_name" field. It's identical to NormalizedAliasNameEQ.
 func NormalizedAliasName(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldEQ(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameEQ applies the EQ predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameEQ(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldEQ(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameNEQ applies the NEQ predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameNEQ(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldNEQ(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameIn applies the In predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameIn(vs ...string) predicate.DishAlias {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldNormalizedAliasName), v...))
-	})
+	return predicate.DishAlias(sql.FieldIn(FieldNormalizedAliasName, vs...))
 }
 
 // NormalizedAliasNameNotIn applies the NotIn predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameNotIn(vs ...string) predicate.DishAlias {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldNormalizedAliasName), v...))
-	})
+	return predicate.DishAlias(sql.FieldNotIn(FieldNormalizedAliasName, vs...))
 }
 
 // NormalizedAliasNameGT applies the GT predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameGT(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldGT(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameGTE applies the GTE predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameGTE(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldGTE(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameLT applies the LT predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameLT(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldLT(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameLTE applies the LTE predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameLTE(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldLTE(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameContains applies the Contains predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameContains(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldContains(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameHasPrefix applies the HasPrefix predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameHasPrefix(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldHasPrefix(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameHasSuffix applies the HasSuffix predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameHasSuffix(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldHasSuffix(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameEqualFold applies the EqualFold predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameEqualFold(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldEqualFold(FieldNormalizedAliasName, v))
 }
 
 // NormalizedAliasNameContainsFold applies the ContainsFold predicate on the "normalized_alias_name" field.
 func NormalizedAliasNameContainsFold(v string) predicate.DishAlias {
-	return predicate.DishAlias(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldNormalizedAliasName), v))
-	})
+	return predicate.DishAlias(sql.FieldContainsFold(FieldNormalizedAliasName, v))
 }
 
 // HasDish applies the HasEdge predicate on the "dish" edge.
@@ -190,7 +138,6 @@ func HasDish() predicate.DishAlias {
 	return predicate.DishAlias(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DishTable, DishFieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -200,11 +147,7 @@ func HasDish() predicate.DishAlias {
 // HasDishWith applies the HasEdge predicate on the "dish" edge with a given conditions (other predicates).
 func HasDishWith(preds ...predicate.Dish) predicate.DishAlias {
 	return predicate.DishAlias(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DishInverseTable, DishFieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
-		)
+		step := newDishStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

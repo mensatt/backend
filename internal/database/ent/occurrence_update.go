@@ -527,40 +527,7 @@ func (ou *OccurrenceUpdate) RemoveReviews(r ...*Review) *OccurrenceUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ou *OccurrenceUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(ou.hooks) == 0 {
-		if err = ou.check(); err != nil {
-			return 0, err
-		}
-		affected, err = ou.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*OccurrenceMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = ou.check(); err != nil {
-				return 0, err
-			}
-			ou.mutation = mutation
-			affected, err = ou.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(ou.hooks) - 1; i >= 0; i-- {
-			if ou.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ou.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, ou.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks(ctx, ou.sqlSave, ou.mutation, ou.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -602,16 +569,10 @@ func (ou *OccurrenceUpdate) check() error {
 }
 
 func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   occurrence.Table,
-			Columns: occurrence.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: occurrence.FieldID,
-			},
-		},
+	if err := ou.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(occurrence.Table, occurrence.Columns, sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID))
 	if ps := ou.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -741,10 +702,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: location.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -757,10 +715,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: location.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -776,10 +731,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -792,10 +744,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -811,10 +760,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: tag.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -827,10 +773,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: tag.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -846,10 +789,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: tag.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -865,10 +805,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: occurrence.SideDishesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -881,10 +818,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: occurrence.SideDishesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -900,10 +834,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: occurrence.SideDishesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -919,10 +850,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{occurrence.ReviewsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -935,10 +863,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{occurrence.ReviewsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -954,10 +879,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{occurrence.ReviewsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -973,6 +895,7 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	ou.mutation.done = true
 	return n, nil
 }
 
@@ -1475,6 +1398,12 @@ func (ouo *OccurrenceUpdateOne) RemoveReviews(r ...*Review) *OccurrenceUpdateOne
 	return ouo.RemoveReviewIDs(ids...)
 }
 
+// Where appends a list predicates to the OccurrenceUpdate builder.
+func (ouo *OccurrenceUpdateOne) Where(ps ...predicate.Occurrence) *OccurrenceUpdateOne {
+	ouo.mutation.Where(ps...)
+	return ouo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (ouo *OccurrenceUpdateOne) Select(field string, fields ...string) *OccurrenceUpdateOne {
@@ -1484,46 +1413,7 @@ func (ouo *OccurrenceUpdateOne) Select(field string, fields ...string) *Occurren
 
 // Save executes the query and returns the updated Occurrence entity.
 func (ouo *OccurrenceUpdateOne) Save(ctx context.Context) (*Occurrence, error) {
-	var (
-		err  error
-		node *Occurrence
-	)
-	if len(ouo.hooks) == 0 {
-		if err = ouo.check(); err != nil {
-			return nil, err
-		}
-		node, err = ouo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*OccurrenceMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = ouo.check(); err != nil {
-				return nil, err
-			}
-			ouo.mutation = mutation
-			node, err = ouo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(ouo.hooks) - 1; i >= 0; i-- {
-			if ouo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ouo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, ouo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Occurrence)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from OccurrenceMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, ouo.sqlSave, ouo.mutation, ouo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -1565,16 +1455,10 @@ func (ouo *OccurrenceUpdateOne) check() error {
 }
 
 func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   occurrence.Table,
-			Columns: occurrence.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: occurrence.FieldID,
-			},
-		},
+	if err := ouo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(occurrence.Table, occurrence.Columns, sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID))
 	id, ok := ouo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Occurrence.id" for update`)}
@@ -1721,10 +1605,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: location.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1737,10 +1618,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: []string{occurrence.LocationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: location.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1756,10 +1634,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1772,10 +1647,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: []string{occurrence.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1791,10 +1663,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: tag.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeString),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1807,10 +1676,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: tag.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -1826,10 +1692,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: occurrence.TagsPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: tag.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(tag.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -1845,10 +1708,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: occurrence.SideDishesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1861,10 +1721,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: occurrence.SideDishesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1880,10 +1737,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: occurrence.SideDishesPrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1899,10 +1753,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: []string{occurrence.ReviewsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -1915,10 +1766,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: []string{occurrence.ReviewsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1934,10 +1782,7 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 			Columns: []string{occurrence.ReviewsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: review.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -1956,5 +1801,6 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 		}
 		return nil, err
 	}
+	ouo.mutation.done = true
 	return _node, nil
 }

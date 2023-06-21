@@ -11,6 +11,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/migrate"
 
+	"entgo.io/ent"
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/dishalias"
 	"github.com/mensatt/backend/internal/database/ent/image"
@@ -19,10 +23,6 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/ent/user"
-
-	"entgo.io/ent/dialect"
-	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -50,7 +50,7 @@ type Client struct {
 
 // NewClient creates a new client configured with the given options.
 func NewClient(opts ...Option) *Client {
-	cfg := config{log: log.Println, hooks: &hooks{}}
+	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
 	cfg.options(opts...)
 	client := &Client{config: cfg}
 	client.init()
@@ -67,6 +67,55 @@ func (c *Client) init() {
 	c.Review = NewReviewClient(c.config)
 	c.Tag = NewTagClient(c.config)
 	c.User = NewUserClient(c.config)
+}
+
+type (
+	// config is the configuration for the client and its builder.
+	config struct {
+		// driver used for executing database requests.
+		driver dialect.Driver
+		// debug enable a debug logging.
+		debug bool
+		// log used for logging on debug mode.
+		log func(...any)
+		// hooks to execute on mutations.
+		hooks *hooks
+		// interceptors to execute on queries.
+		inters *inters
+	}
+	// Option function to configure the client.
+	Option func(*config)
+)
+
+// options applies the options on the config object.
+func (c *config) options(opts ...Option) {
+	for _, opt := range opts {
+		opt(c)
+	}
+	if c.debug {
+		c.driver = dialect.Debug(c.driver, c.log)
+	}
+}
+
+// Debug enables debug logging on the ent.Driver.
+func Debug() Option {
+	return func(c *config) {
+		c.debug = true
+	}
+}
+
+// Log sets the logging function for debug mode.
+func Log(fn func(...any)) Option {
+	return func(c *config) {
+		c.log = fn
+	}
+}
+
+// Driver configures the client driver.
+func Driver(driver dialect.Driver) Option {
+	return func(c *config) {
+		c.driver = driver
+	}
 }
 
 // Open opens a database/sql.DB specified by the driver name and
@@ -163,14 +212,45 @@ func (c *Client) Close() error {
 // Use adds the mutation hooks to all the entity clients.
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
-	c.Dish.Use(hooks...)
-	c.DishAlias.Use(hooks...)
-	c.Image.Use(hooks...)
-	c.Location.Use(hooks...)
-	c.Occurrence.Use(hooks...)
-	c.Review.Use(hooks...)
-	c.Tag.Use(hooks...)
-	c.User.Use(hooks...)
+	for _, n := range []interface{ Use(...Hook) }{
+		c.Dish, c.DishAlias, c.Image, c.Location, c.Occurrence, c.Review, c.Tag, c.User,
+	} {
+		n.Use(hooks...)
+	}
+}
+
+// Intercept adds the query interceptors to all the entity clients.
+// In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
+func (c *Client) Intercept(interceptors ...Interceptor) {
+	for _, n := range []interface{ Intercept(...Interceptor) }{
+		c.Dish, c.DishAlias, c.Image, c.Location, c.Occurrence, c.Review, c.Tag, c.User,
+	} {
+		n.Intercept(interceptors...)
+	}
+}
+
+// Mutate implements the ent.Mutator interface.
+func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
+	switch m := m.(type) {
+	case *DishMutation:
+		return c.Dish.mutate(ctx, m)
+	case *DishAliasMutation:
+		return c.DishAlias.mutate(ctx, m)
+	case *ImageMutation:
+		return c.Image.mutate(ctx, m)
+	case *LocationMutation:
+		return c.Location.mutate(ctx, m)
+	case *OccurrenceMutation:
+		return c.Occurrence.mutate(ctx, m)
+	case *ReviewMutation:
+		return c.Review.mutate(ctx, m)
+	case *TagMutation:
+		return c.Tag.mutate(ctx, m)
+	case *UserMutation:
+		return c.User.mutate(ctx, m)
+	default:
+		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
 }
 
 // DishClient is a client for the Dish schema.
@@ -187,6 +267,12 @@ func NewDishClient(c config) *DishClient {
 // A call to `Use(f, g, h)` equals to `dish.Hooks(f(g(h())))`.
 func (c *DishClient) Use(hooks ...Hook) {
 	c.hooks.Dish = append(c.hooks.Dish, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dish.Intercept(f(g(h())))`.
+func (c *DishClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Dish = append(c.inters.Dish, interceptors...)
 }
 
 // Create returns a builder for creating a Dish entity.
@@ -241,6 +327,8 @@ func (c *DishClient) DeleteOneID(id uuid.UUID) *DishDeleteOne {
 func (c *DishClient) Query() *DishQuery {
 	return &DishQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeDish},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -260,7 +348,7 @@ func (c *DishClient) GetX(ctx context.Context, id uuid.UUID) *Dish {
 
 // QueryDishOccurrences queries the dish_occurrences edge of a Dish.
 func (c *DishClient) QueryDishOccurrences(d *Dish) *OccurrenceQuery {
-	query := &OccurrenceQuery{config: c.config}
+	query := (&OccurrenceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := d.ID
 		step := sqlgraph.NewStep(
@@ -276,7 +364,7 @@ func (c *DishClient) QueryDishOccurrences(d *Dish) *OccurrenceQuery {
 
 // QueryAliases queries the aliases edge of a Dish.
 func (c *DishClient) QueryAliases(d *Dish) *DishAliasQuery {
-	query := &DishAliasQuery{config: c.config}
+	query := (&DishAliasClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := d.ID
 		step := sqlgraph.NewStep(
@@ -292,7 +380,7 @@ func (c *DishClient) QueryAliases(d *Dish) *DishAliasQuery {
 
 // QuerySideDishOccurrence queries the side_dish_occurrence edge of a Dish.
 func (c *DishClient) QuerySideDishOccurrence(d *Dish) *OccurrenceQuery {
-	query := &OccurrenceQuery{config: c.config}
+	query := (&OccurrenceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := d.ID
 		step := sqlgraph.NewStep(
@@ -311,6 +399,26 @@ func (c *DishClient) Hooks() []Hook {
 	return c.hooks.Dish
 }
 
+// Interceptors returns the client interceptors.
+func (c *DishClient) Interceptors() []Interceptor {
+	return c.inters.Dish
+}
+
+func (c *DishClient) mutate(ctx context.Context, m *DishMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DishCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DishUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DishUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DishDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Dish mutation op: %q", m.Op())
+	}
+}
+
 // DishAliasClient is a client for the DishAlias schema.
 type DishAliasClient struct {
 	config
@@ -325,6 +433,12 @@ func NewDishAliasClient(c config) *DishAliasClient {
 // A call to `Use(f, g, h)` equals to `dishalias.Hooks(f(g(h())))`.
 func (c *DishAliasClient) Use(hooks ...Hook) {
 	c.hooks.DishAlias = append(c.hooks.DishAlias, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `dishalias.Intercept(f(g(h())))`.
+func (c *DishAliasClient) Intercept(interceptors ...Interceptor) {
+	c.inters.DishAlias = append(c.inters.DishAlias, interceptors...)
 }
 
 // Create returns a builder for creating a DishAlias entity.
@@ -379,6 +493,8 @@ func (c *DishAliasClient) DeleteOneID(id string) *DishAliasDeleteOne {
 func (c *DishAliasClient) Query() *DishAliasQuery {
 	return &DishAliasQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeDishAlias},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -398,7 +514,7 @@ func (c *DishAliasClient) GetX(ctx context.Context, id string) *DishAlias {
 
 // QueryDish queries the dish edge of a DishAlias.
 func (c *DishAliasClient) QueryDish(da *DishAlias) *DishQuery {
-	query := &DishQuery{config: c.config}
+	query := (&DishClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := da.ID
 		step := sqlgraph.NewStep(
@@ -417,6 +533,26 @@ func (c *DishAliasClient) Hooks() []Hook {
 	return c.hooks.DishAlias
 }
 
+// Interceptors returns the client interceptors.
+func (c *DishAliasClient) Interceptors() []Interceptor {
+	return c.inters.DishAlias
+}
+
+func (c *DishAliasClient) mutate(ctx context.Context, m *DishAliasMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&DishAliasCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&DishAliasUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&DishAliasUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&DishAliasDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown DishAlias mutation op: %q", m.Op())
+	}
+}
+
 // ImageClient is a client for the Image schema.
 type ImageClient struct {
 	config
@@ -431,6 +567,12 @@ func NewImageClient(c config) *ImageClient {
 // A call to `Use(f, g, h)` equals to `image.Hooks(f(g(h())))`.
 func (c *ImageClient) Use(hooks ...Hook) {
 	c.hooks.Image = append(c.hooks.Image, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `image.Intercept(f(g(h())))`.
+func (c *ImageClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Image = append(c.inters.Image, interceptors...)
 }
 
 // Create returns a builder for creating a Image entity.
@@ -485,6 +627,8 @@ func (c *ImageClient) DeleteOneID(id uuid.UUID) *ImageDeleteOne {
 func (c *ImageClient) Query() *ImageQuery {
 	return &ImageQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeImage},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -504,7 +648,7 @@ func (c *ImageClient) GetX(ctx context.Context, id uuid.UUID) *Image {
 
 // QueryReview queries the review edge of a Image.
 func (c *ImageClient) QueryReview(i *Image) *ReviewQuery {
-	query := &ReviewQuery{config: c.config}
+	query := (&ReviewClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := i.ID
 		step := sqlgraph.NewStep(
@@ -523,6 +667,26 @@ func (c *ImageClient) Hooks() []Hook {
 	return c.hooks.Image
 }
 
+// Interceptors returns the client interceptors.
+func (c *ImageClient) Interceptors() []Interceptor {
+	return c.inters.Image
+}
+
+func (c *ImageClient) mutate(ctx context.Context, m *ImageMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ImageCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ImageUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ImageUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ImageDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Image mutation op: %q", m.Op())
+	}
+}
+
 // LocationClient is a client for the Location schema.
 type LocationClient struct {
 	config
@@ -537,6 +701,12 @@ func NewLocationClient(c config) *LocationClient {
 // A call to `Use(f, g, h)` equals to `location.Hooks(f(g(h())))`.
 func (c *LocationClient) Use(hooks ...Hook) {
 	c.hooks.Location = append(c.hooks.Location, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `location.Intercept(f(g(h())))`.
+func (c *LocationClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Location = append(c.inters.Location, interceptors...)
 }
 
 // Create returns a builder for creating a Location entity.
@@ -591,6 +761,8 @@ func (c *LocationClient) DeleteOneID(id uuid.UUID) *LocationDeleteOne {
 func (c *LocationClient) Query() *LocationQuery {
 	return &LocationQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeLocation},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -610,7 +782,7 @@ func (c *LocationClient) GetX(ctx context.Context, id uuid.UUID) *Location {
 
 // QueryOccurrences queries the occurrences edge of a Location.
 func (c *LocationClient) QueryOccurrences(l *Location) *OccurrenceQuery {
-	query := &OccurrenceQuery{config: c.config}
+	query := (&OccurrenceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := l.ID
 		step := sqlgraph.NewStep(
@@ -629,6 +801,26 @@ func (c *LocationClient) Hooks() []Hook {
 	return c.hooks.Location
 }
 
+// Interceptors returns the client interceptors.
+func (c *LocationClient) Interceptors() []Interceptor {
+	return c.inters.Location
+}
+
+func (c *LocationClient) mutate(ctx context.Context, m *LocationMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&LocationCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&LocationUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&LocationUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&LocationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Location mutation op: %q", m.Op())
+	}
+}
+
 // OccurrenceClient is a client for the Occurrence schema.
 type OccurrenceClient struct {
 	config
@@ -643,6 +835,12 @@ func NewOccurrenceClient(c config) *OccurrenceClient {
 // A call to `Use(f, g, h)` equals to `occurrence.Hooks(f(g(h())))`.
 func (c *OccurrenceClient) Use(hooks ...Hook) {
 	c.hooks.Occurrence = append(c.hooks.Occurrence, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `occurrence.Intercept(f(g(h())))`.
+func (c *OccurrenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Occurrence = append(c.inters.Occurrence, interceptors...)
 }
 
 // Create returns a builder for creating a Occurrence entity.
@@ -697,6 +895,8 @@ func (c *OccurrenceClient) DeleteOneID(id uuid.UUID) *OccurrenceDeleteOne {
 func (c *OccurrenceClient) Query() *OccurrenceQuery {
 	return &OccurrenceQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeOccurrence},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -716,7 +916,7 @@ func (c *OccurrenceClient) GetX(ctx context.Context, id uuid.UUID) *Occurrence {
 
 // QueryLocation queries the location edge of a Occurrence.
 func (c *OccurrenceClient) QueryLocation(o *Occurrence) *LocationQuery {
-	query := &LocationQuery{config: c.config}
+	query := (&LocationClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := o.ID
 		step := sqlgraph.NewStep(
@@ -732,7 +932,7 @@ func (c *OccurrenceClient) QueryLocation(o *Occurrence) *LocationQuery {
 
 // QueryDish queries the dish edge of a Occurrence.
 func (c *OccurrenceClient) QueryDish(o *Occurrence) *DishQuery {
-	query := &DishQuery{config: c.config}
+	query := (&DishClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := o.ID
 		step := sqlgraph.NewStep(
@@ -748,7 +948,7 @@ func (c *OccurrenceClient) QueryDish(o *Occurrence) *DishQuery {
 
 // QueryTags queries the tags edge of a Occurrence.
 func (c *OccurrenceClient) QueryTags(o *Occurrence) *TagQuery {
-	query := &TagQuery{config: c.config}
+	query := (&TagClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := o.ID
 		step := sqlgraph.NewStep(
@@ -764,7 +964,7 @@ func (c *OccurrenceClient) QueryTags(o *Occurrence) *TagQuery {
 
 // QuerySideDishes queries the side_dishes edge of a Occurrence.
 func (c *OccurrenceClient) QuerySideDishes(o *Occurrence) *DishQuery {
-	query := &DishQuery{config: c.config}
+	query := (&DishClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := o.ID
 		step := sqlgraph.NewStep(
@@ -780,7 +980,7 @@ func (c *OccurrenceClient) QuerySideDishes(o *Occurrence) *DishQuery {
 
 // QueryReviews queries the reviews edge of a Occurrence.
 func (c *OccurrenceClient) QueryReviews(o *Occurrence) *ReviewQuery {
-	query := &ReviewQuery{config: c.config}
+	query := (&ReviewClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := o.ID
 		step := sqlgraph.NewStep(
@@ -799,6 +999,26 @@ func (c *OccurrenceClient) Hooks() []Hook {
 	return c.hooks.Occurrence
 }
 
+// Interceptors returns the client interceptors.
+func (c *OccurrenceClient) Interceptors() []Interceptor {
+	return c.inters.Occurrence
+}
+
+func (c *OccurrenceClient) mutate(ctx context.Context, m *OccurrenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&OccurrenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&OccurrenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&OccurrenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&OccurrenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Occurrence mutation op: %q", m.Op())
+	}
+}
+
 // ReviewClient is a client for the Review schema.
 type ReviewClient struct {
 	config
@@ -813,6 +1033,12 @@ func NewReviewClient(c config) *ReviewClient {
 // A call to `Use(f, g, h)` equals to `review.Hooks(f(g(h())))`.
 func (c *ReviewClient) Use(hooks ...Hook) {
 	c.hooks.Review = append(c.hooks.Review, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `review.Intercept(f(g(h())))`.
+func (c *ReviewClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Review = append(c.inters.Review, interceptors...)
 }
 
 // Create returns a builder for creating a Review entity.
@@ -867,6 +1093,8 @@ func (c *ReviewClient) DeleteOneID(id uuid.UUID) *ReviewDeleteOne {
 func (c *ReviewClient) Query() *ReviewQuery {
 	return &ReviewQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeReview},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -886,7 +1114,7 @@ func (c *ReviewClient) GetX(ctx context.Context, id uuid.UUID) *Review {
 
 // QueryOccurrence queries the occurrence edge of a Review.
 func (c *ReviewClient) QueryOccurrence(r *Review) *OccurrenceQuery {
-	query := &OccurrenceQuery{config: c.config}
+	query := (&OccurrenceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := r.ID
 		step := sqlgraph.NewStep(
@@ -902,7 +1130,7 @@ func (c *ReviewClient) QueryOccurrence(r *Review) *OccurrenceQuery {
 
 // QueryImages queries the images edge of a Review.
 func (c *ReviewClient) QueryImages(r *Review) *ImageQuery {
-	query := &ImageQuery{config: c.config}
+	query := (&ImageClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := r.ID
 		step := sqlgraph.NewStep(
@@ -921,6 +1149,26 @@ func (c *ReviewClient) Hooks() []Hook {
 	return c.hooks.Review
 }
 
+// Interceptors returns the client interceptors.
+func (c *ReviewClient) Interceptors() []Interceptor {
+	return c.inters.Review
+}
+
+func (c *ReviewClient) mutate(ctx context.Context, m *ReviewMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ReviewCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ReviewUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ReviewUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ReviewDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Review mutation op: %q", m.Op())
+	}
+}
+
 // TagClient is a client for the Tag schema.
 type TagClient struct {
 	config
@@ -935,6 +1183,12 @@ func NewTagClient(c config) *TagClient {
 // A call to `Use(f, g, h)` equals to `tag.Hooks(f(g(h())))`.
 func (c *TagClient) Use(hooks ...Hook) {
 	c.hooks.Tag = append(c.hooks.Tag, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `tag.Intercept(f(g(h())))`.
+func (c *TagClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Tag = append(c.inters.Tag, interceptors...)
 }
 
 // Create returns a builder for creating a Tag entity.
@@ -989,6 +1243,8 @@ func (c *TagClient) DeleteOneID(id string) *TagDeleteOne {
 func (c *TagClient) Query() *TagQuery {
 	return &TagQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeTag},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1008,7 +1264,7 @@ func (c *TagClient) GetX(ctx context.Context, id string) *Tag {
 
 // QueryOccurrence queries the occurrence edge of a Tag.
 func (c *TagClient) QueryOccurrence(t *Tag) *OccurrenceQuery {
-	query := &OccurrenceQuery{config: c.config}
+	query := (&OccurrenceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
@@ -1027,6 +1283,26 @@ func (c *TagClient) Hooks() []Hook {
 	return c.hooks.Tag
 }
 
+// Interceptors returns the client interceptors.
+func (c *TagClient) Interceptors() []Interceptor {
+	return c.inters.Tag
+}
+
+func (c *TagClient) mutate(ctx context.Context, m *TagMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TagCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TagUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TagUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TagDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Tag mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -1041,6 +1317,12 @@ func NewUserClient(c config) *UserClient {
 // A call to `Use(f, g, h)` equals to `user.Hooks(f(g(h())))`.
 func (c *UserClient) Use(hooks ...Hook) {
 	c.hooks.User = append(c.hooks.User, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `user.Intercept(f(g(h())))`.
+func (c *UserClient) Intercept(interceptors ...Interceptor) {
+	c.inters.User = append(c.inters.User, interceptors...)
 }
 
 // Create returns a builder for creating a User entity.
@@ -1095,6 +1377,8 @@ func (c *UserClient) DeleteOneID(id uuid.UUID) *UserDeleteOne {
 func (c *UserClient) Query() *UserQuery {
 	return &UserQuery{
 		config: c.config,
+		ctx:    &QueryContext{Type: TypeUser},
+		inters: c.Interceptors(),
 	}
 }
 
@@ -1116,3 +1400,34 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 func (c *UserClient) Hooks() []Hook {
 	return c.hooks.User
 }
+
+// Interceptors returns the client interceptors.
+func (c *UserClient) Interceptors() []Interceptor {
+	return c.inters.User
+}
+
+func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown User mutation op: %q", m.Op())
+	}
+}
+
+// hooks and interceptors per client, for fast access.
+type (
+	hooks struct {
+		Dish, DishAlias, Image, Location, Occurrence, Review, Tag, User []ent.Hook
+	}
+	inters struct {
+		Dish, DishAlias, Image, Location, Occurrence, Review, Tag,
+		User []ent.Interceptor
+	}
+)

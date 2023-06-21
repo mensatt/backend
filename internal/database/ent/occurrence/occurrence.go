@@ -5,6 +5,8 @@ package occurrence
 import (
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/schema"
 )
@@ -154,4 +156,173 @@ func StatusValidator(s schema.OccurrenceStatus) error {
 	default:
 		return fmt.Errorf("occurrence: invalid enum value for status field: %q", s)
 	}
+}
+
+// OrderOption defines the ordering options for the Occurrence queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByDate orders the results by the date field.
+func ByDate(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDate, opts...).ToFunc()
+}
+
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
+}
+
+// ByKj orders the results by the kj field.
+func ByKj(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKj, opts...).ToFunc()
+}
+
+// ByKcal orders the results by the kcal field.
+func ByKcal(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKcal, opts...).ToFunc()
+}
+
+// ByFat orders the results by the fat field.
+func ByFat(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFat, opts...).ToFunc()
+}
+
+// BySaturatedFat orders the results by the saturated_fat field.
+func BySaturatedFat(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSaturatedFat, opts...).ToFunc()
+}
+
+// ByCarbohydrates orders the results by the carbohydrates field.
+func ByCarbohydrates(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCarbohydrates, opts...).ToFunc()
+}
+
+// BySugar orders the results by the sugar field.
+func BySugar(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSugar, opts...).ToFunc()
+}
+
+// ByFiber orders the results by the fiber field.
+func ByFiber(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFiber, opts...).ToFunc()
+}
+
+// ByProtein orders the results by the protein field.
+func ByProtein(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProtein, opts...).ToFunc()
+}
+
+// BySalt orders the results by the salt field.
+func BySalt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSalt, opts...).ToFunc()
+}
+
+// ByPriceStudent orders the results by the price_student field.
+func ByPriceStudent(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPriceStudent, opts...).ToFunc()
+}
+
+// ByPriceStaff orders the results by the price_staff field.
+func ByPriceStaff(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPriceStaff, opts...).ToFunc()
+}
+
+// ByPriceGuest orders the results by the price_guest field.
+func ByPriceGuest(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPriceGuest, opts...).ToFunc()
+}
+
+// ByLocationField orders the results by location field.
+func ByLocationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newLocationStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByDishField orders the results by dish field.
+func ByDishField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDishStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByTagsCount orders the results by tags count.
+func ByTagsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newTagsStep(), opts...)
+	}
+}
+
+// ByTags orders the results by tags terms.
+func ByTags(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newTagsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySideDishesCount orders the results by side_dishes count.
+func BySideDishesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSideDishesStep(), opts...)
+	}
+}
+
+// BySideDishes orders the results by side_dishes terms.
+func BySideDishes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSideDishesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByReviewsCount orders the results by reviews count.
+func ByReviewsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newReviewsStep(), opts...)
+	}
+}
+
+// ByReviews orders the results by reviews terms.
+func ByReviews(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviewsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newLocationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(LocationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, LocationTable, LocationColumn),
+	)
+}
+func newDishStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DishInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
+	)
+}
+func newTagsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(TagsInverseTable, TagFieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, TagsTable, TagsPrimaryKey...),
+	)
+}
+func newSideDishesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SideDishesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, SideDishesTable, SideDishesPrimaryKey...),
+	)
+}
+func newReviewsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviewsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ReviewsTable, ReviewsColumn),
+	)
 }

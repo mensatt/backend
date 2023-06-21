@@ -59,40 +59,7 @@ func (dau *DishAliasUpdate) ClearDish() *DishAliasUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (dau *DishAliasUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(dau.hooks) == 0 {
-		if err = dau.check(); err != nil {
-			return 0, err
-		}
-		affected, err = dau.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*DishAliasMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = dau.check(); err != nil {
-				return 0, err
-			}
-			dau.mutation = mutation
-			affected, err = dau.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(dau.hooks) - 1; i >= 0; i-- {
-			if dau.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = dau.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, dau.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks(ctx, dau.sqlSave, dau.mutation, dau.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -131,16 +98,10 @@ func (dau *DishAliasUpdate) check() error {
 }
 
 func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   dishalias.Table,
-			Columns: dishalias.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: dishalias.FieldID,
-			},
-		},
+	if err := dau.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(dishalias.Table, dishalias.Columns, sqlgraph.NewFieldSpec(dishalias.FieldID, field.TypeString))
 	if ps := dau.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -159,10 +120,7 @@ func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -175,10 +133,7 @@ func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -194,6 +149,7 @@ func (dau *DishAliasUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	dau.mutation.done = true
 	return n, nil
 }
 
@@ -233,6 +189,12 @@ func (dauo *DishAliasUpdateOne) ClearDish() *DishAliasUpdateOne {
 	return dauo
 }
 
+// Where appends a list predicates to the DishAliasUpdate builder.
+func (dauo *DishAliasUpdateOne) Where(ps ...predicate.DishAlias) *DishAliasUpdateOne {
+	dauo.mutation.Where(ps...)
+	return dauo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (dauo *DishAliasUpdateOne) Select(field string, fields ...string) *DishAliasUpdateOne {
@@ -242,46 +204,7 @@ func (dauo *DishAliasUpdateOne) Select(field string, fields ...string) *DishAlia
 
 // Save executes the query and returns the updated DishAlias entity.
 func (dauo *DishAliasUpdateOne) Save(ctx context.Context) (*DishAlias, error) {
-	var (
-		err  error
-		node *DishAlias
-	)
-	if len(dauo.hooks) == 0 {
-		if err = dauo.check(); err != nil {
-			return nil, err
-		}
-		node, err = dauo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*DishAliasMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = dauo.check(); err != nil {
-				return nil, err
-			}
-			dauo.mutation = mutation
-			node, err = dauo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(dauo.hooks) - 1; i >= 0; i-- {
-			if dauo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = dauo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, dauo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*DishAlias)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from DishAliasMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, dauo.sqlSave, dauo.mutation, dauo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -320,16 +243,10 @@ func (dauo *DishAliasUpdateOne) check() error {
 }
 
 func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   dishalias.Table,
-			Columns: dishalias.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: dishalias.FieldID,
-			},
-		},
+	if err := dauo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(dishalias.Table, dishalias.Columns, sqlgraph.NewFieldSpec(dishalias.FieldID, field.TypeString))
 	id, ok := dauo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "DishAlias.id" for update`)}
@@ -365,10 +282,7 @@ func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, 
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -381,10 +295,7 @@ func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, 
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -403,5 +314,6 @@ func (dauo *DishAliasUpdateOne) sqlSave(ctx context.Context) (_node *DishAlias, 
 		}
 		return nil, err
 	}
+	dauo.mutation.done = true
 	return _node, nil
 }

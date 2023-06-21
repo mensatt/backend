@@ -11,299 +11,197 @@ import (
 
 // ID filters vertices based on their ID field.
 func ID(id uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.Dish(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.Dish(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
 func IDNEQ(id uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldID), id))
-	})
+	return predicate.Dish(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.In(s.C(FieldID), v...))
-	})
+	return predicate.Dish(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.NotIn(s.C(FieldID), v...))
-	})
+	return predicate.Dish(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
 func IDGT(id uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldID), id))
-	})
+	return predicate.Dish(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
 func IDGTE(id uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldID), id))
-	})
+	return predicate.Dish(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
 func IDLT(id uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldID), id))
-	})
+	return predicate.Dish(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id uuid.UUID) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldID), id))
-	})
+	return predicate.Dish(sql.FieldLTE(FieldID, id))
 }
 
 // NameDe applies equality check predicate on the "name_de" field. It's identical to NameDeEQ.
 func NameDe(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldEQ(FieldNameDe, v))
 }
 
 // NameEn applies equality check predicate on the "name_en" field. It's identical to NameEnEQ.
 func NameEn(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldEQ(FieldNameEn, v))
 }
 
 // NameDeEQ applies the EQ predicate on the "name_de" field.
 func NameDeEQ(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldEQ(FieldNameDe, v))
 }
 
 // NameDeNEQ applies the NEQ predicate on the "name_de" field.
 func NameDeNEQ(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldNEQ(FieldNameDe, v))
 }
 
 // NameDeIn applies the In predicate on the "name_de" field.
 func NameDeIn(vs ...string) predicate.Dish {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldNameDe), v...))
-	})
+	return predicate.Dish(sql.FieldIn(FieldNameDe, vs...))
 }
 
 // NameDeNotIn applies the NotIn predicate on the "name_de" field.
 func NameDeNotIn(vs ...string) predicate.Dish {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldNameDe), v...))
-	})
+	return predicate.Dish(sql.FieldNotIn(FieldNameDe, vs...))
 }
 
 // NameDeGT applies the GT predicate on the "name_de" field.
 func NameDeGT(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldGT(FieldNameDe, v))
 }
 
 // NameDeGTE applies the GTE predicate on the "name_de" field.
 func NameDeGTE(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldGTE(FieldNameDe, v))
 }
 
 // NameDeLT applies the LT predicate on the "name_de" field.
 func NameDeLT(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldLT(FieldNameDe, v))
 }
 
 // NameDeLTE applies the LTE predicate on the "name_de" field.
 func NameDeLTE(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldLTE(FieldNameDe, v))
 }
 
 // NameDeContains applies the Contains predicate on the "name_de" field.
 func NameDeContains(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldContains(FieldNameDe, v))
 }
 
 // NameDeHasPrefix applies the HasPrefix predicate on the "name_de" field.
 func NameDeHasPrefix(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldHasPrefix(FieldNameDe, v))
 }
 
 // NameDeHasSuffix applies the HasSuffix predicate on the "name_de" field.
 func NameDeHasSuffix(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldHasSuffix(FieldNameDe, v))
 }
 
 // NameDeEqualFold applies the EqualFold predicate on the "name_de" field.
 func NameDeEqualFold(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldEqualFold(FieldNameDe, v))
 }
 
 // NameDeContainsFold applies the ContainsFold predicate on the "name_de" field.
 func NameDeContainsFold(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldNameDe), v))
-	})
+	return predicate.Dish(sql.FieldContainsFold(FieldNameDe, v))
 }
 
 // NameEnEQ applies the EQ predicate on the "name_en" field.
 func NameEnEQ(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldEQ(FieldNameEn, v))
 }
 
 // NameEnNEQ applies the NEQ predicate on the "name_en" field.
 func NameEnNEQ(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldNEQ(FieldNameEn, v))
 }
 
 // NameEnIn applies the In predicate on the "name_en" field.
 func NameEnIn(vs ...string) predicate.Dish {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldNameEn), v...))
-	})
+	return predicate.Dish(sql.FieldIn(FieldNameEn, vs...))
 }
 
 // NameEnNotIn applies the NotIn predicate on the "name_en" field.
 func NameEnNotIn(vs ...string) predicate.Dish {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldNameEn), v...))
-	})
+	return predicate.Dish(sql.FieldNotIn(FieldNameEn, vs...))
 }
 
 // NameEnGT applies the GT predicate on the "name_en" field.
 func NameEnGT(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldGT(FieldNameEn, v))
 }
 
 // NameEnGTE applies the GTE predicate on the "name_en" field.
 func NameEnGTE(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldGTE(FieldNameEn, v))
 }
 
 // NameEnLT applies the LT predicate on the "name_en" field.
 func NameEnLT(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldLT(FieldNameEn, v))
 }
 
 // NameEnLTE applies the LTE predicate on the "name_en" field.
 func NameEnLTE(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldLTE(FieldNameEn, v))
 }
 
 // NameEnContains applies the Contains predicate on the "name_en" field.
 func NameEnContains(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldContains(FieldNameEn, v))
 }
 
 // NameEnHasPrefix applies the HasPrefix predicate on the "name_en" field.
 func NameEnHasPrefix(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldHasPrefix(FieldNameEn, v))
 }
 
 // NameEnHasSuffix applies the HasSuffix predicate on the "name_en" field.
 func NameEnHasSuffix(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldHasSuffix(FieldNameEn, v))
 }
 
 // NameEnIsNil applies the IsNil predicate on the "name_en" field.
 func NameEnIsNil() predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.IsNull(s.C(FieldNameEn)))
-	})
+	return predicate.Dish(sql.FieldIsNull(FieldNameEn))
 }
 
 // NameEnNotNil applies the NotNil predicate on the "name_en" field.
 func NameEnNotNil() predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.NotNull(s.C(FieldNameEn)))
-	})
+	return predicate.Dish(sql.FieldNotNull(FieldNameEn))
 }
 
 // NameEnEqualFold applies the EqualFold predicate on the "name_en" field.
 func NameEnEqualFold(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldEqualFold(FieldNameEn, v))
 }
 
 // NameEnContainsFold applies the ContainsFold predicate on the "name_en" field.
 func NameEnContainsFold(v string) predicate.Dish {
-	return predicate.Dish(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldNameEn), v))
-	})
+	return predicate.Dish(sql.FieldContainsFold(FieldNameEn, v))
 }
 
 // HasDishOccurrences applies the HasEdge predicate on the "dish_occurrences" edge.
@@ -311,7 +209,6 @@ func HasDishOccurrences() predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DishOccurrencesTable, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, DishOccurrencesTable, DishOccurrencesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -321,11 +218,7 @@ func HasDishOccurrences() predicate.Dish {
 // HasDishOccurrencesWith applies the HasEdge predicate on the "dish_occurrences" edge with a given conditions (other predicates).
 func HasDishOccurrencesWith(preds ...predicate.Occurrence) predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(DishOccurrencesInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, DishOccurrencesTable, DishOccurrencesColumn),
-		)
+		step := newDishOccurrencesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -339,7 +232,6 @@ func HasAliases() predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AliasesTable, DishAliasFieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, AliasesTable, AliasesColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -349,11 +241,7 @@ func HasAliases() predicate.Dish {
 // HasAliasesWith applies the HasEdge predicate on the "aliases" edge with a given conditions (other predicates).
 func HasAliasesWith(preds ...predicate.DishAlias) predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(AliasesInverseTable, DishAliasFieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AliasesTable, AliasesColumn),
-		)
+		step := newAliasesStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -367,7 +255,6 @@ func HasSideDishOccurrence() predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SideDishOccurrenceTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, SideDishOccurrenceTable, SideDishOccurrencePrimaryKey...),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -377,11 +264,7 @@ func HasSideDishOccurrence() predicate.Dish {
 // HasSideDishOccurrenceWith applies the HasEdge predicate on the "side_dish_occurrence" edge with a given conditions (other predicates).
 func HasSideDishOccurrenceWith(preds ...predicate.Occurrence) predicate.Dish {
 	return predicate.Dish(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(SideDishOccurrenceInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, SideDishOccurrenceTable, SideDishOccurrencePrimaryKey...),
-		)
+		step := newSideDishOccurrenceStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

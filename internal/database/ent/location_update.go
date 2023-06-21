@@ -105,40 +105,7 @@ func (lu *LocationUpdate) RemoveOccurrences(o ...*Occurrence) *LocationUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (lu *LocationUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(lu.hooks) == 0 {
-		if err = lu.check(); err != nil {
-			return 0, err
-		}
-		affected, err = lu.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*LocationMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = lu.check(); err != nil {
-				return 0, err
-			}
-			lu.mutation = mutation
-			affected, err = lu.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(lu.hooks) - 1; i >= 0; i-- {
-			if lu.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = lu.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, lu.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks(ctx, lu.sqlSave, lu.mutation, lu.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -174,16 +141,10 @@ func (lu *LocationUpdate) check() error {
 }
 
 func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   location.Table,
-			Columns: location.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: location.FieldID,
-			},
-		},
+	if err := lu.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(location.Table, location.Columns, sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID))
 	if ps := lu.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -211,10 +172,7 @@ func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{location.OccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -227,10 +185,7 @@ func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{location.OccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -246,10 +201,7 @@ func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{location.OccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -265,6 +217,7 @@ func (lu *LocationUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	lu.mutation.done = true
 	return n, nil
 }
 
@@ -350,6 +303,12 @@ func (luo *LocationUpdateOne) RemoveOccurrences(o ...*Occurrence) *LocationUpdat
 	return luo.RemoveOccurrenceIDs(ids...)
 }
 
+// Where appends a list predicates to the LocationUpdate builder.
+func (luo *LocationUpdateOne) Where(ps ...predicate.Location) *LocationUpdateOne {
+	luo.mutation.Where(ps...)
+	return luo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (luo *LocationUpdateOne) Select(field string, fields ...string) *LocationUpdateOne {
@@ -359,46 +318,7 @@ func (luo *LocationUpdateOne) Select(field string, fields ...string) *LocationUp
 
 // Save executes the query and returns the updated Location entity.
 func (luo *LocationUpdateOne) Save(ctx context.Context) (*Location, error) {
-	var (
-		err  error
-		node *Location
-	)
-	if len(luo.hooks) == 0 {
-		if err = luo.check(); err != nil {
-			return nil, err
-		}
-		node, err = luo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*LocationMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = luo.check(); err != nil {
-				return nil, err
-			}
-			luo.mutation = mutation
-			node, err = luo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(luo.hooks) - 1; i >= 0; i-- {
-			if luo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = luo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, luo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Location)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from LocationMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, luo.sqlSave, luo.mutation, luo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -434,16 +354,10 @@ func (luo *LocationUpdateOne) check() error {
 }
 
 func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   location.Table,
-			Columns: location.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: location.FieldID,
-			},
-		},
+	if err := luo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(location.Table, location.Columns, sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID))
 	id, ok := luo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Location.id" for update`)}
@@ -488,10 +402,7 @@ func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err
 			Columns: []string{location.OccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -504,10 +415,7 @@ func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err
 			Columns: []string{location.OccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -523,10 +431,7 @@ func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err
 			Columns: []string{location.OccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -545,5 +450,6 @@ func (luo *LocationUpdateOne) sqlSave(ctx context.Context) (_node *Location, err
 		}
 		return nil, err
 	}
+	luo.mutation.done = true
 	return _node, nil
 }

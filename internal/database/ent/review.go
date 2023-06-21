@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
@@ -32,8 +33,9 @@ type Review struct {
 	AcceptedAt *time.Time `json:"accepted_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ReviewQuery when eager-loading is set.
-	Edges      ReviewEdges `json:"edges"`
-	occurrence *uuid.UUID
+	Edges        ReviewEdges `json:"edges"`
+	occurrence   *uuid.UUID
+	selectValues sql.SelectValues
 }
 
 // ReviewEdges holds the relations/edges for other nodes in the graph.
@@ -85,7 +87,7 @@ func (*Review) scanValues(columns []string) ([]any, error) {
 		case review.ForeignKeys[0]: // occurrence
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Review", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -151,26 +153,34 @@ func (r *Review) assignValues(columns []string, values []any) error {
 				r.occurrence = new(uuid.UUID)
 				*r.occurrence = *value.S.(*uuid.UUID)
 			}
+		default:
+			r.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
+// Value returns the ent.Value that was dynamically selected and assigned to the Review.
+// This includes values selected through modifiers, order, etc.
+func (r *Review) Value(name string) (ent.Value, error) {
+	return r.selectValues.Get(name)
+}
+
 // QueryOccurrence queries the "occurrence" edge of the Review entity.
 func (r *Review) QueryOccurrence() *OccurrenceQuery {
-	return (&ReviewClient{config: r.config}).QueryOccurrence(r)
+	return NewReviewClient(r.config).QueryOccurrence(r)
 }
 
 // QueryImages queries the "images" edge of the Review entity.
 func (r *Review) QueryImages() *ImageQuery {
-	return (&ReviewClient{config: r.config}).QueryImages(r)
+	return NewReviewClient(r.config).QueryImages(r)
 }
 
 // Update returns a builder for updating this Review.
 // Note that you need to call Review.Unwrap() before calling this method if this Review
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (r *Review) Update() *ReviewUpdateOne {
-	return (&ReviewClient{config: r.config}).UpdateOne(r)
+	return NewReviewClient(r.config).UpdateOne(r)
 }
 
 // Unwrap unwraps the Review entity that was returned from a transaction after it was closed,
@@ -218,9 +228,3 @@ func (r *Review) String() string {
 
 // Reviews is a parsable slice of Review.
 type Reviews []*Review
-
-func (r Reviews) config(cfg config) {
-	for _i := range r {
-		r[_i].config = cfg
-	}
-}

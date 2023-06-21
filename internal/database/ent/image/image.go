@@ -3,6 +3,8 @@
 package image
 
 import (
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -59,3 +61,30 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// OrderOption defines the ordering options for the Image queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByImageHash orders the results by the image_hash field.
+func ByImageHash(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldImageHash, opts...).ToFunc()
+}
+
+// ByReviewField orders the results by review field.
+func ByReviewField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newReviewStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newReviewStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ReviewInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, ReviewTable, ReviewColumn),
+	)
+}

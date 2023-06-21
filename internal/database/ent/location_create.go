@@ -86,50 +86,8 @@ func (lc *LocationCreate) Mutation() *LocationMutation {
 
 // Save creates the Location in the database.
 func (lc *LocationCreate) Save(ctx context.Context) (*Location, error) {
-	var (
-		err  error
-		node *Location
-	)
 	lc.defaults()
-	if len(lc.hooks) == 0 {
-		if err = lc.check(); err != nil {
-			return nil, err
-		}
-		node, err = lc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*LocationMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = lc.check(); err != nil {
-				return nil, err
-			}
-			lc.mutation = mutation
-			if node, err = lc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(lc.hooks) - 1; i >= 0; i-- {
-			if lc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = lc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, lc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Location)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from LocationMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, lc.sqlSave, lc.mutation, lc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -186,6 +144,9 @@ func (lc *LocationCreate) check() error {
 }
 
 func (lc *LocationCreate) sqlSave(ctx context.Context) (*Location, error) {
+	if err := lc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := lc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, lc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -200,19 +161,15 @@ func (lc *LocationCreate) sqlSave(ctx context.Context) (*Location, error) {
 			return nil, err
 		}
 	}
+	lc.mutation.id = &_node.ID
+	lc.mutation.done = true
 	return _node, nil
 }
 
 func (lc *LocationCreate) createSpec() (*Location, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Location{config: lc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: location.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: location.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(location.Table, sqlgraph.NewFieldSpec(location.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = lc.conflict
 	if id, ok := lc.mutation.ID(); ok {
@@ -239,10 +196,7 @@ func (lc *LocationCreate) createSpec() (*Location, *sqlgraph.CreateSpec) {
 			Columns: []string{location.OccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -504,8 +458,8 @@ func (lcb *LocationCreateBulk) Save(ctx context.Context) ([]*Location, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, lcb.builders[i+1].mutation)
 				} else {

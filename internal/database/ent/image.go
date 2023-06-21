@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/image"
@@ -21,8 +22,9 @@ type Image struct {
 	ImageHash string `json:"image_hash,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
-	Edges  ImageEdges `json:"edges"`
-	review *uuid.UUID
+	Edges        ImageEdges `json:"edges"`
+	review       *uuid.UUID
+	selectValues sql.SelectValues
 }
 
 // ImageEdges holds the relations/edges for other nodes in the graph.
@@ -59,7 +61,7 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 		case image.ForeignKeys[0]: // review
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Image", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -92,21 +94,29 @@ func (i *Image) assignValues(columns []string, values []any) error {
 				i.review = new(uuid.UUID)
 				*i.review = *value.S.(*uuid.UUID)
 			}
+		default:
+			i.selectValues.Set(columns[j], values[j])
 		}
 	}
 	return nil
 }
 
+// Value returns the ent.Value that was dynamically selected and assigned to the Image.
+// This includes values selected through modifiers, order, etc.
+func (i *Image) Value(name string) (ent.Value, error) {
+	return i.selectValues.Get(name)
+}
+
 // QueryReview queries the "review" edge of the Image entity.
 func (i *Image) QueryReview() *ReviewQuery {
-	return (&ImageClient{config: i.config}).QueryReview(i)
+	return NewImageClient(i.config).QueryReview(i)
 }
 
 // Update returns a builder for updating this Image.
 // Note that you need to call Image.Unwrap() before calling this method if this Image
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (i *Image) Update() *ImageUpdateOne {
-	return (&ImageClient{config: i.config}).UpdateOne(i)
+	return NewImageClient(i.config).UpdateOne(i)
 }
 
 // Unwrap unwraps the Image entity that was returned from a transaction after it was closed,
@@ -133,9 +143,3 @@ func (i *Image) String() string {
 
 // Images is a parsable slice of Image.
 type Images []*Image
-
-func (i Images) config(cfg config) {
-	for _i := range i {
-		i[_i].config = cfg
-	}
-}

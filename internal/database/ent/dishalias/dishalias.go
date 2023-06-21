@@ -2,6 +2,11 @@
 
 package dishalias
 
+import (
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
+)
+
 const (
 	// Label holds the string label denoting the dishalias type in the database.
 	Label = "dish_alias"
@@ -55,3 +60,30 @@ var (
 	// NormalizedAliasNameValidator is a validator for the "normalized_alias_name" field. It is called by the builders before save.
 	NormalizedAliasNameValidator func(string) error
 )
+
+// OrderOption defines the ordering options for the DishAlias queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByNormalizedAliasName orders the results by the normalized_alias_name field.
+func ByNormalizedAliasName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNormalizedAliasName, opts...).ToFunc()
+}
+
+// ByDishField orders the results by dish field.
+func ByDishField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDishStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newDishStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DishInverseTable, DishFieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, DishTable, DishColumn),
+	)
+}

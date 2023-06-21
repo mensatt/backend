@@ -54,49 +54,7 @@ func (dac *DishAliasCreate) Mutation() *DishAliasMutation {
 
 // Save creates the DishAlias in the database.
 func (dac *DishAliasCreate) Save(ctx context.Context) (*DishAlias, error) {
-	var (
-		err  error
-		node *DishAlias
-	)
-	if len(dac.hooks) == 0 {
-		if err = dac.check(); err != nil {
-			return nil, err
-		}
-		node, err = dac.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*DishAliasMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = dac.check(); err != nil {
-				return nil, err
-			}
-			dac.mutation = mutation
-			if node, err = dac.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(dac.hooks) - 1; i >= 0; i-- {
-			if dac.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = dac.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, dac.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*DishAlias)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from DishAliasMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, dac.sqlSave, dac.mutation, dac.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -138,6 +96,9 @@ func (dac *DishAliasCreate) check() error {
 }
 
 func (dac *DishAliasCreate) sqlSave(ctx context.Context) (*DishAlias, error) {
+	if err := dac.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := dac.createSpec()
 	if err := sqlgraph.CreateNode(ctx, dac.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -152,19 +113,15 @@ func (dac *DishAliasCreate) sqlSave(ctx context.Context) (*DishAlias, error) {
 			return nil, fmt.Errorf("unexpected DishAlias.ID type: %T", _spec.ID.Value)
 		}
 	}
+	dac.mutation.id = &_node.ID
+	dac.mutation.done = true
 	return _node, nil
 }
 
 func (dac *DishAliasCreate) createSpec() (*DishAlias, *sqlgraph.CreateSpec) {
 	var (
 		_node = &DishAlias{config: dac.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: dishalias.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: dishalias.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(dishalias.Table, sqlgraph.NewFieldSpec(dishalias.FieldID, field.TypeString))
 	)
 	_spec.OnConflict = dac.conflict
 	if id, ok := dac.mutation.ID(); ok {
@@ -183,10 +140,7 @@ func (dac *DishAliasCreate) createSpec() (*DishAlias, *sqlgraph.CreateSpec) {
 			Columns: []string{dishalias.DishColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: dish.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -383,8 +337,8 @@ func (dacb *DishAliasCreateBulk) Save(ctx context.Context) ([]*DishAlias, error)
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, dacb.builders[i+1].mutation)
 				} else {

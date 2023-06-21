@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/dish"
@@ -22,7 +23,8 @@ type Dish struct {
 	NameEn *string `json:"name_en,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DishQuery when eager-loading is set.
-	Edges DishEdges `json:"edges"`
+	Edges        DishEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // DishEdges holds the relations/edges for other nodes in the graph.
@@ -75,7 +77,7 @@ func (*Dish) scanValues(columns []string) ([]any, error) {
 		case dish.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Dish", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -108,31 +110,39 @@ func (d *Dish) assignValues(columns []string, values []any) error {
 				d.NameEn = new(string)
 				*d.NameEn = value.String
 			}
+		default:
+			d.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
+// Value returns the ent.Value that was dynamically selected and assigned to the Dish.
+// This includes values selected through modifiers, order, etc.
+func (d *Dish) Value(name string) (ent.Value, error) {
+	return d.selectValues.Get(name)
+}
+
 // QueryDishOccurrences queries the "dish_occurrences" edge of the Dish entity.
 func (d *Dish) QueryDishOccurrences() *OccurrenceQuery {
-	return (&DishClient{config: d.config}).QueryDishOccurrences(d)
+	return NewDishClient(d.config).QueryDishOccurrences(d)
 }
 
 // QueryAliases queries the "aliases" edge of the Dish entity.
 func (d *Dish) QueryAliases() *DishAliasQuery {
-	return (&DishClient{config: d.config}).QueryAliases(d)
+	return NewDishClient(d.config).QueryAliases(d)
 }
 
 // QuerySideDishOccurrence queries the "side_dish_occurrence" edge of the Dish entity.
 func (d *Dish) QuerySideDishOccurrence() *OccurrenceQuery {
-	return (&DishClient{config: d.config}).QuerySideDishOccurrence(d)
+	return NewDishClient(d.config).QuerySideDishOccurrence(d)
 }
 
 // Update returns a builder for updating this Dish.
 // Note that you need to call Dish.Unwrap() before calling this method if this Dish
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (d *Dish) Update() *DishUpdateOne {
-	return (&DishClient{config: d.config}).UpdateOne(d)
+	return NewDishClient(d.config).UpdateOne(d)
 }
 
 // Unwrap unwraps the Dish entity that was returned from a transaction after it was closed,
@@ -164,9 +174,3 @@ func (d *Dish) String() string {
 
 // Dishes is a parsable slice of Dish.
 type Dishes []*Dish
-
-func (d Dishes) config(cfg config) {
-	for _i := range d {
-		d[_i].config = cfg
-	}
-}

@@ -5,6 +5,8 @@ package review
 import (
 	"time"
 
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -95,3 +97,76 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// OrderOption defines the ordering options for the Review queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByDisplayName orders the results by the display_name field.
+func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
+}
+
+// ByStars orders the results by the stars field.
+func ByStars(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStars, opts...).ToFunc()
+}
+
+// ByText orders the results by the text field.
+func ByText(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldText, opts...).ToFunc()
+}
+
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByAcceptedAt orders the results by the accepted_at field.
+func ByAcceptedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAcceptedAt, opts...).ToFunc()
+}
+
+// ByOccurrenceField orders the results by occurrence field.
+func ByOccurrenceField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOccurrenceStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByImagesCount orders the results by images count.
+func ByImagesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newImagesStep(), opts...)
+	}
+}
+
+// ByImages orders the results by images terms.
+func ByImages(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newImagesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newOccurrenceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OccurrenceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, OccurrenceTable, OccurrenceColumn),
+	)
+}
+func newImagesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ImagesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ImagesTable, ImagesColumn),
+	)
+}
