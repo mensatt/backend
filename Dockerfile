@@ -5,7 +5,7 @@ ARG USER_ID
 ARG GROUP_ID
 
 # Install libvips-dev for image processing
-RUN apk add --no-cache vips-dev build-base
+RUN apk add --no-cache vips-dev build-base git
 
 # Create a group and user
 RUN addgroup -g $GROUP_ID mensatt && \
