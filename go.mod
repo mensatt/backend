@@ -8,7 +8,7 @@ require (
 	github.com/davidbyttow/govips/v2 v2.13.0
 	github.com/getsentry/sentry-go v0.22.0
 	github.com/gin-gonic/gin v1.9.0
-	github.com/golang-jwt/jwt/v4 v4.4.3
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgx/v5 v5.4.0
 	github.com/vektah/gqlparser/v2 v2.5.1
