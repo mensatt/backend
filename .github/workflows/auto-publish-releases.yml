@@ -30,3 +30,6 @@ jobs:
         with:
           push: true # Will only build if this is not here
           tags: ${{ steps.meta.outputs.tags }}
+          args: |
+            --build-arg USER_ID=1000
+            --build-arg GROUP_ID=1000
