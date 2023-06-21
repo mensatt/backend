@@ -42,7 +42,7 @@ FROM alpine:3.18 as prod
 COPY --from=built /tmp/mensatt /usr/bin/mensatt
 
 # Install libvips-dev for image processing
-RUN apk add --no-cache vips
+RUN apk add --no-cache vips git
 
 EXPOSE 4000
 CMD ["mensatt"]
