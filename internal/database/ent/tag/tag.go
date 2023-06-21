@@ -5,6 +5,8 @@ package tag
 import (
 	"fmt"
 
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/mensatt/backend/internal/database/schema"
 )
 
@@ -83,4 +85,58 @@ func PriorityValidator(pr schema.TagPriority) error {
 	default:
 		return fmt.Errorf("tag: invalid enum value for priority field: %q", pr)
 	}
+}
+
+// OrderOption defines the ordering options for the Tag queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
+}
+
+// ByShortName orders the results by the short_name field.
+func ByShortName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldShortName, opts...).ToFunc()
+}
+
+// ByPriority orders the results by the priority field.
+func ByPriority(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPriority, opts...).ToFunc()
+}
+
+// ByIsAllergy orders the results by the is_allergy field.
+func ByIsAllergy(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldIsAllergy, opts...).ToFunc()
+}
+
+// ByOccurrenceCount orders the results by occurrence count.
+func ByOccurrenceCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOccurrenceStep(), opts...)
+	}
+}
+
+// ByOccurrence orders the results by occurrence terms.
+func ByOccurrence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOccurrenceStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newOccurrenceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OccurrenceInverseTable, OccurrenceFieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, OccurrenceTable, OccurrencePrimaryKey...),
+	)
 }

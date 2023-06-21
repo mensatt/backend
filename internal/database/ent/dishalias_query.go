@@ -19,11 +19,9 @@ import (
 // DishAliasQuery is the builder for querying DishAlias entities.
 type DishAliasQuery struct {
 	config
-	limit      *int
-	offset     *int
-	unique     *bool
-	order      []OrderFunc
-	fields     []string
+	ctx        *QueryContext
+	order      []dishalias.OrderOption
+	inters     []Interceptor
 	predicates []predicate.DishAlias
 	withDish   *DishQuery
 	withFKs    bool
@@ -38,34 +36,34 @@ func (daq *DishAliasQuery) Where(ps ...predicate.DishAlias) *DishAliasQuery {
 	return daq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (daq *DishAliasQuery) Limit(limit int) *DishAliasQuery {
-	daq.limit = &limit
+	daq.ctx.Limit = &limit
 	return daq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (daq *DishAliasQuery) Offset(offset int) *DishAliasQuery {
-	daq.offset = &offset
+	daq.ctx.Offset = &offset
 	return daq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (daq *DishAliasQuery) Unique(unique bool) *DishAliasQuery {
-	daq.unique = &unique
+	daq.ctx.Unique = &unique
 	return daq
 }
 
-// Order adds an order step to the query.
-func (daq *DishAliasQuery) Order(o ...OrderFunc) *DishAliasQuery {
+// Order specifies how the records should be ordered.
+func (daq *DishAliasQuery) Order(o ...dishalias.OrderOption) *DishAliasQuery {
 	daq.order = append(daq.order, o...)
 	return daq
 }
 
 // QueryDish chains the current query on the "dish" edge.
 func (daq *DishAliasQuery) QueryDish() *DishQuery {
-	query := &DishQuery{config: daq.config}
+	query := (&DishClient{config: daq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := daq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -88,7 +86,7 @@ func (daq *DishAliasQuery) QueryDish() *DishQuery {
 // First returns the first DishAlias entity from the query.
 // Returns a *NotFoundError when no DishAlias was found.
 func (daq *DishAliasQuery) First(ctx context.Context) (*DishAlias, error) {
-	nodes, err := daq.Limit(1).All(ctx)
+	nodes, err := daq.Limit(1).All(setContextOp(ctx, daq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -111,7 +109,7 @@ func (daq *DishAliasQuery) FirstX(ctx context.Context) *DishAlias {
 // Returns a *NotFoundError when no DishAlias ID was found.
 func (daq *DishAliasQuery) FirstID(ctx context.Context) (id string, err error) {
 	var ids []string
-	if ids, err = daq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = daq.Limit(1).IDs(setContextOp(ctx, daq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -134,7 +132,7 @@ func (daq *DishAliasQuery) FirstIDX(ctx context.Context) string {
 // Returns a *NotSingularError when more than one DishAlias entity is found.
 // Returns a *NotFoundError when no DishAlias entities are found.
 func (daq *DishAliasQuery) Only(ctx context.Context) (*DishAlias, error) {
-	nodes, err := daq.Limit(2).All(ctx)
+	nodes, err := daq.Limit(2).All(setContextOp(ctx, daq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +160,7 @@ func (daq *DishAliasQuery) OnlyX(ctx context.Context) *DishAlias {
 // Returns a *NotFoundError when no entities are found.
 func (daq *DishAliasQuery) OnlyID(ctx context.Context) (id string, err error) {
 	var ids []string
-	if ids, err = daq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = daq.Limit(2).IDs(setContextOp(ctx, daq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -187,10 +185,12 @@ func (daq *DishAliasQuery) OnlyIDX(ctx context.Context) string {
 
 // All executes the query and returns a list of DishAliasSlice.
 func (daq *DishAliasQuery) All(ctx context.Context) ([]*DishAlias, error) {
+	ctx = setContextOp(ctx, daq.ctx, "All")
 	if err := daq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return daq.sqlAll(ctx)
+	qr := querierAll[[]*DishAlias, *DishAliasQuery]()
+	return withInterceptors[[]*DishAlias](ctx, daq, qr, daq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -203,9 +203,12 @@ func (daq *DishAliasQuery) AllX(ctx context.Context) []*DishAlias {
 }
 
 // IDs executes the query and returns a list of DishAlias IDs.
-func (daq *DishAliasQuery) IDs(ctx context.Context) ([]string, error) {
-	var ids []string
-	if err := daq.Select(dishalias.FieldID).Scan(ctx, &ids); err != nil {
+func (daq *DishAliasQuery) IDs(ctx context.Context) (ids []string, err error) {
+	if daq.ctx.Unique == nil && daq.path != nil {
+		daq.Unique(true)
+	}
+	ctx = setContextOp(ctx, daq.ctx, "IDs")
+	if err = daq.Select(dishalias.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -222,10 +225,11 @@ func (daq *DishAliasQuery) IDsX(ctx context.Context) []string {
 
 // Count returns the count of the given query.
 func (daq *DishAliasQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, daq.ctx, "Count")
 	if err := daq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return daq.sqlCount(ctx)
+	return withInterceptors[int](ctx, daq, querierCount[*DishAliasQuery](), daq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -239,10 +243,15 @@ func (daq *DishAliasQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (daq *DishAliasQuery) Exist(ctx context.Context) (bool, error) {
-	if err := daq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, daq.ctx, "Exist")
+	switch _, err := daq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return daq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -262,22 +271,21 @@ func (daq *DishAliasQuery) Clone() *DishAliasQuery {
 	}
 	return &DishAliasQuery{
 		config:     daq.config,
-		limit:      daq.limit,
-		offset:     daq.offset,
-		order:      append([]OrderFunc{}, daq.order...),
+		ctx:        daq.ctx.Clone(),
+		order:      append([]dishalias.OrderOption{}, daq.order...),
+		inters:     append([]Interceptor{}, daq.inters...),
 		predicates: append([]predicate.DishAlias{}, daq.predicates...),
 		withDish:   daq.withDish.Clone(),
 		// clone intermediate query.
-		sql:    daq.sql.Clone(),
-		path:   daq.path,
-		unique: daq.unique,
+		sql:  daq.sql.Clone(),
+		path: daq.path,
 	}
 }
 
 // WithDish tells the query-builder to eager-load the nodes that are connected to
 // the "dish" edge. The optional arguments are used to configure the query builder of the edge.
 func (daq *DishAliasQuery) WithDish(opts ...func(*DishQuery)) *DishAliasQuery {
-	query := &DishQuery{config: daq.config}
+	query := (&DishClient{config: daq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -300,16 +308,11 @@ func (daq *DishAliasQuery) WithDish(opts ...func(*DishQuery)) *DishAliasQuery {
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (daq *DishAliasQuery) GroupBy(field string, fields ...string) *DishAliasGroupBy {
-	grbuild := &DishAliasGroupBy{config: daq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := daq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return daq.sqlQuery(ctx), nil
-	}
+	daq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &DishAliasGroupBy{build: daq}
+	grbuild.flds = &daq.ctx.Fields
 	grbuild.label = dishalias.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -326,11 +329,11 @@ func (daq *DishAliasQuery) GroupBy(field string, fields ...string) *DishAliasGro
 //		Select(dishalias.FieldNormalizedAliasName).
 //		Scan(ctx, &v)
 func (daq *DishAliasQuery) Select(fields ...string) *DishAliasSelect {
-	daq.fields = append(daq.fields, fields...)
-	selbuild := &DishAliasSelect{DishAliasQuery: daq}
-	selbuild.label = dishalias.Label
-	selbuild.flds, selbuild.scan = &daq.fields, selbuild.Scan
-	return selbuild
+	daq.ctx.Fields = append(daq.ctx.Fields, fields...)
+	sbuild := &DishAliasSelect{DishAliasQuery: daq}
+	sbuild.label = dishalias.Label
+	sbuild.flds, sbuild.scan = &daq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a DishAliasSelect configured with the given aggregations.
@@ -339,7 +342,17 @@ func (daq *DishAliasQuery) Aggregate(fns ...AggregateFunc) *DishAliasSelect {
 }
 
 func (daq *DishAliasQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range daq.fields {
+	for _, inter := range daq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, daq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range daq.ctx.Fields {
 		if !dishalias.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -409,6 +422,9 @@ func (daq *DishAliasQuery) loadDish(ctx context.Context, query *DishQuery, nodes
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(dish.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -428,41 +444,22 @@ func (daq *DishAliasQuery) loadDish(ctx context.Context, query *DishQuery, nodes
 
 func (daq *DishAliasQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := daq.querySpec()
-	_spec.Node.Columns = daq.fields
-	if len(daq.fields) > 0 {
-		_spec.Unique = daq.unique != nil && *daq.unique
+	_spec.Node.Columns = daq.ctx.Fields
+	if len(daq.ctx.Fields) > 0 {
+		_spec.Unique = daq.ctx.Unique != nil && *daq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, daq.driver, _spec)
 }
 
-func (daq *DishAliasQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := daq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (daq *DishAliasQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   dishalias.Table,
-			Columns: dishalias.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: dishalias.FieldID,
-			},
-		},
-		From:   daq.sql,
-		Unique: true,
-	}
-	if unique := daq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(dishalias.Table, dishalias.Columns, sqlgraph.NewFieldSpec(dishalias.FieldID, field.TypeString))
+	_spec.From = daq.sql
+	if unique := daq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if daq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := daq.fields; len(fields) > 0 {
+	if fields := daq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, dishalias.FieldID)
 		for i := range fields {
@@ -478,10 +475,10 @@ func (daq *DishAliasQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := daq.limit; limit != nil {
+	if limit := daq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := daq.offset; offset != nil {
+	if offset := daq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := daq.order; len(ps) > 0 {
@@ -497,7 +494,7 @@ func (daq *DishAliasQuery) querySpec() *sqlgraph.QuerySpec {
 func (daq *DishAliasQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(daq.driver.Dialect())
 	t1 := builder.Table(dishalias.Table)
-	columns := daq.fields
+	columns := daq.ctx.Fields
 	if len(columns) == 0 {
 		columns = dishalias.Columns
 	}
@@ -506,7 +503,7 @@ func (daq *DishAliasQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = daq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if daq.unique != nil && *daq.unique {
+	if daq.ctx.Unique != nil && *daq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, p := range daq.predicates {
@@ -515,12 +512,12 @@ func (daq *DishAliasQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range daq.order {
 		p(selector)
 	}
-	if offset := daq.offset; offset != nil {
+	if offset := daq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := daq.limit; limit != nil {
+	if limit := daq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -528,13 +525,8 @@ func (daq *DishAliasQuery) sqlQuery(ctx context.Context) *sql.Selector {
 
 // DishAliasGroupBy is the group-by builder for DishAlias entities.
 type DishAliasGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *DishAliasQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -543,58 +535,46 @@ func (dagb *DishAliasGroupBy) Aggregate(fns ...AggregateFunc) *DishAliasGroupBy 
 	return dagb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (dagb *DishAliasGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := dagb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, dagb.build.ctx, "GroupBy")
+	if err := dagb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	dagb.sql = query
-	return dagb.sqlScan(ctx, v)
+	return scanWithInterceptors[*DishAliasQuery, *DishAliasGroupBy](ctx, dagb.build, dagb, dagb.build.inters, v)
 }
 
-func (dagb *DishAliasGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range dagb.fields {
-		if !dishalias.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (dagb *DishAliasGroupBy) sqlScan(ctx context.Context, root *DishAliasQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(dagb.fns))
+	for _, fn := range dagb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := dagb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*dagb.flds)+len(dagb.fns))
+		for _, f := range *dagb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*dagb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := dagb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := dagb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (dagb *DishAliasGroupBy) sqlQuery() *sql.Selector {
-	selector := dagb.sql.Select()
-	aggregation := make([]string, 0, len(dagb.fns))
-	for _, fn := range dagb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(dagb.fields)+len(dagb.fns))
-		for _, f := range dagb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(dagb.fields...)...)
-}
-
 // DishAliasSelect is the builder for selecting fields of DishAlias entities.
 type DishAliasSelect struct {
 	*DishAliasQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -605,26 +585,27 @@ func (das *DishAliasSelect) Aggregate(fns ...AggregateFunc) *DishAliasSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (das *DishAliasSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, das.ctx, "Select")
 	if err := das.prepareQuery(ctx); err != nil {
 		return err
 	}
-	das.sql = das.DishAliasQuery.sqlQuery(ctx)
-	return das.sqlScan(ctx, v)
+	return scanWithInterceptors[*DishAliasQuery, *DishAliasSelect](ctx, das.DishAliasQuery, das, das.inters, v)
 }
 
-func (das *DishAliasSelect) sqlScan(ctx context.Context, v any) error {
+func (das *DishAliasSelect) sqlScan(ctx context.Context, root *DishAliasQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(das.fns))
 	for _, fn := range das.fns {
-		aggregation = append(aggregation, fn(das.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*das.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		das.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		das.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := das.sql.Query()
+	query, args := selector.Query()
 	if err := das.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"entgo.io/ent"
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/dishalias"
@@ -20,8 +22,6 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/ent/user"
 	"github.com/mensatt/backend/internal/database/schema"
-
-	"entgo.io/ent"
 )
 
 const (
@@ -422,9 +422,24 @@ func (m *DishMutation) Where(ps ...predicate.Dish) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the DishMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DishMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Dish, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *DishMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DishMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (Dish).
@@ -894,9 +909,24 @@ func (m *DishAliasMutation) Where(ps ...predicate.DishAlias) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the DishAliasMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *DishAliasMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.DishAlias, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *DishAliasMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *DishAliasMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (DishAlias).
@@ -1278,9 +1308,24 @@ func (m *ImageMutation) Where(ps ...predicate.Image) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the ImageMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ImageMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Image, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *ImageMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ImageMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (Image).
@@ -1773,9 +1818,24 @@ func (m *LocationMutation) Where(ps ...predicate.Location) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the LocationMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *LocationMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Location, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *LocationMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *LocationMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (Location).
@@ -3329,9 +3389,24 @@ func (m *OccurrenceMutation) Where(ps ...predicate.Occurrence) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the OccurrenceMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *OccurrenceMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Occurrence, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *OccurrenceMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *OccurrenceMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (Occurrence).
@@ -4556,9 +4631,24 @@ func (m *ReviewMutation) Where(ps ...predicate.Review) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the ReviewMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *ReviewMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Review, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *ReviewMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *ReviewMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (Review).
@@ -5266,9 +5356,24 @@ func (m *TagMutation) Where(ps ...predicate.Tag) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the TagMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *TagMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.Tag, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *TagMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *TagMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (Tag).
@@ -5807,9 +5912,24 @@ func (m *UserMutation) Where(ps ...predicate.User) {
 	m.predicates = append(m.predicates, ps...)
 }
 
+// WhereP appends storage-level predicates to the UserMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *UserMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.User, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
 // Op returns the operation name.
 func (m *UserMutation) Op() Op {
 	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *UserMutation) SetOp(op Op) {
+	m.op = op
 }
 
 // Type returns the node type of this mutation (User).

@@ -170,41 +170,8 @@ func (ru *ReviewUpdate) RemoveImages(i ...*Image) *ReviewUpdate {
 
 // Save executes the query and returns the number of nodes affected by the update operation.
 func (ru *ReviewUpdate) Save(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
 	ru.defaults()
-	if len(ru.hooks) == 0 {
-		if err = ru.check(); err != nil {
-			return 0, err
-		}
-		affected, err = ru.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ReviewMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = ru.check(); err != nil {
-				return 0, err
-			}
-			ru.mutation = mutation
-			affected, err = ru.sqlSave(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(ru.hooks) - 1; i >= 0; i-- {
-			if ru.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ru.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, ru.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks(ctx, ru.sqlSave, ru.mutation, ru.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -261,16 +228,10 @@ func (ru *ReviewUpdate) check() error {
 }
 
 func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   review.Table,
-			Columns: review.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: review.FieldID,
-			},
-		},
+	if err := ru.check(); err != nil {
+		return n, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(review.Table, review.Columns, sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID))
 	if ps := ru.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -313,10 +274,7 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -329,10 +287,7 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -348,10 +303,7 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{review.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -364,10 +316,7 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{review.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -383,10 +332,7 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Columns: []string{review.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -402,6 +348,7 @@ func (ru *ReviewUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		return 0, err
 	}
+	ru.mutation.done = true
 	return n, nil
 }
 
@@ -550,6 +497,12 @@ func (ruo *ReviewUpdateOne) RemoveImages(i ...*Image) *ReviewUpdateOne {
 	return ruo.RemoveImageIDs(ids...)
 }
 
+// Where appends a list predicates to the ReviewUpdate builder.
+func (ruo *ReviewUpdateOne) Where(ps ...predicate.Review) *ReviewUpdateOne {
+	ruo.mutation.Where(ps...)
+	return ruo
+}
+
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
 func (ruo *ReviewUpdateOne) Select(field string, fields ...string) *ReviewUpdateOne {
@@ -559,47 +512,8 @@ func (ruo *ReviewUpdateOne) Select(field string, fields ...string) *ReviewUpdate
 
 // Save executes the query and returns the updated Review entity.
 func (ruo *ReviewUpdateOne) Save(ctx context.Context) (*Review, error) {
-	var (
-		err  error
-		node *Review
-	)
 	ruo.defaults()
-	if len(ruo.hooks) == 0 {
-		if err = ruo.check(); err != nil {
-			return nil, err
-		}
-		node, err = ruo.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*ReviewMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = ruo.check(); err != nil {
-				return nil, err
-			}
-			ruo.mutation = mutation
-			node, err = ruo.sqlSave(ctx)
-			mutation.done = true
-			return node, err
-		})
-		for i := len(ruo.hooks) - 1; i >= 0; i-- {
-			if ruo.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = ruo.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, ruo.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Review)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from ReviewMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, ruo.sqlSave, ruo.mutation, ruo.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
@@ -656,16 +570,10 @@ func (ruo *ReviewUpdateOne) check() error {
 }
 
 func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err error) {
-	_spec := &sqlgraph.UpdateSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   review.Table,
-			Columns: review.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: review.FieldID,
-			},
-		},
+	if err := ruo.check(); err != nil {
+		return _node, err
 	}
+	_spec := sqlgraph.NewUpdateSpec(review.Table, review.Columns, sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID))
 	id, ok := ruo.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Review.id" for update`)}
@@ -725,10 +633,7 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -741,10 +646,7 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 			Columns: []string{review.OccurrenceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -760,10 +662,7 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 			Columns: []string{review.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
@@ -776,10 +675,7 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 			Columns: []string{review.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -795,10 +691,7 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 			Columns: []string{review.ImagesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: image.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(image.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -817,5 +710,6 @@ func (ruo *ReviewUpdateOne) sqlSave(ctx context.Context) (_node *Review, err err
 		}
 		return nil, err
 	}
+	ruo.mutation.done = true
 	return _node, nil
 }

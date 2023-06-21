@@ -23,11 +23,9 @@ import (
 // OccurrenceQuery is the builder for querying Occurrence entities.
 type OccurrenceQuery struct {
 	config
-	limit          *int
-	offset         *int
-	unique         *bool
-	order          []OrderFunc
-	fields         []string
+	ctx            *QueryContext
+	order          []occurrence.OrderOption
+	inters         []Interceptor
 	predicates     []predicate.Occurrence
 	withLocation   *LocationQuery
 	withDish       *DishQuery
@@ -46,34 +44,34 @@ func (oq *OccurrenceQuery) Where(ps ...predicate.Occurrence) *OccurrenceQuery {
 	return oq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (oq *OccurrenceQuery) Limit(limit int) *OccurrenceQuery {
-	oq.limit = &limit
+	oq.ctx.Limit = &limit
 	return oq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (oq *OccurrenceQuery) Offset(offset int) *OccurrenceQuery {
-	oq.offset = &offset
+	oq.ctx.Offset = &offset
 	return oq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (oq *OccurrenceQuery) Unique(unique bool) *OccurrenceQuery {
-	oq.unique = &unique
+	oq.ctx.Unique = &unique
 	return oq
 }
 
-// Order adds an order step to the query.
-func (oq *OccurrenceQuery) Order(o ...OrderFunc) *OccurrenceQuery {
+// Order specifies how the records should be ordered.
+func (oq *OccurrenceQuery) Order(o ...occurrence.OrderOption) *OccurrenceQuery {
 	oq.order = append(oq.order, o...)
 	return oq
 }
 
 // QueryLocation chains the current query on the "location" edge.
 func (oq *OccurrenceQuery) QueryLocation() *LocationQuery {
-	query := &LocationQuery{config: oq.config}
+	query := (&LocationClient{config: oq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -95,7 +93,7 @@ func (oq *OccurrenceQuery) QueryLocation() *LocationQuery {
 
 // QueryDish chains the current query on the "dish" edge.
 func (oq *OccurrenceQuery) QueryDish() *DishQuery {
-	query := &DishQuery{config: oq.config}
+	query := (&DishClient{config: oq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -117,7 +115,7 @@ func (oq *OccurrenceQuery) QueryDish() *DishQuery {
 
 // QueryTags chains the current query on the "tags" edge.
 func (oq *OccurrenceQuery) QueryTags() *TagQuery {
-	query := &TagQuery{config: oq.config}
+	query := (&TagClient{config: oq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -139,7 +137,7 @@ func (oq *OccurrenceQuery) QueryTags() *TagQuery {
 
 // QuerySideDishes chains the current query on the "side_dishes" edge.
 func (oq *OccurrenceQuery) QuerySideDishes() *DishQuery {
-	query := &DishQuery{config: oq.config}
+	query := (&DishClient{config: oq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -161,7 +159,7 @@ func (oq *OccurrenceQuery) QuerySideDishes() *DishQuery {
 
 // QueryReviews chains the current query on the "reviews" edge.
 func (oq *OccurrenceQuery) QueryReviews() *ReviewQuery {
-	query := &ReviewQuery{config: oq.config}
+	query := (&ReviewClient{config: oq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := oq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -184,7 +182,7 @@ func (oq *OccurrenceQuery) QueryReviews() *ReviewQuery {
 // First returns the first Occurrence entity from the query.
 // Returns a *NotFoundError when no Occurrence was found.
 func (oq *OccurrenceQuery) First(ctx context.Context) (*Occurrence, error) {
-	nodes, err := oq.Limit(1).All(ctx)
+	nodes, err := oq.Limit(1).All(setContextOp(ctx, oq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +205,7 @@ func (oq *OccurrenceQuery) FirstX(ctx context.Context) *Occurrence {
 // Returns a *NotFoundError when no Occurrence ID was found.
 func (oq *OccurrenceQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = oq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = oq.Limit(1).IDs(setContextOp(ctx, oq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -230,7 +228,7 @@ func (oq *OccurrenceQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one Occurrence entity is found.
 // Returns a *NotFoundError when no Occurrence entities are found.
 func (oq *OccurrenceQuery) Only(ctx context.Context) (*Occurrence, error) {
-	nodes, err := oq.Limit(2).All(ctx)
+	nodes, err := oq.Limit(2).All(setContextOp(ctx, oq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -258,7 +256,7 @@ func (oq *OccurrenceQuery) OnlyX(ctx context.Context) *Occurrence {
 // Returns a *NotFoundError when no entities are found.
 func (oq *OccurrenceQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = oq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = oq.Limit(2).IDs(setContextOp(ctx, oq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -283,10 +281,12 @@ func (oq *OccurrenceQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of Occurrences.
 func (oq *OccurrenceQuery) All(ctx context.Context) ([]*Occurrence, error) {
+	ctx = setContextOp(ctx, oq.ctx, "All")
 	if err := oq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return oq.sqlAll(ctx)
+	qr := querierAll[[]*Occurrence, *OccurrenceQuery]()
+	return withInterceptors[[]*Occurrence](ctx, oq, qr, oq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -299,9 +299,12 @@ func (oq *OccurrenceQuery) AllX(ctx context.Context) []*Occurrence {
 }
 
 // IDs executes the query and returns a list of Occurrence IDs.
-func (oq *OccurrenceQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := oq.Select(occurrence.FieldID).Scan(ctx, &ids); err != nil {
+func (oq *OccurrenceQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if oq.ctx.Unique == nil && oq.path != nil {
+		oq.Unique(true)
+	}
+	ctx = setContextOp(ctx, oq.ctx, "IDs")
+	if err = oq.Select(occurrence.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -318,10 +321,11 @@ func (oq *OccurrenceQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (oq *OccurrenceQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, oq.ctx, "Count")
 	if err := oq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return oq.sqlCount(ctx)
+	return withInterceptors[int](ctx, oq, querierCount[*OccurrenceQuery](), oq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -335,10 +339,15 @@ func (oq *OccurrenceQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (oq *OccurrenceQuery) Exist(ctx context.Context) (bool, error) {
-	if err := oq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, oq.ctx, "Exist")
+	switch _, err := oq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return oq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -358,9 +367,9 @@ func (oq *OccurrenceQuery) Clone() *OccurrenceQuery {
 	}
 	return &OccurrenceQuery{
 		config:         oq.config,
-		limit:          oq.limit,
-		offset:         oq.offset,
-		order:          append([]OrderFunc{}, oq.order...),
+		ctx:            oq.ctx.Clone(),
+		order:          append([]occurrence.OrderOption{}, oq.order...),
+		inters:         append([]Interceptor{}, oq.inters...),
 		predicates:     append([]predicate.Occurrence{}, oq.predicates...),
 		withLocation:   oq.withLocation.Clone(),
 		withDish:       oq.withDish.Clone(),
@@ -368,16 +377,15 @@ func (oq *OccurrenceQuery) Clone() *OccurrenceQuery {
 		withSideDishes: oq.withSideDishes.Clone(),
 		withReviews:    oq.withReviews.Clone(),
 		// clone intermediate query.
-		sql:    oq.sql.Clone(),
-		path:   oq.path,
-		unique: oq.unique,
+		sql:  oq.sql.Clone(),
+		path: oq.path,
 	}
 }
 
 // WithLocation tells the query-builder to eager-load the nodes that are connected to
 // the "location" edge. The optional arguments are used to configure the query builder of the edge.
 func (oq *OccurrenceQuery) WithLocation(opts ...func(*LocationQuery)) *OccurrenceQuery {
-	query := &LocationQuery{config: oq.config}
+	query := (&LocationClient{config: oq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -388,7 +396,7 @@ func (oq *OccurrenceQuery) WithLocation(opts ...func(*LocationQuery)) *Occurrenc
 // WithDish tells the query-builder to eager-load the nodes that are connected to
 // the "dish" edge. The optional arguments are used to configure the query builder of the edge.
 func (oq *OccurrenceQuery) WithDish(opts ...func(*DishQuery)) *OccurrenceQuery {
-	query := &DishQuery{config: oq.config}
+	query := (&DishClient{config: oq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -399,7 +407,7 @@ func (oq *OccurrenceQuery) WithDish(opts ...func(*DishQuery)) *OccurrenceQuery {
 // WithTags tells the query-builder to eager-load the nodes that are connected to
 // the "tags" edge. The optional arguments are used to configure the query builder of the edge.
 func (oq *OccurrenceQuery) WithTags(opts ...func(*TagQuery)) *OccurrenceQuery {
-	query := &TagQuery{config: oq.config}
+	query := (&TagClient{config: oq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -410,7 +418,7 @@ func (oq *OccurrenceQuery) WithTags(opts ...func(*TagQuery)) *OccurrenceQuery {
 // WithSideDishes tells the query-builder to eager-load the nodes that are connected to
 // the "side_dishes" edge. The optional arguments are used to configure the query builder of the edge.
 func (oq *OccurrenceQuery) WithSideDishes(opts ...func(*DishQuery)) *OccurrenceQuery {
-	query := &DishQuery{config: oq.config}
+	query := (&DishClient{config: oq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -421,7 +429,7 @@ func (oq *OccurrenceQuery) WithSideDishes(opts ...func(*DishQuery)) *OccurrenceQ
 // WithReviews tells the query-builder to eager-load the nodes that are connected to
 // the "reviews" edge. The optional arguments are used to configure the query builder of the edge.
 func (oq *OccurrenceQuery) WithReviews(opts ...func(*ReviewQuery)) *OccurrenceQuery {
-	query := &ReviewQuery{config: oq.config}
+	query := (&ReviewClient{config: oq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -444,16 +452,11 @@ func (oq *OccurrenceQuery) WithReviews(opts ...func(*ReviewQuery)) *OccurrenceQu
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (oq *OccurrenceQuery) GroupBy(field string, fields ...string) *OccurrenceGroupBy {
-	grbuild := &OccurrenceGroupBy{config: oq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := oq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return oq.sqlQuery(ctx), nil
-	}
+	oq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &OccurrenceGroupBy{build: oq}
+	grbuild.flds = &oq.ctx.Fields
 	grbuild.label = occurrence.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -470,11 +473,11 @@ func (oq *OccurrenceQuery) GroupBy(field string, fields ...string) *OccurrenceGr
 //		Select(occurrence.FieldDate).
 //		Scan(ctx, &v)
 func (oq *OccurrenceQuery) Select(fields ...string) *OccurrenceSelect {
-	oq.fields = append(oq.fields, fields...)
-	selbuild := &OccurrenceSelect{OccurrenceQuery: oq}
-	selbuild.label = occurrence.Label
-	selbuild.flds, selbuild.scan = &oq.fields, selbuild.Scan
-	return selbuild
+	oq.ctx.Fields = append(oq.ctx.Fields, fields...)
+	sbuild := &OccurrenceSelect{OccurrenceQuery: oq}
+	sbuild.label = occurrence.Label
+	sbuild.flds, sbuild.scan = &oq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a OccurrenceSelect configured with the given aggregations.
@@ -483,7 +486,17 @@ func (oq *OccurrenceQuery) Aggregate(fns ...AggregateFunc) *OccurrenceSelect {
 }
 
 func (oq *OccurrenceQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range oq.fields {
+	for _, inter := range oq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, oq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range oq.ctx.Fields {
 		if !occurrence.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -584,6 +597,9 @@ func (oq *OccurrenceQuery) loadLocation(ctx context.Context, query *LocationQuer
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(location.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -612,6 +628,9 @@ func (oq *OccurrenceQuery) loadDish(ctx context.Context, query *DishQuery, nodes
 			ids = append(ids, fk)
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
 	}
 	query.Where(dish.IDIn(ids...))
 	neighbors, err := query.All(ctx)
@@ -652,27 +671,30 @@ func (oq *OccurrenceQuery) loadTags(ctx context.Context, query *TagQuery, nodes 
 	if err := query.prepareQuery(ctx); err != nil {
 		return err
 	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
 			}
-			return append([]any{new(uuid.UUID)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := *values[0].(*uuid.UUID)
-			inValue := values[1].(*sql.NullString).String
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Occurrence]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := values[1].(*sql.NullString).String
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Occurrence]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
 			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
+		})
 	})
+	neighbors, err := withInterceptors[[]*Tag](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
@@ -710,27 +732,30 @@ func (oq *OccurrenceQuery) loadSideDishes(ctx context.Context, query *DishQuery,
 	if err := query.prepareQuery(ctx); err != nil {
 		return err
 	}
-	neighbors, err := query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-		assign := spec.Assign
-		values := spec.ScanValues
-		spec.ScanValues = func(columns []string) ([]any, error) {
-			values, err := values(columns[1:])
-			if err != nil {
-				return nil, err
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
 			}
-			return append([]any{new(uuid.UUID)}, values...), nil
-		}
-		spec.Assign = func(columns []string, values []any) error {
-			outValue := *values[0].(*uuid.UUID)
-			inValue := *values[1].(*uuid.UUID)
-			if nids[inValue] == nil {
-				nids[inValue] = map[*Occurrence]struct{}{byID[outValue]: {}}
-				return assign(columns[1:], values[1:])
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*Occurrence]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
 			}
-			nids[inValue][byID[outValue]] = struct{}{}
-			return nil
-		}
+		})
 	})
+	neighbors, err := withInterceptors[[]*Dish](ctx, query, qr, query.inters)
 	if err != nil {
 		return err
 	}
@@ -757,7 +782,7 @@ func (oq *OccurrenceQuery) loadReviews(ctx context.Context, query *ReviewQuery, 
 	}
 	query.withFKs = true
 	query.Where(predicate.Review(func(s *sql.Selector) {
-		s.Where(sql.InValues(occurrence.ReviewsColumn, fks...))
+		s.Where(sql.InValues(s.C(occurrence.ReviewsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -770,7 +795,7 @@ func (oq *OccurrenceQuery) loadReviews(ctx context.Context, query *ReviewQuery, 
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "occurrence" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "occurrence" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -779,41 +804,22 @@ func (oq *OccurrenceQuery) loadReviews(ctx context.Context, query *ReviewQuery, 
 
 func (oq *OccurrenceQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := oq.querySpec()
-	_spec.Node.Columns = oq.fields
-	if len(oq.fields) > 0 {
-		_spec.Unique = oq.unique != nil && *oq.unique
+	_spec.Node.Columns = oq.ctx.Fields
+	if len(oq.ctx.Fields) > 0 {
+		_spec.Unique = oq.ctx.Unique != nil && *oq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, oq.driver, _spec)
 }
 
-func (oq *OccurrenceQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := oq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (oq *OccurrenceQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   occurrence.Table,
-			Columns: occurrence.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: occurrence.FieldID,
-			},
-		},
-		From:   oq.sql,
-		Unique: true,
-	}
-	if unique := oq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(occurrence.Table, occurrence.Columns, sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID))
+	_spec.From = oq.sql
+	if unique := oq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if oq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := oq.fields; len(fields) > 0 {
+	if fields := oq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, occurrence.FieldID)
 		for i := range fields {
@@ -829,10 +835,10 @@ func (oq *OccurrenceQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := oq.limit; limit != nil {
+	if limit := oq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := oq.offset; offset != nil {
+	if offset := oq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := oq.order; len(ps) > 0 {
@@ -848,7 +854,7 @@ func (oq *OccurrenceQuery) querySpec() *sqlgraph.QuerySpec {
 func (oq *OccurrenceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(oq.driver.Dialect())
 	t1 := builder.Table(occurrence.Table)
-	columns := oq.fields
+	columns := oq.ctx.Fields
 	if len(columns) == 0 {
 		columns = occurrence.Columns
 	}
@@ -857,7 +863,7 @@ func (oq *OccurrenceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = oq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if oq.unique != nil && *oq.unique {
+	if oq.ctx.Unique != nil && *oq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, p := range oq.predicates {
@@ -866,12 +872,12 @@ func (oq *OccurrenceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range oq.order {
 		p(selector)
 	}
-	if offset := oq.offset; offset != nil {
+	if offset := oq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := oq.limit; limit != nil {
+	if limit := oq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -879,13 +885,8 @@ func (oq *OccurrenceQuery) sqlQuery(ctx context.Context) *sql.Selector {
 
 // OccurrenceGroupBy is the group-by builder for Occurrence entities.
 type OccurrenceGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *OccurrenceQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -894,58 +895,46 @@ func (ogb *OccurrenceGroupBy) Aggregate(fns ...AggregateFunc) *OccurrenceGroupBy
 	return ogb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (ogb *OccurrenceGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := ogb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, ogb.build.ctx, "GroupBy")
+	if err := ogb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	ogb.sql = query
-	return ogb.sqlScan(ctx, v)
+	return scanWithInterceptors[*OccurrenceQuery, *OccurrenceGroupBy](ctx, ogb.build, ogb, ogb.build.inters, v)
 }
 
-func (ogb *OccurrenceGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range ogb.fields {
-		if !occurrence.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (ogb *OccurrenceGroupBy) sqlScan(ctx context.Context, root *OccurrenceQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(ogb.fns))
+	for _, fn := range ogb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := ogb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*ogb.flds)+len(ogb.fns))
+		for _, f := range *ogb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*ogb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := ogb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := ogb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (ogb *OccurrenceGroupBy) sqlQuery() *sql.Selector {
-	selector := ogb.sql.Select()
-	aggregation := make([]string, 0, len(ogb.fns))
-	for _, fn := range ogb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(ogb.fields)+len(ogb.fns))
-		for _, f := range ogb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(ogb.fields...)...)
-}
-
 // OccurrenceSelect is the builder for selecting fields of Occurrence entities.
 type OccurrenceSelect struct {
 	*OccurrenceQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -956,26 +945,27 @@ func (os *OccurrenceSelect) Aggregate(fns ...AggregateFunc) *OccurrenceSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (os *OccurrenceSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, os.ctx, "Select")
 	if err := os.prepareQuery(ctx); err != nil {
 		return err
 	}
-	os.sql = os.OccurrenceQuery.sqlQuery(ctx)
-	return os.sqlScan(ctx, v)
+	return scanWithInterceptors[*OccurrenceQuery, *OccurrenceSelect](ctx, os.OccurrenceQuery, os, os.inters, v)
 }
 
-func (os *OccurrenceSelect) sqlScan(ctx context.Context, v any) error {
+func (os *OccurrenceSelect) sqlScan(ctx context.Context, root *OccurrenceQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(os.fns))
 	for _, fn := range os.fns {
-		aggregation = append(aggregation, fn(os.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*os.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		os.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		os.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := os.sql.Query()
+	query, args := selector.Query()
 	if err := os.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

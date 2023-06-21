@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/dish"
@@ -50,9 +51,10 @@ type Occurrence struct {
 	PriceGuest *int `json:"price_guest,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OccurrenceQuery when eager-loading is set.
-	Edges    OccurrenceEdges `json:"edges"`
-	dish     *uuid.UUID
-	location *uuid.UUID
+	Edges        OccurrenceEdges `json:"edges"`
+	dish         *uuid.UUID
+	location     *uuid.UUID
+	selectValues sql.SelectValues
 }
 
 // OccurrenceEdges holds the relations/edges for other nodes in the graph.
@@ -143,7 +145,7 @@ func (*Occurrence) scanValues(columns []string) ([]any, error) {
 		case occurrence.ForeignKeys[1]: // location
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Occurrence", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -273,41 +275,49 @@ func (o *Occurrence) assignValues(columns []string, values []any) error {
 				o.location = new(uuid.UUID)
 				*o.location = *value.S.(*uuid.UUID)
 			}
+		default:
+			o.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
+// Value returns the ent.Value that was dynamically selected and assigned to the Occurrence.
+// This includes values selected through modifiers, order, etc.
+func (o *Occurrence) Value(name string) (ent.Value, error) {
+	return o.selectValues.Get(name)
+}
+
 // QueryLocation queries the "location" edge of the Occurrence entity.
 func (o *Occurrence) QueryLocation() *LocationQuery {
-	return (&OccurrenceClient{config: o.config}).QueryLocation(o)
+	return NewOccurrenceClient(o.config).QueryLocation(o)
 }
 
 // QueryDish queries the "dish" edge of the Occurrence entity.
 func (o *Occurrence) QueryDish() *DishQuery {
-	return (&OccurrenceClient{config: o.config}).QueryDish(o)
+	return NewOccurrenceClient(o.config).QueryDish(o)
 }
 
 // QueryTags queries the "tags" edge of the Occurrence entity.
 func (o *Occurrence) QueryTags() *TagQuery {
-	return (&OccurrenceClient{config: o.config}).QueryTags(o)
+	return NewOccurrenceClient(o.config).QueryTags(o)
 }
 
 // QuerySideDishes queries the "side_dishes" edge of the Occurrence entity.
 func (o *Occurrence) QuerySideDishes() *DishQuery {
-	return (&OccurrenceClient{config: o.config}).QuerySideDishes(o)
+	return NewOccurrenceClient(o.config).QuerySideDishes(o)
 }
 
 // QueryReviews queries the "reviews" edge of the Occurrence entity.
 func (o *Occurrence) QueryReviews() *ReviewQuery {
-	return (&OccurrenceClient{config: o.config}).QueryReviews(o)
+	return NewOccurrenceClient(o.config).QueryReviews(o)
 }
 
 // Update returns a builder for updating this Occurrence.
 // Note that you need to call Occurrence.Unwrap() before calling this method if this Occurrence
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (o *Occurrence) Update() *OccurrenceUpdateOne {
-	return (&OccurrenceClient{config: o.config}).UpdateOne(o)
+	return NewOccurrenceClient(o.config).UpdateOne(o)
 }
 
 // Unwrap unwraps the Occurrence entity that was returned from a transaction after it was closed,
@@ -397,9 +407,3 @@ func (o *Occurrence) String() string {
 
 // Occurrences is a parsable slice of Occurrence.
 type Occurrences []*Occurrence
-
-func (o Occurrences) config(cfg config) {
-	for _i := range o {
-		o[_i].config = cfg
-	}
-}

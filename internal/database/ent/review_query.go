@@ -21,11 +21,9 @@ import (
 // ReviewQuery is the builder for querying Review entities.
 type ReviewQuery struct {
 	config
-	limit          *int
-	offset         *int
-	unique         *bool
-	order          []OrderFunc
-	fields         []string
+	ctx            *QueryContext
+	order          []review.OrderOption
+	inters         []Interceptor
 	predicates     []predicate.Review
 	withOccurrence *OccurrenceQuery
 	withImages     *ImageQuery
@@ -41,34 +39,34 @@ func (rq *ReviewQuery) Where(ps ...predicate.Review) *ReviewQuery {
 	return rq
 }
 
-// Limit adds a limit step to the query.
+// Limit the number of records to be returned by this query.
 func (rq *ReviewQuery) Limit(limit int) *ReviewQuery {
-	rq.limit = &limit
+	rq.ctx.Limit = &limit
 	return rq
 }
 
-// Offset adds an offset step to the query.
+// Offset to start from.
 func (rq *ReviewQuery) Offset(offset int) *ReviewQuery {
-	rq.offset = &offset
+	rq.ctx.Offset = &offset
 	return rq
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
 func (rq *ReviewQuery) Unique(unique bool) *ReviewQuery {
-	rq.unique = &unique
+	rq.ctx.Unique = &unique
 	return rq
 }
 
-// Order adds an order step to the query.
-func (rq *ReviewQuery) Order(o ...OrderFunc) *ReviewQuery {
+// Order specifies how the records should be ordered.
+func (rq *ReviewQuery) Order(o ...review.OrderOption) *ReviewQuery {
 	rq.order = append(rq.order, o...)
 	return rq
 }
 
 // QueryOccurrence chains the current query on the "occurrence" edge.
 func (rq *ReviewQuery) QueryOccurrence() *OccurrenceQuery {
-	query := &OccurrenceQuery{config: rq.config}
+	query := (&OccurrenceClient{config: rq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := rq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -90,7 +88,7 @@ func (rq *ReviewQuery) QueryOccurrence() *OccurrenceQuery {
 
 // QueryImages chains the current query on the "images" edge.
 func (rq *ReviewQuery) QueryImages() *ImageQuery {
-	query := &ImageQuery{config: rq.config}
+	query := (&ImageClient{config: rq.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := rq.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -113,7 +111,7 @@ func (rq *ReviewQuery) QueryImages() *ImageQuery {
 // First returns the first Review entity from the query.
 // Returns a *NotFoundError when no Review was found.
 func (rq *ReviewQuery) First(ctx context.Context) (*Review, error) {
-	nodes, err := rq.Limit(1).All(ctx)
+	nodes, err := rq.Limit(1).All(setContextOp(ctx, rq.ctx, "First"))
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +134,7 @@ func (rq *ReviewQuery) FirstX(ctx context.Context) *Review {
 // Returns a *NotFoundError when no Review ID was found.
 func (rq *ReviewQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = rq.Limit(1).IDs(ctx); err != nil {
+	if ids, err = rq.Limit(1).IDs(setContextOp(ctx, rq.ctx, "FirstID")); err != nil {
 		return
 	}
 	if len(ids) == 0 {
@@ -159,7 +157,7 @@ func (rq *ReviewQuery) FirstIDX(ctx context.Context) uuid.UUID {
 // Returns a *NotSingularError when more than one Review entity is found.
 // Returns a *NotFoundError when no Review entities are found.
 func (rq *ReviewQuery) Only(ctx context.Context) (*Review, error) {
-	nodes, err := rq.Limit(2).All(ctx)
+	nodes, err := rq.Limit(2).All(setContextOp(ctx, rq.ctx, "Only"))
 	if err != nil {
 		return nil, err
 	}
@@ -187,7 +185,7 @@ func (rq *ReviewQuery) OnlyX(ctx context.Context) *Review {
 // Returns a *NotFoundError when no entities are found.
 func (rq *ReviewQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
-	if ids, err = rq.Limit(2).IDs(ctx); err != nil {
+	if ids, err = rq.Limit(2).IDs(setContextOp(ctx, rq.ctx, "OnlyID")); err != nil {
 		return
 	}
 	switch len(ids) {
@@ -212,10 +210,12 @@ func (rq *ReviewQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 
 // All executes the query and returns a list of Reviews.
 func (rq *ReviewQuery) All(ctx context.Context) ([]*Review, error) {
+	ctx = setContextOp(ctx, rq.ctx, "All")
 	if err := rq.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	return rq.sqlAll(ctx)
+	qr := querierAll[[]*Review, *ReviewQuery]()
+	return withInterceptors[[]*Review](ctx, rq, qr, rq.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
@@ -228,9 +228,12 @@ func (rq *ReviewQuery) AllX(ctx context.Context) []*Review {
 }
 
 // IDs executes the query and returns a list of Review IDs.
-func (rq *ReviewQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
-	if err := rq.Select(review.FieldID).Scan(ctx, &ids); err != nil {
+func (rq *ReviewQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+	if rq.ctx.Unique == nil && rq.path != nil {
+		rq.Unique(true)
+	}
+	ctx = setContextOp(ctx, rq.ctx, "IDs")
+	if err = rq.Select(review.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
@@ -247,10 +250,11 @@ func (rq *ReviewQuery) IDsX(ctx context.Context) []uuid.UUID {
 
 // Count returns the count of the given query.
 func (rq *ReviewQuery) Count(ctx context.Context) (int, error) {
+	ctx = setContextOp(ctx, rq.ctx, "Count")
 	if err := rq.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return rq.sqlCount(ctx)
+	return withInterceptors[int](ctx, rq, querierCount[*ReviewQuery](), rq.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
@@ -264,10 +268,15 @@ func (rq *ReviewQuery) CountX(ctx context.Context) int {
 
 // Exist returns true if the query has elements in the graph.
 func (rq *ReviewQuery) Exist(ctx context.Context) (bool, error) {
-	if err := rq.prepareQuery(ctx); err != nil {
-		return false, err
+	ctx = setContextOp(ctx, rq.ctx, "Exist")
+	switch _, err := rq.FirstID(ctx); {
+	case IsNotFound(err):
+		return false, nil
+	case err != nil:
+		return false, fmt.Errorf("ent: check existence: %w", err)
+	default:
+		return true, nil
 	}
-	return rq.sqlExist(ctx)
 }
 
 // ExistX is like Exist, but panics if an error occurs.
@@ -287,23 +296,22 @@ func (rq *ReviewQuery) Clone() *ReviewQuery {
 	}
 	return &ReviewQuery{
 		config:         rq.config,
-		limit:          rq.limit,
-		offset:         rq.offset,
-		order:          append([]OrderFunc{}, rq.order...),
+		ctx:            rq.ctx.Clone(),
+		order:          append([]review.OrderOption{}, rq.order...),
+		inters:         append([]Interceptor{}, rq.inters...),
 		predicates:     append([]predicate.Review{}, rq.predicates...),
 		withOccurrence: rq.withOccurrence.Clone(),
 		withImages:     rq.withImages.Clone(),
 		// clone intermediate query.
-		sql:    rq.sql.Clone(),
-		path:   rq.path,
-		unique: rq.unique,
+		sql:  rq.sql.Clone(),
+		path: rq.path,
 	}
 }
 
 // WithOccurrence tells the query-builder to eager-load the nodes that are connected to
 // the "occurrence" edge. The optional arguments are used to configure the query builder of the edge.
 func (rq *ReviewQuery) WithOccurrence(opts ...func(*OccurrenceQuery)) *ReviewQuery {
-	query := &OccurrenceQuery{config: rq.config}
+	query := (&OccurrenceClient{config: rq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -314,7 +322,7 @@ func (rq *ReviewQuery) WithOccurrence(opts ...func(*OccurrenceQuery)) *ReviewQue
 // WithImages tells the query-builder to eager-load the nodes that are connected to
 // the "images" edge. The optional arguments are used to configure the query builder of the edge.
 func (rq *ReviewQuery) WithImages(opts ...func(*ImageQuery)) *ReviewQuery {
-	query := &ImageQuery{config: rq.config}
+	query := (&ImageClient{config: rq.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -337,16 +345,11 @@ func (rq *ReviewQuery) WithImages(opts ...func(*ImageQuery)) *ReviewQuery {
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 func (rq *ReviewQuery) GroupBy(field string, fields ...string) *ReviewGroupBy {
-	grbuild := &ReviewGroupBy{config: rq.config}
-	grbuild.fields = append([]string{field}, fields...)
-	grbuild.path = func(ctx context.Context) (prev *sql.Selector, err error) {
-		if err := rq.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		return rq.sqlQuery(ctx), nil
-	}
+	rq.ctx.Fields = append([]string{field}, fields...)
+	grbuild := &ReviewGroupBy{build: rq}
+	grbuild.flds = &rq.ctx.Fields
 	grbuild.label = review.Label
-	grbuild.flds, grbuild.scan = &grbuild.fields, grbuild.Scan
+	grbuild.scan = grbuild.Scan
 	return grbuild
 }
 
@@ -363,11 +366,11 @@ func (rq *ReviewQuery) GroupBy(field string, fields ...string) *ReviewGroupBy {
 //		Select(review.FieldDisplayName).
 //		Scan(ctx, &v)
 func (rq *ReviewQuery) Select(fields ...string) *ReviewSelect {
-	rq.fields = append(rq.fields, fields...)
-	selbuild := &ReviewSelect{ReviewQuery: rq}
-	selbuild.label = review.Label
-	selbuild.flds, selbuild.scan = &rq.fields, selbuild.Scan
-	return selbuild
+	rq.ctx.Fields = append(rq.ctx.Fields, fields...)
+	sbuild := &ReviewSelect{ReviewQuery: rq}
+	sbuild.label = review.Label
+	sbuild.flds, sbuild.scan = &rq.ctx.Fields, sbuild.Scan
+	return sbuild
 }
 
 // Aggregate returns a ReviewSelect configured with the given aggregations.
@@ -376,7 +379,17 @@ func (rq *ReviewQuery) Aggregate(fns ...AggregateFunc) *ReviewSelect {
 }
 
 func (rq *ReviewQuery) prepareQuery(ctx context.Context) error {
-	for _, f := range rq.fields {
+	for _, inter := range rq.inters {
+		if inter == nil {
+			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
+		}
+		if trv, ok := inter.(Traverser); ok {
+			if err := trv.Traverse(ctx, rq); err != nil {
+				return err
+			}
+		}
+	}
+	for _, f := range rq.ctx.Fields {
 		if !review.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
@@ -454,6 +467,9 @@ func (rq *ReviewQuery) loadOccurrence(ctx context.Context, query *OccurrenceQuer
 		}
 		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
+	if len(ids) == 0 {
+		return nil
+	}
 	query.Where(occurrence.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -482,7 +498,7 @@ func (rq *ReviewQuery) loadImages(ctx context.Context, query *ImageQuery, nodes 
 	}
 	query.withFKs = true
 	query.Where(predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.InValues(review.ImagesColumn, fks...))
+		s.Where(sql.InValues(s.C(review.ImagesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -495,7 +511,7 @@ func (rq *ReviewQuery) loadImages(ctx context.Context, query *ImageQuery, nodes 
 		}
 		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "review" returned %v for node %v`, *fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "review" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -504,41 +520,22 @@ func (rq *ReviewQuery) loadImages(ctx context.Context, query *ImageQuery, nodes 
 
 func (rq *ReviewQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := rq.querySpec()
-	_spec.Node.Columns = rq.fields
-	if len(rq.fields) > 0 {
-		_spec.Unique = rq.unique != nil && *rq.unique
+	_spec.Node.Columns = rq.ctx.Fields
+	if len(rq.ctx.Fields) > 0 {
+		_spec.Unique = rq.ctx.Unique != nil && *rq.ctx.Unique
 	}
 	return sqlgraph.CountNodes(ctx, rq.driver, _spec)
 }
 
-func (rq *ReviewQuery) sqlExist(ctx context.Context) (bool, error) {
-	switch _, err := rq.FirstID(ctx); {
-	case IsNotFound(err):
-		return false, nil
-	case err != nil:
-		return false, fmt.Errorf("ent: check existence: %w", err)
-	default:
-		return true, nil
-	}
-}
-
 func (rq *ReviewQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := &sqlgraph.QuerySpec{
-		Node: &sqlgraph.NodeSpec{
-			Table:   review.Table,
-			Columns: review.Columns,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: review.FieldID,
-			},
-		},
-		From:   rq.sql,
-		Unique: true,
-	}
-	if unique := rq.unique; unique != nil {
+	_spec := sqlgraph.NewQuerySpec(review.Table, review.Columns, sqlgraph.NewFieldSpec(review.FieldID, field.TypeUUID))
+	_spec.From = rq.sql
+	if unique := rq.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
+	} else if rq.path != nil {
+		_spec.Unique = true
 	}
-	if fields := rq.fields; len(fields) > 0 {
+	if fields := rq.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
 		_spec.Node.Columns = append(_spec.Node.Columns, review.FieldID)
 		for i := range fields {
@@ -554,10 +551,10 @@ func (rq *ReviewQuery) querySpec() *sqlgraph.QuerySpec {
 			}
 		}
 	}
-	if limit := rq.limit; limit != nil {
+	if limit := rq.ctx.Limit; limit != nil {
 		_spec.Limit = *limit
 	}
-	if offset := rq.offset; offset != nil {
+	if offset := rq.ctx.Offset; offset != nil {
 		_spec.Offset = *offset
 	}
 	if ps := rq.order; len(ps) > 0 {
@@ -573,7 +570,7 @@ func (rq *ReviewQuery) querySpec() *sqlgraph.QuerySpec {
 func (rq *ReviewQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(rq.driver.Dialect())
 	t1 := builder.Table(review.Table)
-	columns := rq.fields
+	columns := rq.ctx.Fields
 	if len(columns) == 0 {
 		columns = review.Columns
 	}
@@ -582,7 +579,7 @@ func (rq *ReviewQuery) sqlQuery(ctx context.Context) *sql.Selector {
 		selector = rq.sql
 		selector.Select(selector.Columns(columns...)...)
 	}
-	if rq.unique != nil && *rq.unique {
+	if rq.ctx.Unique != nil && *rq.ctx.Unique {
 		selector.Distinct()
 	}
 	for _, p := range rq.predicates {
@@ -591,12 +588,12 @@ func (rq *ReviewQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	for _, p := range rq.order {
 		p(selector)
 	}
-	if offset := rq.offset; offset != nil {
+	if offset := rq.ctx.Offset; offset != nil {
 		// limit is mandatory for offset clause. We start
 		// with default value, and override it below if needed.
 		selector.Offset(*offset).Limit(math.MaxInt32)
 	}
-	if limit := rq.limit; limit != nil {
+	if limit := rq.ctx.Limit; limit != nil {
 		selector.Limit(*limit)
 	}
 	return selector
@@ -604,13 +601,8 @@ func (rq *ReviewQuery) sqlQuery(ctx context.Context) *sql.Selector {
 
 // ReviewGroupBy is the group-by builder for Review entities.
 type ReviewGroupBy struct {
-	config
 	selector
-	fields []string
-	fns    []AggregateFunc
-	// intermediate query (i.e. traversal path).
-	sql  *sql.Selector
-	path func(context.Context) (*sql.Selector, error)
+	build *ReviewQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
@@ -619,58 +611,46 @@ func (rgb *ReviewGroupBy) Aggregate(fns ...AggregateFunc) *ReviewGroupBy {
 	return rgb
 }
 
-// Scan applies the group-by query and scans the result into the given value.
+// Scan applies the selector query and scans the result into the given value.
 func (rgb *ReviewGroupBy) Scan(ctx context.Context, v any) error {
-	query, err := rgb.path(ctx)
-	if err != nil {
+	ctx = setContextOp(ctx, rgb.build.ctx, "GroupBy")
+	if err := rgb.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	rgb.sql = query
-	return rgb.sqlScan(ctx, v)
+	return scanWithInterceptors[*ReviewQuery, *ReviewGroupBy](ctx, rgb.build, rgb, rgb.build.inters, v)
 }
 
-func (rgb *ReviewGroupBy) sqlScan(ctx context.Context, v any) error {
-	for _, f := range rgb.fields {
-		if !review.ValidColumn(f) {
-			return &ValidationError{Name: f, err: fmt.Errorf("invalid field %q for group-by", f)}
-		}
+func (rgb *ReviewGroupBy) sqlScan(ctx context.Context, root *ReviewQuery, v any) error {
+	selector := root.sqlQuery(ctx).Select()
+	aggregation := make([]string, 0, len(rgb.fns))
+	for _, fn := range rgb.fns {
+		aggregation = append(aggregation, fn(selector))
 	}
-	selector := rgb.sqlQuery()
+	if len(selector.SelectedColumns()) == 0 {
+		columns := make([]string, 0, len(*rgb.flds)+len(rgb.fns))
+		for _, f := range *rgb.flds {
+			columns = append(columns, selector.C(f))
+		}
+		columns = append(columns, aggregation...)
+		selector.Select(columns...)
+	}
+	selector.GroupBy(selector.Columns(*rgb.flds...)...)
 	if err := selector.Err(); err != nil {
 		return err
 	}
 	rows := &sql.Rows{}
 	query, args := selector.Query()
-	if err := rgb.driver.Query(ctx, query, args, rows); err != nil {
+	if err := rgb.build.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}
 	defer rows.Close()
 	return sql.ScanSlice(rows, v)
 }
 
-func (rgb *ReviewGroupBy) sqlQuery() *sql.Selector {
-	selector := rgb.sql.Select()
-	aggregation := make([]string, 0, len(rgb.fns))
-	for _, fn := range rgb.fns {
-		aggregation = append(aggregation, fn(selector))
-	}
-	if len(selector.SelectedColumns()) == 0 {
-		columns := make([]string, 0, len(rgb.fields)+len(rgb.fns))
-		for _, f := range rgb.fields {
-			columns = append(columns, selector.C(f))
-		}
-		columns = append(columns, aggregation...)
-		selector.Select(columns...)
-	}
-	return selector.GroupBy(selector.Columns(rgb.fields...)...)
-}
-
 // ReviewSelect is the builder for selecting fields of Review entities.
 type ReviewSelect struct {
 	*ReviewQuery
 	selector
-	// intermediate query (i.e. traversal path).
-	sql *sql.Selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
@@ -681,26 +661,27 @@ func (rs *ReviewSelect) Aggregate(fns ...AggregateFunc) *ReviewSelect {
 
 // Scan applies the selector query and scans the result into the given value.
 func (rs *ReviewSelect) Scan(ctx context.Context, v any) error {
+	ctx = setContextOp(ctx, rs.ctx, "Select")
 	if err := rs.prepareQuery(ctx); err != nil {
 		return err
 	}
-	rs.sql = rs.ReviewQuery.sqlQuery(ctx)
-	return rs.sqlScan(ctx, v)
+	return scanWithInterceptors[*ReviewQuery, *ReviewSelect](ctx, rs.ReviewQuery, rs, rs.inters, v)
 }
 
-func (rs *ReviewSelect) sqlScan(ctx context.Context, v any) error {
+func (rs *ReviewSelect) sqlScan(ctx context.Context, root *ReviewQuery, v any) error {
+	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(rs.fns))
 	for _, fn := range rs.fns {
-		aggregation = append(aggregation, fn(rs.sql))
+		aggregation = append(aggregation, fn(selector))
 	}
 	switch n := len(*rs.selector.flds); {
 	case n == 0 && len(aggregation) > 0:
-		rs.sql.Select(aggregation...)
+		selector.Select(aggregation...)
 	case n != 0 && len(aggregation) > 0:
-		rs.sql.AppendSelect(aggregation...)
+		selector.AppendSelect(aggregation...)
 	}
 	rows := &sql.Rows{}
-	query, args := rs.sql.Query()
+	query, args := selector.Query()
 	if err := rs.driver.Query(ctx, query, args, rows); err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/schema"
@@ -28,7 +29,8 @@ type Tag struct {
 	IsAllergy bool `json:"is_allergy,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TagQuery when eager-loading is set.
-	Edges TagEdges `json:"edges"`
+	Edges        TagEdges `json:"edges"`
+	selectValues sql.SelectValues
 }
 
 // TagEdges holds the relations/edges for other nodes in the graph.
@@ -59,7 +61,7 @@ func (*Tag) scanValues(columns []string) ([]any, error) {
 		case tag.FieldID, tag.FieldName, tag.FieldDescription, tag.FieldShortName, tag.FieldPriority:
 			values[i] = new(sql.NullString)
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type Tag", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -110,21 +112,29 @@ func (t *Tag) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				t.IsAllergy = value.Bool
 			}
+		default:
+			t.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
+// Value returns the ent.Value that was dynamically selected and assigned to the Tag.
+// This includes values selected through modifiers, order, etc.
+func (t *Tag) Value(name string) (ent.Value, error) {
+	return t.selectValues.Get(name)
+}
+
 // QueryOccurrence queries the "occurrence" edge of the Tag entity.
 func (t *Tag) QueryOccurrence() *OccurrenceQuery {
-	return (&TagClient{config: t.config}).QueryOccurrence(t)
+	return NewTagClient(t.config).QueryOccurrence(t)
 }
 
 // Update returns a builder for updating this Tag.
 // Note that you need to call Tag.Unwrap() before calling this method if this Tag
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (t *Tag) Update() *TagUpdateOne {
-	return (&TagClient{config: t.config}).UpdateOne(t)
+	return NewTagClient(t.config).UpdateOne(t)
 }
 
 // Unwrap unwraps the Tag entity that was returned from a transaction after it was closed,
@@ -165,9 +175,3 @@ func (t *Tag) String() string {
 
 // Tags is a parsable slice of Tag.
 type Tags []*Tag
-
-func (t Tags) config(cfg config) {
-	for _i := range t {
-		t[_i].config = cfg
-	}
-}

@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -28,34 +27,7 @@ func (dad *DishAliasDelete) Where(ps ...predicate.DishAlias) *DishAliasDelete {
 
 // Exec executes the deletion query and returns how many vertices were deleted.
 func (dad *DishAliasDelete) Exec(ctx context.Context) (int, error) {
-	var (
-		err      error
-		affected int
-	)
-	if len(dad.hooks) == 0 {
-		affected, err = dad.sqlExec(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*DishAliasMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			dad.mutation = mutation
-			affected, err = dad.sqlExec(ctx)
-			mutation.done = true
-			return affected, err
-		})
-		for i := len(dad.hooks) - 1; i >= 0; i-- {
-			if dad.hooks[i] == nil {
-				return 0, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = dad.hooks[i](mut)
-		}
-		if _, err := mut.Mutate(ctx, dad.mutation); err != nil {
-			return 0, err
-		}
-	}
-	return affected, err
+	return withHooks(ctx, dad.sqlExec, dad.mutation, dad.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
@@ -68,15 +40,7 @@ func (dad *DishAliasDelete) ExecX(ctx context.Context) int {
 }
 
 func (dad *DishAliasDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := &sqlgraph.DeleteSpec{
-		Node: &sqlgraph.NodeSpec{
-			Table: dishalias.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeString,
-				Column: dishalias.FieldID,
-			},
-		},
-	}
+	_spec := sqlgraph.NewDeleteSpec(dishalias.Table, sqlgraph.NewFieldSpec(dishalias.FieldID, field.TypeString))
 	if ps := dad.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -88,12 +52,19 @@ func (dad *DishAliasDelete) sqlExec(ctx context.Context) (int, error) {
 	if err != nil && sqlgraph.IsConstraintError(err) {
 		err = &ConstraintError{msg: err.Error(), wrap: err}
 	}
+	dad.mutation.done = true
 	return affected, err
 }
 
 // DishAliasDeleteOne is the builder for deleting a single DishAlias entity.
 type DishAliasDeleteOne struct {
 	dad *DishAliasDelete
+}
+
+// Where appends a list predicates to the DishAliasDelete builder.
+func (dado *DishAliasDeleteOne) Where(ps ...predicate.DishAlias) *DishAliasDeleteOne {
+	dado.dad.mutation.Where(ps...)
+	return dado
 }
 
 // Exec executes the deletion query.
@@ -111,5 +82,7 @@ func (dado *DishAliasDeleteOne) Exec(ctx context.Context) error {
 
 // ExecX is like Exec, but panics if an error occurs.
 func (dado *DishAliasDeleteOne) ExecX(ctx context.Context) {
-	dado.dad.ExecX(ctx)
+	if err := dado.Exec(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -3,6 +3,8 @@
 package location
 
 import (
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -56,3 +58,47 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// OrderOption defines the ordering options for the Location queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByExternalID orders the results by the external_id field.
+func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+}
+
+// ByName orders the results by the name field.
+func ByName(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldName, opts...).ToFunc()
+}
+
+// ByVisible orders the results by the visible field.
+func ByVisible(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldVisible, opts...).ToFunc()
+}
+
+// ByOccurrencesCount orders the results by occurrences count.
+func ByOccurrencesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOccurrencesStep(), opts...)
+	}
+}
+
+// ByOccurrences orders the results by occurrences terms.
+func ByOccurrences(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOccurrencesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newOccurrencesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OccurrencesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OccurrencesTable, OccurrencesColumn),
+	)
+}

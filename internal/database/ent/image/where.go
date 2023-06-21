@@ -11,179 +11,117 @@ import (
 
 // ID filters vertices based on their ID field.
 func ID(id uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.Image(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
 func IDEQ(id uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldID), id))
-	})
+	return predicate.Image(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
 func IDNEQ(id uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldID), id))
-	})
+	return predicate.Image(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
 func IDIn(ids ...uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.In(s.C(FieldID), v...))
-	})
+	return predicate.Image(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
 func IDNotIn(ids ...uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		v := make([]any, len(ids))
-		for i := range v {
-			v[i] = ids[i]
-		}
-		s.Where(sql.NotIn(s.C(FieldID), v...))
-	})
+	return predicate.Image(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
 func IDGT(id uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldID), id))
-	})
+	return predicate.Image(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
 func IDGTE(id uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldID), id))
-	})
+	return predicate.Image(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
 func IDLT(id uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldID), id))
-	})
+	return predicate.Image(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
 func IDLTE(id uuid.UUID) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldID), id))
-	})
+	return predicate.Image(sql.FieldLTE(FieldID, id))
 }
 
 // ImageHash applies equality check predicate on the "image_hash" field. It's identical to ImageHashEQ.
 func ImageHash(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldEQ(FieldImageHash, v))
 }
 
 // ImageHashEQ applies the EQ predicate on the "image_hash" field.
 func ImageHashEQ(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldEQ(FieldImageHash, v))
 }
 
 // ImageHashNEQ applies the NEQ predicate on the "image_hash" field.
 func ImageHashNEQ(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldNEQ(FieldImageHash, v))
 }
 
 // ImageHashIn applies the In predicate on the "image_hash" field.
 func ImageHashIn(vs ...string) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.In(s.C(FieldImageHash), v...))
-	})
+	return predicate.Image(sql.FieldIn(FieldImageHash, vs...))
 }
 
 // ImageHashNotIn applies the NotIn predicate on the "image_hash" field.
 func ImageHashNotIn(vs ...string) predicate.Image {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.NotIn(s.C(FieldImageHash), v...))
-	})
+	return predicate.Image(sql.FieldNotIn(FieldImageHash, vs...))
 }
 
 // ImageHashGT applies the GT predicate on the "image_hash" field.
 func ImageHashGT(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldGT(FieldImageHash, v))
 }
 
 // ImageHashGTE applies the GTE predicate on the "image_hash" field.
 func ImageHashGTE(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldGTE(FieldImageHash, v))
 }
 
 // ImageHashLT applies the LT predicate on the "image_hash" field.
 func ImageHashLT(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldLT(FieldImageHash, v))
 }
 
 // ImageHashLTE applies the LTE predicate on the "image_hash" field.
 func ImageHashLTE(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldLTE(FieldImageHash, v))
 }
 
 // ImageHashContains applies the Contains predicate on the "image_hash" field.
 func ImageHashContains(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldContains(FieldImageHash, v))
 }
 
 // ImageHashHasPrefix applies the HasPrefix predicate on the "image_hash" field.
 func ImageHashHasPrefix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldHasPrefix(FieldImageHash, v))
 }
 
 // ImageHashHasSuffix applies the HasSuffix predicate on the "image_hash" field.
 func ImageHashHasSuffix(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldHasSuffix(FieldImageHash, v))
 }
 
 // ImageHashEqualFold applies the EqualFold predicate on the "image_hash" field.
 func ImageHashEqualFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldEqualFold(FieldImageHash, v))
 }
 
 // ImageHashContainsFold applies the ContainsFold predicate on the "image_hash" field.
 func ImageHashContainsFold(v string) predicate.Image {
-	return predicate.Image(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldImageHash), v))
-	})
+	return predicate.Image(sql.FieldContainsFold(FieldImageHash, v))
 }
 
 // HasReview applies the HasEdge predicate on the "review" edge.
@@ -191,7 +129,6 @@ func HasReview() predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ReviewTable, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, ReviewTable, ReviewColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
@@ -201,11 +138,7 @@ func HasReview() predicate.Image {
 // HasReviewWith applies the HasEdge predicate on the "review" edge with a given conditions (other predicates).
 func HasReviewWith(preds ...predicate.Review) predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(ReviewInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, ReviewTable, ReviewColumn),
-		)
+		step := newReviewStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

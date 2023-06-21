@@ -111,50 +111,8 @@ func (dc *DishCreate) Mutation() *DishMutation {
 
 // Save creates the Dish in the database.
 func (dc *DishCreate) Save(ctx context.Context) (*Dish, error) {
-	var (
-		err  error
-		node *Dish
-	)
 	dc.defaults()
-	if len(dc.hooks) == 0 {
-		if err = dc.check(); err != nil {
-			return nil, err
-		}
-		node, err = dc.sqlSave(ctx)
-	} else {
-		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-			mutation, ok := m.(*DishMutation)
-			if !ok {
-				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = dc.check(); err != nil {
-				return nil, err
-			}
-			dc.mutation = mutation
-			if node, err = dc.sqlSave(ctx); err != nil {
-				return nil, err
-			}
-			mutation.id = &node.ID
-			mutation.done = true
-			return node, err
-		})
-		for i := len(dc.hooks) - 1; i >= 0; i-- {
-			if dc.hooks[i] == nil {
-				return nil, fmt.Errorf("ent: uninitialized hook (forgotten import ent/runtime?)")
-			}
-			mut = dc.hooks[i](mut)
-		}
-		v, err := mut.Mutate(ctx, dc.mutation)
-		if err != nil {
-			return nil, err
-		}
-		nv, ok := v.(*Dish)
-		if !ok {
-			return nil, fmt.Errorf("unexpected node type %T returned from DishMutation", v)
-		}
-		node = nv
-	}
-	return node, err
+	return withHooks(ctx, dc.sqlSave, dc.mutation, dc.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
@@ -206,6 +164,9 @@ func (dc *DishCreate) check() error {
 }
 
 func (dc *DishCreate) sqlSave(ctx context.Context) (*Dish, error) {
+	if err := dc.check(); err != nil {
+		return nil, err
+	}
 	_node, _spec := dc.createSpec()
 	if err := sqlgraph.CreateNode(ctx, dc.driver, _spec); err != nil {
 		if sqlgraph.IsConstraintError(err) {
@@ -220,19 +181,15 @@ func (dc *DishCreate) sqlSave(ctx context.Context) (*Dish, error) {
 			return nil, err
 		}
 	}
+	dc.mutation.id = &_node.ID
+	dc.mutation.done = true
 	return _node, nil
 }
 
 func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Dish{config: dc.config}
-		_spec = &sqlgraph.CreateSpec{
-			Table: dish.Table,
-			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
-				Column: dish.FieldID,
-			},
-		}
+		_spec = sqlgraph.NewCreateSpec(dish.Table, sqlgraph.NewFieldSpec(dish.FieldID, field.TypeUUID))
 	)
 	_spec.OnConflict = dc.conflict
 	if id, ok := dc.mutation.ID(); ok {
@@ -255,10 +212,7 @@ func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 			Columns: []string{dish.DishOccurrencesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -274,10 +228,7 @@ func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 			Columns: []string{dish.AliasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeString,
-					Column: dishalias.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(dishalias.FieldID, field.TypeString),
 			},
 		}
 		for _, k := range nodes {
@@ -293,10 +244,7 @@ func (dc *DishCreate) createSpec() (*Dish, *sqlgraph.CreateSpec) {
 			Columns: dish.SideDishOccurrencePrimaryKey,
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: occurrence.FieldID,
-				},
+				IDSpec: sqlgraph.NewFieldSpec(occurrence.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -532,8 +480,8 @@ func (dcb *DishCreateBulk) Save(ctx context.Context) ([]*Dish, error) {
 					return nil, err
 				}
 				builder.mutation = mutation
-				nodes[i], specs[i] = builder.createSpec()
 				var err error
+				nodes[i], specs[i] = builder.createSpec()
 				if i < len(mutators)-1 {
 					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
 				} else {

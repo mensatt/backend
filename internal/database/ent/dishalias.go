@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/dish"
@@ -21,8 +22,9 @@ type DishAlias struct {
 	NormalizedAliasName string `json:"normalized_alias_name,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the DishAliasQuery when eager-loading is set.
-	Edges DishAliasEdges `json:"edges"`
-	dish  *uuid.UUID
+	Edges        DishAliasEdges `json:"edges"`
+	dish         *uuid.UUID
+	selectValues sql.SelectValues
 }
 
 // DishAliasEdges holds the relations/edges for other nodes in the graph.
@@ -57,7 +59,7 @@ func (*DishAlias) scanValues(columns []string) ([]any, error) {
 		case dishalias.ForeignKeys[0]: // dish
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
-			return nil, fmt.Errorf("unexpected column %q for type DishAlias", columns[i])
+			values[i] = new(sql.UnknownType)
 		}
 	}
 	return values, nil
@@ -90,21 +92,29 @@ func (da *DishAlias) assignValues(columns []string, values []any) error {
 				da.dish = new(uuid.UUID)
 				*da.dish = *value.S.(*uuid.UUID)
 			}
+		default:
+			da.selectValues.Set(columns[i], values[i])
 		}
 	}
 	return nil
 }
 
+// Value returns the ent.Value that was dynamically selected and assigned to the DishAlias.
+// This includes values selected through modifiers, order, etc.
+func (da *DishAlias) Value(name string) (ent.Value, error) {
+	return da.selectValues.Get(name)
+}
+
 // QueryDish queries the "dish" edge of the DishAlias entity.
 func (da *DishAlias) QueryDish() *DishQuery {
-	return (&DishAliasClient{config: da.config}).QueryDish(da)
+	return NewDishAliasClient(da.config).QueryDish(da)
 }
 
 // Update returns a builder for updating this DishAlias.
 // Note that you need to call DishAlias.Unwrap() before calling this method if this DishAlias
 // was returned from a transaction, and the transaction was committed or rolled back.
 func (da *DishAlias) Update() *DishAliasUpdateOne {
-	return (&DishAliasClient{config: da.config}).UpdateOne(da)
+	return NewDishAliasClient(da.config).UpdateOne(da)
 }
 
 // Unwrap unwraps the DishAlias entity that was returned from a transaction after it was closed,
@@ -131,9 +141,3 @@ func (da *DishAlias) String() string {
 
 // DishAliasSlice is a parsable slice of DishAlias.
 type DishAliasSlice []*DishAlias
-
-func (da DishAliasSlice) config(cfg config) {
-	for _i := range da {
-		da[_i].config = cfg
-	}
-}

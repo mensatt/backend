@@ -3,6 +3,8 @@
 package dish
 
 import (
+	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -77,3 +79,84 @@ var (
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
+
+// OrderOption defines the ordering options for the Dish queries.
+type OrderOption func(*sql.Selector)
+
+// ByID orders the results by the id field.
+func ByID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByNameDe orders the results by the name_de field.
+func ByNameDe(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNameDe, opts...).ToFunc()
+}
+
+// ByNameEn orders the results by the name_en field.
+func ByNameEn(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNameEn, opts...).ToFunc()
+}
+
+// ByDishOccurrencesCount orders the results by dish_occurrences count.
+func ByDishOccurrencesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newDishOccurrencesStep(), opts...)
+	}
+}
+
+// ByDishOccurrences orders the results by dish_occurrences terms.
+func ByDishOccurrences(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newDishOccurrencesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByAliasesCount orders the results by aliases count.
+func ByAliasesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAliasesStep(), opts...)
+	}
+}
+
+// ByAliases orders the results by aliases terms.
+func ByAliases(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAliasesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// BySideDishOccurrenceCount orders the results by side_dish_occurrence count.
+func BySideDishOccurrenceCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSideDishOccurrenceStep(), opts...)
+	}
+}
+
+// BySideDishOccurrence orders the results by side_dish_occurrence terms.
+func BySideDishOccurrence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSideDishOccurrenceStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newDishOccurrencesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(DishOccurrencesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, DishOccurrencesTable, DishOccurrencesColumn),
+	)
+}
+func newAliasesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AliasesInverseTable, DishAliasFieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AliasesTable, AliasesColumn),
+	)
+}
+func newSideDishOccurrenceStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SideDishOccurrenceInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, SideDishOccurrenceTable, SideDishOccurrencePrimaryKey...),
+	)
+}
