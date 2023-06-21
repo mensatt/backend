@@ -1,15 +1,15 @@
-FROM golang:1.19-bullseye as base
+FROM golang:1.19-alpine as base
 
 # Set environment variables for the user
 ARG USER_ID
 ARG GROUP_ID
 
 # Install libvips-dev for image processing
-RUN apt-get update && apt-get install -y libvips-dev
+RUN apk add --no-cache vips-dev build-base
 
 # Create a group and user
-RUN addgroup --gid $GROUP_ID mensatt && \
-    adduser --disabled-password --gecos '' --uid $USER_ID --gid $GROUP_ID mensatt
+RUN addgroup -g $GROUP_ID mensatt && \
+    adduser -D -s /bin/sh -u $USER_ID -G mensatt mensatt
 
 # This is required to set proper permissions for the assets directory when using a volume
 RUN mkdir -p /opt/app/mensatt/assets && chown -R mensatt:mensatt /opt/app/mensatt/assets
@@ -34,13 +34,10 @@ FROM base as built
 WORKDIR /go/app/mensatt
 COPY . .
 
-#ENV CGO_ENABLED=1
-
 RUN go mod download
-#RUN go build -tags netgo -ldflags="-extldflags=-static" -o /tmp/mensatt ./cmd/mensatt/main.go
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
-FROM alpine:3.17 as prod
+FROM alpine:3.18 as prod
 
 COPY --from=built /tmp/mensatt /usr/bin/mensatt
 
