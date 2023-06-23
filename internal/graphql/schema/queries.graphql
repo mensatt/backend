@@ -15,8 +15,7 @@ type Query {
     reviews(filter: ReviewFilter): [Review!]!
 
     # Location
-    locations: [Location!]!
-    locationById(id: UUID!): Location!
+    locations(filter: LocationFilter): [Location!]!
 
     # Misc
     # only enabled in debug mode

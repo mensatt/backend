@@ -8,9 +8,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent"
-	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/models"
 	"github.com/mensatt/backend/internal/middleware"
@@ -49,13 +47,11 @@ func (r *queryResolver) Reviews(ctx context.Context, filter *models.ReviewFilter
 }
 
 // Locations is the resolver for the locations field.
-func (r *queryResolver) Locations(ctx context.Context) ([]*ent.Location, error) {
-	return r.Database.Location.Query().All(ctx)
-}
-
-// LocationByID is the resolver for the locationById field.
-func (r *queryResolver) LocationByID(ctx context.Context, id uuid.UUID) (*ent.Location, error) {
-	return r.Database.Location.Query().Where(location.ID(id)).Only(ctx)
+func (r *queryResolver) Locations(ctx context.Context, filter *models.LocationFilter) ([]*ent.Location, error) {
+	if filter == nil {
+		return r.Database.Location.Query().All(ctx)
+	}
+	return r.filteredLocations(ctx, filter)
 }
 
 // VcsBuildInfo is the resolver for the vcsBuildInfo field.

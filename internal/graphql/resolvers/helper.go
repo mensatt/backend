@@ -110,3 +110,25 @@ func (r *queryResolver) filteredReviews(ctx context.Context, filter *models.Revi
 
 	return queryBuilder.All(ctx)
 }
+
+func (r *queryResolver) filteredLocations(ctx context.Context, filter *models.LocationFilter) ([]*ent.Location, error) {
+	queryBuilder := r.Database.Location.Query()
+
+	if filter.Ids != nil {
+		queryBuilder = queryBuilder.Where(location.IDIn(filter.Ids...))
+	}
+
+	if filter.ExternalIds != nil {
+		queryBuilder = queryBuilder.Where(location.ExternalIDIn(filter.ExternalIds...))
+	}
+
+	if filter.Names != nil {
+		queryBuilder = queryBuilder.Where(location.NameIn(filter.Names...))
+	}
+
+	if filter.Visible != nil {
+		queryBuilder = queryBuilder.Where(location.VisibleEQ(*filter.Visible))
+	}
+
+	return queryBuilder.All(ctx)
+}

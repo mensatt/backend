@@ -142,8 +142,7 @@ type ComplexityRoot struct {
 	Query struct {
 		CurrentUser  func(childComplexity int) int
 		Dishes       func(childComplexity int) int
-		LocationByID func(childComplexity int, id uuid.UUID) int
-		Locations    func(childComplexity int) int
+		Locations    func(childComplexity int, filter *models.LocationFilter) int
 		Occurrences  func(childComplexity int, filter *models.OccurrenceFilter) int
 		Reviews      func(childComplexity int, filter *models.ReviewFilter) int
 		Tags         func(childComplexity int) int
@@ -252,8 +251,7 @@ type QueryResolver interface {
 	Dishes(ctx context.Context) ([]*ent.Dish, error)
 	Occurrences(ctx context.Context, filter *models.OccurrenceFilter) ([]*ent.Occurrence, error)
 	Reviews(ctx context.Context, filter *models.ReviewFilter) ([]*ent.Review, error)
-	Locations(ctx context.Context) ([]*ent.Location, error)
-	LocationByID(ctx context.Context, id uuid.UUID) (*ent.Location, error)
+	Locations(ctx context.Context, filter *models.LocationFilter) ([]*ent.Location, error)
 	VcsBuildInfo(ctx context.Context) (*utils.VCSBuildInfo, error)
 }
 type ReviewResolver interface {
@@ -800,24 +798,17 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Query.Dishes(childComplexity), true
 
-	case "Query.locationById":
-		if e.complexity.Query.LocationByID == nil {
-			break
-		}
-
-		args, err := ec.field_Query_locationById_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Query.LocationByID(childComplexity, args["id"].(uuid.UUID)), true
-
 	case "Query.locations":
 		if e.complexity.Query.Locations == nil {
 			break
 		}
 
-		return e.complexity.Query.Locations(childComplexity), true
+		args, err := ec.field_Query_locations_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Locations(childComplexity, args["filter"].(*models.LocationFilter)), true
 
 	case "Query.occurrences":
 		if e.complexity.Query.Occurrences == nil {
@@ -1088,6 +1079,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDeleteOccurrenceInput,
 		ec.unmarshalInputDeleteReviewInput,
 		ec.unmarshalInputImageInput,
+		ec.unmarshalInputLocationFilter,
 		ec.unmarshalInputLoginUserInput,
 		ec.unmarshalInputOccurrenceFilter,
 		ec.unmarshalInputRemoveSideDishFromOccurrenceInput,
@@ -1379,6 +1371,16 @@ input DeleteImageToReviewInput {
     review: UUID!
     id: UUID!
 }
+
+
+# Location
+
+input LocationFilter {
+    ids: [UUID!]
+    externalIds: [Int!]
+    names: [String!]
+    visible: Boolean
+}
 `, BuiltIn: false},
 	{Name: "../schema/mutations.graphql", Input: `type Mutation {
     # User
@@ -1433,13 +1435,13 @@ input DeleteImageToReviewInput {
     reviews(filter: ReviewFilter): [Review!]!
 
     # Location
-    locations: [Location!]!
-    locationById(id: UUID!): Location!
+    locations(filter: LocationFilter): [Location!]!
 
     # Misc
     # only enabled in debug mode
     vcsBuildInfo: VcsBuildInfo
-}`, BuiltIn: false},
+}
+`, BuiltIn: false},
 	{Name: "../schema/scalars.graphql", Input: `# Timestamp as defined in RFC3339Nano
 scalar Timestamp
 
@@ -1904,18 +1906,18 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_locationById_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+func (ec *executionContext) field_Query_locations_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 uuid.UUID
-	if tmp, ok := rawArgs["id"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-		arg0, err = ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, tmp)
+	var arg0 *models.LocationFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalOLocationFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐLocationFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["id"] = arg0
+	args["filter"] = arg0
 	return args, nil
 }
 
@@ -5855,7 +5857,7 @@ func (ec *executionContext) _Query_locations(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Locations(rctx)
+		return ec.resolvers.Query().Locations(rctx, fc.Args["filter"].(*models.LocationFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5892,60 +5894,6 @@ func (ec *executionContext) fieldContext_Query_locations(ctx context.Context, fi
 			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
 		},
 	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_locationById(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Query_locationById(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().LocationByID(rctx, fc.Args["id"].(uuid.UUID))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Location)
-	fc.Result = res
-	return ec.marshalNLocation2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐLocation(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Query_locationById(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Location_id(ctx, field)
-			case "externalId":
-				return ec.fieldContext_Location_externalId(ctx, field)
-			case "name":
-				return ec.fieldContext_Location_name(ctx, field)
-			case "visible":
-				return ec.fieldContext_Location_visible(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Location", field.Name)
-		},
-	}
 	defer func() {
 		if r := recover(); r != nil {
 			err = ec.Recover(ctx, r)
@@ -5953,7 +5901,7 @@ func (ec *executionContext) fieldContext_Query_locationById(ctx context.Context,
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_locationById_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_locations_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -10011,6 +9959,62 @@ func (ec *executionContext) unmarshalInputImageInput(ctx context.Context, obj in
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputLocationFilter(ctx context.Context, obj interface{}) (models.LocationFilter, error) {
+	var it models.LocationFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"ids", "externalIds", "names", "visible"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "ids":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
+			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Ids = data
+		case "externalIds":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("externalIds"))
+			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ExternalIds = data
+		case "names":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("names"))
+			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Names = data
+		case "visible":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visible"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Visible = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputLoginUserInput(ctx context.Context, obj interface{}) (models.LoginUserInput, error) {
 	var it models.LoginUserInput
 	asMap := map[string]interface{}{}
@@ -11596,28 +11600,6 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_locations(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			rrm := func(ctx context.Context) graphql.Marshaler {
-				return ec.OperationContext.RootResolverMiddleware(ctx,
-					func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "locationById":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Query_locationById(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -13565,6 +13547,44 @@ func (ec *executionContext) unmarshalOImageInput2ᚕᚖgithubᚗcomᚋmensattᚋ
 	return res, nil
 }
 
+func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]int, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNInt2int(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOInt2ᚕintᚄ(ctx context.Context, sel ast.SelectionSet, v []int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalNInt2int(ctx, sel, v[i])
+	}
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
+}
+
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
 	if v == nil {
 		return nil, nil
@@ -13579,6 +13599,14 @@ func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.Sele
 	}
 	res := graphql.MarshalInt(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOLocationFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐLocationFilter(ctx context.Context, v interface{}) (*models.LocationFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputLocationFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOOccurrenceFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceFilter(ctx context.Context, v interface{}) (*models.OccurrenceFilter, error) {

@@ -96,6 +96,13 @@ type ImageInput struct {
 	Image graphql.Upload `json:"image"`
 }
 
+type LocationFilter struct {
+	Ids         []uuid.UUID `json:"ids,omitempty"`
+	ExternalIds []int       `json:"externalIds,omitempty"`
+	Names       []string    `json:"names,omitempty"`
+	Visible     *bool       `json:"visible,omitempty"`
+}
+
 type LoginUserInput struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
