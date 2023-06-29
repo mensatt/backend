@@ -2,11 +2,11 @@ version: "3.9"
 
 secrets:
   sentry_dsn:
-    file: "./.secrets/sentry_dsn.secret"
+    file: "./.secrets/sentry_dsn"
   database_username:
-    file: "./.secrets/database_username.secret"
+    file: "./.secrets/database_username"
   database_password:
-    file: "./.secrets/database_password.secret"
+    file: "./.secrets/database_password"
   jwt_public_key:
     file: "./.secrets/jwt_public_key.pem"
   jwt_private_key:
