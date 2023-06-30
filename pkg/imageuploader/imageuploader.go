@@ -56,7 +56,7 @@ func NewImageUploader(params Config) (*ImageUploader, error) {
 	}, nil
 }
 
-func (iu *ImageUploader) ValidateAndStoreImage(image []byte) (uuid.UUID, string, error) {
+func (iu *ImageUploader) ValidateAndStoreImage(image []byte, rotation *int) (uuid.UUID, string, error) {
 	if len(image) > iu.maxImageSize {
 		return uuid.Nil, "", fmt.Errorf("image is too large - max size: %d, actual size: %d", iu.maxImageSize, len(image))
 	}
@@ -65,8 +65,33 @@ func (iu *ImageUploader) ValidateAndStoreImage(image []byte) (uuid.UUID, string,
 		return uuid.Nil, "", fmt.Errorf("image is invalid or format not accepted")
 	}
 
+	// check if rotation angle is valid if provided
+	if rotation != nil && !(*rotation == 0 || *rotation == 90 || *rotation == 180 || *rotation == 270) {
+		return uuid.Nil, "", fmt.Errorf("invalid rotation value - value: %d, allowed values: 90, 180, 270", *rotation)
+	}
+
+	// convert integer rotation to vips.Angle
+	var vipsAngle vips.Angle
+	if rotation != nil {
+		switch *rotation {
+		case 0:
+			vipsAngle = vips.Angle0
+		case 90:
+			vipsAngle = vips.Angle90
+		case 180:
+			vipsAngle = vips.Angle180
+		case 270:
+			vipsAngle = vips.Angle270
+		}
+	}
+
 	vipsImage, err := vips.NewImageFromBuffer(image)
 	defer vipsImage.Close()
+	if err != nil {
+		return uuid.Nil, "", err
+	}
+
+	err = vipsImage.Rotate(vipsAngle)
 	if err != nil {
 		return uuid.Nil, "", err
 	}

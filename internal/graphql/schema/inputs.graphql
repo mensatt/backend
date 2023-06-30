@@ -157,6 +157,7 @@ input ReviewFilter {
 
 input ImageInput {
     image: Upload!
+    rotation: Int
 }
 
 input AddImagesToReviewInput {

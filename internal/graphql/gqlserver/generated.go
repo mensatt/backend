@@ -1360,6 +1360,7 @@ input ReviewFilter {
 
 input ImageInput {
     image: Upload!
+    rotation: Int
 }
 
 input AddImagesToReviewInput {
@@ -9937,7 +9938,7 @@ func (ec *executionContext) unmarshalInputImageInput(ctx context.Context, obj in
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"image"}
+	fieldsInOrder := [...]string{"image", "rotation"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9953,6 +9954,15 @@ func (ec *executionContext) unmarshalInputImageInput(ctx context.Context, obj in
 				return it, err
 			}
 			it.Image = data
+		case "rotation":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rotation"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Rotation = data
 		}
 	}
 

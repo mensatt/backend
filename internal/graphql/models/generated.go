@@ -93,7 +93,8 @@ type DeleteReviewInput struct {
 }
 
 type ImageInput struct {
-	Image graphql.Upload `json:"image"`
+	Image    graphql.Upload `json:"image"`
+	Rotation *int           `json:"rotation,omitempty"`
 }
 
 type LocationFilter struct {

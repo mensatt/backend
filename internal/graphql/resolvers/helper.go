@@ -24,7 +24,7 @@ func (r *mutationResolver) storeImages(tx *ent.Tx, ctx context.Context, review *
 			return nil, err // let the caller handle the transaction rollback
 		}
 
-		imageUUID, imageHash, err := r.ImageUploader.ValidateAndStoreImage(imageBytes)
+		imageUUID, imageHash, err := r.ImageUploader.ValidateAndStoreImage(imageBytes, image.Rotation)
 		if err != nil {
 			return nil, err // let the caller handle the transaction rollback
 		}
