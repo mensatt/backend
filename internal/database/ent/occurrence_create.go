@@ -35,6 +35,14 @@ func (oc *OccurrenceCreate) SetDate(t time.Time) *OccurrenceCreate {
 	return oc
 }
 
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableDate(t *time.Time) *OccurrenceCreate {
+	if t != nil {
+		oc.SetDate(*t)
+	}
+	return oc
+}
+
 // SetStatus sets the "status" field.
 func (oc *OccurrenceCreate) SetStatus(ss schema.OccurrenceStatus) *OccurrenceCreate {
 	oc.mutation.SetStatus(ss)
@@ -333,6 +341,10 @@ func (oc *OccurrenceCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (oc *OccurrenceCreate) defaults() {
+	if _, ok := oc.mutation.Date(); !ok {
+		v := occurrence.DefaultDate()
+		oc.mutation.SetDate(v)
+	}
 	if _, ok := oc.mutation.Status(); !ok {
 		v := occurrence.DefaultStatus
 		oc.mutation.SetStatus(v)

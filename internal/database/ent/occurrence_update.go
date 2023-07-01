@@ -40,6 +40,14 @@ func (ou *OccurrenceUpdate) SetDate(t time.Time) *OccurrenceUpdate {
 	return ou
 }
 
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableDate(t *time.Time) *OccurrenceUpdate {
+	if t != nil {
+		ou.SetDate(*t)
+	}
+	return ou
+}
+
 // SetStatus sets the "status" field.
 func (ou *OccurrenceUpdate) SetStatus(ss schema.OccurrenceStatus) *OccurrenceUpdate {
 	ou.mutation.SetStatus(ss)
@@ -910,6 +918,14 @@ type OccurrenceUpdateOne struct {
 // SetDate sets the "date" field.
 func (ouo *OccurrenceUpdateOne) SetDate(t time.Time) *OccurrenceUpdateOne {
 	ouo.mutation.SetDate(t)
+	return ouo
+}
+
+// SetNillableDate sets the "date" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableDate(t *time.Time) *OccurrenceUpdateOne {
+	if t != nil {
+		ouo.SetDate(*t)
+	}
 	return ouo
 }
 

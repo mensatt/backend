@@ -67,6 +67,10 @@ func init() {
 	location.DefaultID = locationDescID.Default.(func() uuid.UUID)
 	occurrenceFields := schema.Occurrence{}.Fields()
 	_ = occurrenceFields
+	// occurrenceDescDate is the schema descriptor for date field.
+	occurrenceDescDate := occurrenceFields[1].Descriptor()
+	// occurrence.DefaultDate holds the default value on creation for the date field.
+	occurrence.DefaultDate = occurrenceDescDate.Default.(func() time.Time)
 	// occurrenceDescID is the schema descriptor for id field.
 	occurrenceDescID := occurrenceFields[0].Descriptor()
 	// occurrence.DefaultID holds the default value on creation for the id field.

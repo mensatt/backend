@@ -7,6 +7,7 @@ import (
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"time"
 )
 
 // Occurrence holds the schema definition for the Occurrence entity.
@@ -25,7 +26,7 @@ func (Occurrence) Annotations() []schema.Annotation {
 func (Occurrence) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
-		field.Time("date"),
+		field.Time("date").Default(time.Now),
 		field.Enum("status").GoType(OccurrenceStatus("")).Default("AWAITING_APPROVAL"),
 		field.Int("kj").Optional().Nillable(),
 		field.Int("kcal").Optional().Nillable(),

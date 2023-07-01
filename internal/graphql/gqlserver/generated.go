@@ -1258,8 +1258,8 @@ input CreateOccurrenceInput {
     location: UUID!
     dish: UUID!
     sideDishes: [UUID!]
-    date: Date!
-    status: OccurrenceStatus!
+    date: Date
+    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -9530,7 +9530,7 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
-			data, err := ec.unmarshalNDate2timeᚐTime(ctx, v)
+			data, err := ec.unmarshalODate2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9539,7 +9539,7 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx, v)
+			data, err := ec.unmarshalOOccurrenceStatus2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx, v)
 			if err != nil {
 				return it, err
 			}

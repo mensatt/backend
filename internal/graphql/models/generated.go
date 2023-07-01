@@ -38,24 +38,24 @@ type CreateDishInput struct {
 }
 
 type CreateOccurrenceInput struct {
-	Location      uuid.UUID               `json:"location"`
-	Dish          uuid.UUID               `json:"dish"`
-	SideDishes    []uuid.UUID             `json:"sideDishes,omitempty"`
-	Date          time.Time               `json:"date"`
-	Status        schema.OccurrenceStatus `json:"status"`
-	Kj            *int                    `json:"kj,omitempty"`
-	Kcal          *int                    `json:"kcal,omitempty"`
-	Fat           *int                    `json:"fat,omitempty"`
-	SaturatedFat  *int                    `json:"saturatedFat,omitempty"`
-	Carbohydrates *int                    `json:"carbohydrates,omitempty"`
-	Sugar         *int                    `json:"sugar,omitempty"`
-	Fiber         *int                    `json:"fiber,omitempty"`
-	Protein       *int                    `json:"protein,omitempty"`
-	Salt          *int                    `json:"salt,omitempty"`
-	PriceStudent  *int                    `json:"priceStudent,omitempty"`
-	PriceStaff    *int                    `json:"priceStaff,omitempty"`
-	PriceGuest    *int                    `json:"priceGuest,omitempty"`
-	Tags          []string                `json:"tags,omitempty"`
+	Location      uuid.UUID                `json:"location"`
+	Dish          uuid.UUID                `json:"dish"`
+	SideDishes    []uuid.UUID              `json:"sideDishes,omitempty"`
+	Date          *time.Time               `json:"date,omitempty"`
+	Status        *schema.OccurrenceStatus `json:"status,omitempty"`
+	Kj            *int                     `json:"kj,omitempty"`
+	Kcal          *int                     `json:"kcal,omitempty"`
+	Fat           *int                     `json:"fat,omitempty"`
+	SaturatedFat  *int                     `json:"saturatedFat,omitempty"`
+	Carbohydrates *int                     `json:"carbohydrates,omitempty"`
+	Sugar         *int                     `json:"sugar,omitempty"`
+	Fiber         *int                     `json:"fiber,omitempty"`
+	Protein       *int                     `json:"protein,omitempty"`
+	Salt          *int                     `json:"salt,omitempty"`
+	PriceStudent  *int                     `json:"priceStudent,omitempty"`
+	PriceStaff    *int                     `json:"priceStaff,omitempty"`
+	PriceGuest    *int                     `json:"priceGuest,omitempty"`
+	Tags          []string                 `json:"tags,omitempty"`
 }
 
 type CreateReviewInput struct {

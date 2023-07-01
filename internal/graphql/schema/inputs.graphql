@@ -55,8 +55,8 @@ input CreateOccurrenceInput {
     location: UUID!
     dish: UUID!
     sideDishes: [UUID!]
-    date: Date!
-    status: OccurrenceStatus!
+    date: Date
+    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,

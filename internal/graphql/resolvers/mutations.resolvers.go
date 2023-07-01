@@ -109,12 +109,18 @@ func (r *mutationResolver) DeleteDishAlias(ctx context.Context, input models.Del
 func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.CreateOccurrenceInput) (*ent.Occurrence, error) {
 	queryBuilder := r.Database.Occurrence.Create().
 		SetLocationID(input.Location).
-		SetDishID(input.Dish).
-		SetDate(input.Date).
-		SetStatus(input.Status)
+		SetDishID(input.Dish)
 
 	if len(input.SideDishes) > 0 {
 		queryBuilder = queryBuilder.AddSideDishIDs(input.SideDishes...)
+	}
+
+	if input.Date != nil {
+		queryBuilder = queryBuilder.SetDate(*input.Date)
+	}
+
+	if input.Status != nil {
+		queryBuilder = queryBuilder.SetStatus(*input.Status)
 	}
 
 	if input.Kj != nil {
