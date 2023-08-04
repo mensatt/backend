@@ -67,6 +67,24 @@ func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image
 	return nil
 }
 
+func (r *queryResolver) filteredDishes(ctx context.Context, filter *models.DishFilter) ([]*ent.Dish, error) {
+	queryBuilder := r.Database.Dish.Query()
+
+	if filter.Dishes != nil {
+		queryBuilder = queryBuilder.Where(dish.IDIn(filter.Dishes...))
+	}
+
+	if filter.NameDe != nil {
+		queryBuilder = queryBuilder.Where(dish.NameDeEQ(*filter.NameDe))
+	}
+
+	if filter.NameEn != nil {
+		queryBuilder = queryBuilder.Where(dish.NameEnEQ(*filter.NameEn))
+	}
+
+	return queryBuilder.All(ctx)
+}
+
 func (r *queryResolver) filteredOccurrences(ctx context.Context, filter *models.OccurrenceFilter) ([]*ent.Occurrence, error) {
 	queryBuilder := r.Database.Occurrence.Query()
 

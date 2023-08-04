@@ -26,8 +26,11 @@ func (r *queryResolver) Tags(ctx context.Context) ([]*ent.Tag, error) {
 }
 
 // Dishes is the resolver for the dishes field.
-func (r *queryResolver) Dishes(ctx context.Context) ([]*ent.Dish, error) {
-	return r.Database.Dish.Query().All(ctx)
+func (r *queryResolver) Dishes(ctx context.Context, filter *models.DishFilter) ([]*ent.Dish, error) {
+	if filter == nil {
+		return r.Database.Dish.Query().All(ctx)
+	}
+	return r.filteredDishes(ctx, filter)
 }
 
 // Occurrences is the resolver for the occurrences field.

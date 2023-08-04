@@ -92,6 +92,12 @@ type DeleteReviewInput struct {
 	ID uuid.UUID `json:"id"`
 }
 
+type DishFilter struct {
+	Dishes []uuid.UUID `json:"dishes,omitempty"`
+	NameDe *string     `json:"nameDe,omitempty"`
+	NameEn *string     `json:"nameEn,omitempty"`
+}
+
 type ImageInput struct {
 	Image    graphql.Upload `json:"image"`
 	Rotation *int           `json:"rotation,omitempty"`

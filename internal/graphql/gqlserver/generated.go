@@ -141,7 +141,7 @@ type ComplexityRoot struct {
 
 	Query struct {
 		CurrentUser  func(childComplexity int) int
-		Dishes       func(childComplexity int) int
+		Dishes       func(childComplexity int, filter *models.DishFilter) int
 		Locations    func(childComplexity int, filter *models.LocationFilter) int
 		Occurrences  func(childComplexity int, filter *models.OccurrenceFilter) int
 		Reviews      func(childComplexity int, filter *models.ReviewFilter) int
@@ -248,7 +248,7 @@ type OccurrenceResolver interface {
 type QueryResolver interface {
 	CurrentUser(ctx context.Context) (*ent.User, error)
 	Tags(ctx context.Context) ([]*ent.Tag, error)
-	Dishes(ctx context.Context) ([]*ent.Dish, error)
+	Dishes(ctx context.Context, filter *models.DishFilter) ([]*ent.Dish, error)
 	Occurrences(ctx context.Context, filter *models.OccurrenceFilter) ([]*ent.Occurrence, error)
 	Reviews(ctx context.Context, filter *models.ReviewFilter) ([]*ent.Review, error)
 	Locations(ctx context.Context, filter *models.LocationFilter) ([]*ent.Location, error)
@@ -796,7 +796,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Query.Dishes(childComplexity), true
+		args, err := ec.field_Query_dishes_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Dishes(childComplexity, args["filter"].(*models.DishFilter)), true
 
 	case "Query.locations":
 		if e.complexity.Query.Locations == nil {
@@ -1078,6 +1083,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDeleteImageToReviewInput,
 		ec.unmarshalInputDeleteOccurrenceInput,
 		ec.unmarshalInputDeleteReviewInput,
+		ec.unmarshalInputDishFilter,
 		ec.unmarshalInputImageInput,
 		ec.unmarshalInputLocationFilter,
 		ec.unmarshalInputLoginUserInput,
@@ -1230,6 +1236,12 @@ input CreateDishInput {
 
 input UpdateDishInput {
     id: UUID!
+    nameDe: String
+    nameEn: String
+}
+
+input DishFilter {
+    dishes: [UUID!]
     nameDe: String
     nameEn: String
 }
@@ -1427,7 +1439,7 @@ input LocationFilter {
     tags: [Tag!]!
 
     # Dish
-    dishes: [Dish!]!
+    dishes(filter: DishFilter): [Dish!]!
 
     # Occurrence
     occurrences(filter: OccurrenceFilter): [Occurrence!]!
@@ -1904,6 +1916,21 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_dishes_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *models.DishFilter
+	if tmp, ok := rawArgs["filter"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("filter"))
+		arg0, err = ec.unmarshalODishFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDishFilter(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["filter"] = arg0
 	return args, nil
 }
 
@@ -5630,7 +5657,7 @@ func (ec *executionContext) _Query_dishes(ctx context.Context, field graphql.Col
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().Dishes(rctx)
+		return ec.resolvers.Query().Dishes(rctx, fc.Args["filter"].(*models.DishFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -5668,6 +5695,17 @@ func (ec *executionContext) fieldContext_Query_dishes(ctx context.Context, field
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Dish", field.Name)
 		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_dishes_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
 	}
 	return fc, nil
 }
@@ -9931,6 +9969,53 @@ func (ec *executionContext) unmarshalInputDeleteReviewInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputDishFilter(ctx context.Context, obj interface{}) (models.DishFilter, error) {
+	var it models.DishFilter
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"dishes", "nameDe", "nameEn"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "dishes":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dishes"))
+			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Dishes = data
+		case "nameDe":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameDe"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameDe = data
+		case "nameEn":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.NameEn = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputImageInput(ctx context.Context, obj interface{}) (models.ImageInput, error) {
 	var it models.ImageInput
 	asMap := map[string]interface{}{}
@@ -13519,6 +13604,14 @@ func (ec *executionContext) marshalODate2ᚖtimeᚐTime(ctx context.Context, sel
 	}
 	res := scalars.MarshalDate(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalODishFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDishFilter(ctx context.Context, v interface{}) (*models.DishFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputDishFilter(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOFloat2ᚖfloat64(ctx context.Context, v interface{}) (*float64, error) {

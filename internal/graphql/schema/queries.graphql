@@ -6,7 +6,7 @@ type Query {
     tags: [Tag!]!
 
     # Dish
-    dishes: [Dish!]!
+    dishes(filter: DishFilter): [Dish!]!
 
     # Occurrence
     occurrences(filter: OccurrenceFilter): [Occurrence!]!

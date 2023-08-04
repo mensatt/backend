@@ -31,6 +31,12 @@ input UpdateDishInput {
     nameEn: String
 }
 
+input DishFilter {
+    dishes: [UUID!]
+    nameDe: String
+    nameEn: String
+}
+
 #input MergeDishesInput {
 #    keep: UUID!
 #    merge: UUID!
