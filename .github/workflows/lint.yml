@@ -14,7 +14,7 @@ jobs:
           go-version: 1.19
 
       - name: Install dependencies
-        run: sudo apt install -y libvips-dev --no-install-recommends
+        run: sudo apt update && sudo apt install -y libvips-dev --no-install-recommends
 
       - run: go mod download
       - run: .github/workflows/check-fmt
