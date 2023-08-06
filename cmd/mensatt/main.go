@@ -62,6 +62,7 @@ func main() {
 		Dsn:              sentryDSN,
 		AttachStacktrace: true,
 		EnableTracing:    true,
+		TracesSampleRate: 1.0,
 	}
 
 	if config.DebugEnabled {
