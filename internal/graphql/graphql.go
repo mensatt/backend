@@ -25,7 +25,7 @@ type GraphQLParams struct {
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) error {
-	g.POST("", graphqlHandler(params))
+	g.Any("", graphqlHandler(params))
 	if params.DebugEnabled {
 		g.GET("/playground", playgroundHandler(g.BasePath()))
 	}
