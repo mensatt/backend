@@ -35,7 +35,8 @@ WORKDIR /go/app/mensatt
 COPY . .
 
 RUN ls -asl
-RUN git log -1
+RUN pwd
+RUN git log
 
 RUN go mod download
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
