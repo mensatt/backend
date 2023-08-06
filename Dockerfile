@@ -38,6 +38,9 @@ RUN ls -asl
 RUN pwd
 #RUN git log
 
+RUN git config --global --add safe.directory /go/app/mensatt
+RUN git log
+
 RUN go mod download
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
