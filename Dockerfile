@@ -34,6 +34,9 @@ FROM base as built
 WORKDIR /go/app/mensatt
 COPY . .
 
+RUN ls -asl
+RUN git log -1
+
 RUN go mod download
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
