@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -49,6 +50,7 @@ type ResolverRoot interface {
 	Occurrence() OccurrenceResolver
 	Query() QueryResolver
 	Review() ReviewResolver
+	Subscription() SubscriptionResolver
 	Tag() TagResolver
 }
 
@@ -183,6 +185,11 @@ type ComplexityRoot struct {
 		ReviewCount  func(childComplexity int) int
 	}
 
+	Subscription struct {
+		ReviewAccepted func(childComplexity int) int
+		ReviewCreated  func(childComplexity int) int
+	}
+
 	Tag struct {
 		Description func(childComplexity int) int
 		IsAllergy   func(childComplexity int) int
@@ -258,6 +265,10 @@ type ReviewResolver interface {
 	Occurrence(ctx context.Context, obj *ent.Review) (*ent.Occurrence, error)
 
 	Images(ctx context.Context, obj *ent.Review) ([]*ent.Image, error)
+}
+type SubscriptionResolver interface {
+	ReviewCreated(ctx context.Context) (<-chan *ent.Review, error)
+	ReviewAccepted(ctx context.Context) (<-chan *ent.Review, error)
 }
 type TagResolver interface {
 	Key(ctx context.Context, obj *ent.Tag) (string, error)
@@ -986,6 +997,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.ReviewMetadataOccurrence.ReviewCount(childComplexity), true
 
+	case "Subscription.reviewAccepted":
+		if e.complexity.Subscription.ReviewAccepted == nil {
+			break
+		}
+
+		return e.complexity.Subscription.ReviewAccepted(childComplexity), true
+
+	case "Subscription.reviewCreated":
+		if e.complexity.Subscription.ReviewCreated == nil {
+			break
+		}
+
+		return e.complexity.Subscription.ReviewCreated(childComplexity), true
+
 	case "Tag.description":
 		if e.complexity.Tag.Description == nil {
 			break
@@ -1137,6 +1162,23 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 			ctx = graphql.WithUnmarshalerMap(ctx, inputUnmarshalMap)
 			data := ec._Mutation(ctx, rc.Operation.SelectionSet)
 			var buf bytes.Buffer
+			data.MarshalGQL(&buf)
+
+			return &graphql.Response{
+				Data: buf.Bytes(),
+			}
+		}
+	case ast.Subscription:
+		next := ec._Subscription(ctx, rc.Operation.SelectionSet)
+
+		var buf bytes.Buffer
+		return func(ctx context.Context) *graphql.Response {
+			buf.Reset()
+			data := next(ctx)
+
+			if data == nil {
+				return nil
+			}
 			data.MarshalGQL(&buf)
 
 			return &graphql.Response{
@@ -1467,6 +1509,13 @@ scalar UUID
 
 # File Upload
 scalar Upload`, BuiltIn: false},
+	{Name: "../schema/subscriptions.graphql", Input: `type Subscription {
+    # Subscription fires when a review is created
+    reviewCreated: Review
+    # Subscription fires when a review is accepted
+    reviewAccepted: Review
+}
+`, BuiltIn: false},
 	{Name: "../schema/types.graphql", Input: `enum TagPriority {
     HIDE
     LOW
@@ -7070,6 +7119,156 @@ func (ec *executionContext) fieldContext_ReviewMetadataOccurrence_reviewCount(ct
 	return fc, nil
 }
 
+func (ec *executionContext) _Subscription_reviewCreated(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_reviewCreated(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().ReviewCreated(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *ent.Review):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐReview(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_reviewCreated(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Review_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Review_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
+			case "stars":
+				return ec.fieldContext_Review_stars(ctx, field)
+			case "text":
+				return ec.fieldContext_Review_text(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Review_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Review_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Review_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Subscription_reviewAccepted(ctx context.Context, field graphql.CollectedField) (ret func(ctx context.Context) graphql.Marshaler) {
+	fc, err := ec.fieldContext_Subscription_reviewAccepted(ctx, field)
+	if err != nil {
+		return nil
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = nil
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Subscription().ReviewAccepted(rctx)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return nil
+	}
+	if resTmp == nil {
+		return nil
+	}
+	return func(ctx context.Context) graphql.Marshaler {
+		select {
+		case res, ok := <-resTmp.(<-chan *ent.Review):
+			if !ok {
+				return nil
+			}
+			return graphql.WriterFunc(func(w io.Writer) {
+				w.Write([]byte{'{'})
+				graphql.MarshalString(field.Alias).MarshalGQL(w)
+				w.Write([]byte{':'})
+				ec.marshalOReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐReview(ctx, field.Selections, res).MarshalGQL(w)
+				w.Write([]byte{'}'})
+			})
+		case <-ctx.Done():
+			return nil
+		}
+	}
+}
+
+func (ec *executionContext) fieldContext_Subscription_reviewAccepted(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Subscription",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Review_id(ctx, field)
+			case "occurrence":
+				return ec.fieldContext_Review_occurrence(ctx, field)
+			case "displayName":
+				return ec.fieldContext_Review_displayName(ctx, field)
+			case "images":
+				return ec.fieldContext_Review_images(ctx, field)
+			case "stars":
+				return ec.fieldContext_Review_stars(ctx, field)
+			case "text":
+				return ec.fieldContext_Review_text(ctx, field)
+			case "createdAt":
+				return ec.fieldContext_Review_createdAt(ctx, field)
+			case "updatedAt":
+				return ec.fieldContext_Review_updatedAt(ctx, field)
+			case "acceptedAt":
+				return ec.fieldContext_Review_acceptedAt(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Tag_key(ctx context.Context, field graphql.CollectedField, obj *ent.Tag) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Tag_key(ctx, field)
 	if err != nil {
@@ -12069,6 +12268,28 @@ func (ec *executionContext) _ReviewMetadataOccurrence(ctx context.Context, sel a
 	return out
 }
 
+var subscriptionImplementors = []string{"Subscription"}
+
+func (ec *executionContext) _Subscription(ctx context.Context, sel ast.SelectionSet) func(ctx context.Context) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, subscriptionImplementors)
+	ctx = graphql.WithFieldContext(ctx, &graphql.FieldContext{
+		Object: "Subscription",
+	})
+	if len(fields) != 1 {
+		ec.Errorf(ctx, "must subscribe to exactly one stream")
+		return nil
+	}
+
+	switch fields[0].Name {
+	case "reviewCreated":
+		return ec._Subscription_reviewCreated(ctx, fields[0])
+	case "reviewAccepted":
+		return ec._Subscription_reviewAccepted(ctx, fields[0])
+	default:
+		panic("unknown field " + strconv.Quote(fields[0].Name))
+	}
+}
+
 var tagImplementors = []string{"Tag"}
 
 func (ec *executionContext) _Tag(ctx context.Context, sel ast.SelectionSet, obj *ent.Tag) graphql.Marshaler {
@@ -13735,6 +13956,13 @@ func (ec *executionContext) marshalOOccurrenceStatus2ᚖgithubᚗcomᚋmensatt�
 	}
 	res := graphql.MarshalString(string(*v))
 	return res
+}
+
+func (ec *executionContext) marshalOReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐReview(ctx context.Context, sel ast.SelectionSet, v *ent.Review) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._Review(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOReviewFilter2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐReviewFilter(ctx context.Context, v interface{}) (*models.ReviewFilter, error) {

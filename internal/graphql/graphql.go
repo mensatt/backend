@@ -49,11 +49,13 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 		gqlserver.NewExecutableSchema(
 			gqlserver.Config{
 				Resolvers: &resolvers.Resolver{
-					Database:      params.Database,
-					JWTKeyStore:   params.JWTKeyStore,
-					VCSBuildInfo:  vscBuildInfo,
-					ImageUploader: params.ImageUploader,
-					ImageBaseURL:  params.ImageBaseURL,
+					Database:               params.Database,
+					JWTKeyStore:            params.JWTKeyStore,
+					VCSBuildInfo:           vscBuildInfo,
+					ImageUploader:          params.ImageUploader,
+					ImageBaseURL:           params.ImageBaseURL,
+					ReviewAcceptedChannels: map[string]chan *ent.Review{},
+					ReviewCreatedChannels:  map[string]chan *ent.Review{},
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,
