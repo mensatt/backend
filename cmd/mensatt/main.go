@@ -61,6 +61,7 @@ func main() {
 	sentryOptions := sentry.ClientOptions{
 		Dsn:              sentryDSN,
 		AttachStacktrace: true,
+		EnableTracing:    true,
 	}
 
 	if config.DebugEnabled {
