@@ -1,0 +1,6 @@
+type Subscription {
+    # Subscription fires when a review is created
+    reviewCreated: Review
+    # Subscription fires when a review is accepted
+    reviewAccepted: Review
+}

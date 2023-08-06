@@ -397,6 +397,13 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 		return nil, fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
+	// notify all subscribers
+	r.mutex.Lock()
+	for _, channel := range r.ReviewCreatedChannels {
+		channel <- review
+	}
+	r.mutex.Unlock()
+
 	return review, err
 }
 
@@ -406,6 +413,8 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 	if err != nil {
 		return nil, err
 	}
+
+	oldAcceptedAt := review.AcceptedAt
 
 	queryBuilder := r.Database.Review.UpdateOne(review)
 
@@ -429,7 +438,21 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 		queryBuilder = queryBuilder.SetAcceptedAt(time.Now()) // approved (not null) at current time
 	}
 
-	return queryBuilder.Save(ctx)
+	review, err = queryBuilder.Save(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	// notify all subscribers (if approved)
+	if input.Approved != nil && oldAcceptedAt == nil {
+		r.mutex.Lock()
+		for _, channel := range r.ReviewAcceptedChannels {
+			channel <- review
+		}
+		r.mutex.Unlock()
+	}
+
+	return review, nil
 }
 
 // DeleteReview is the resolver for the deleteReview field.
