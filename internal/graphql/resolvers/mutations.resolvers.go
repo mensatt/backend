@@ -444,7 +444,7 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 	}
 
 	// notify all subscribers (if approved)
-	if input.Approved != nil && oldAcceptedAt == nil {
+	if input.Approved != nil && *input.Approved == true && oldAcceptedAt == nil {
 		r.mutex.Lock()
 		for _, channel := range r.ReviewAcceptedChannels {
 			channel <- review
