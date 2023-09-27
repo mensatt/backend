@@ -2084,7 +2084,6 @@ type OccurrenceMutation struct {
 	typ                string
 	id                 *uuid.UUID
 	date               *time.Time
-	status             *schema.OccurrenceStatus
 	kj                 *int
 	addkj              *int
 	kcal               *int
@@ -2109,6 +2108,7 @@ type OccurrenceMutation struct {
 	addprice_staff     *int
 	price_guest        *int
 	addprice_guest     *int
+	notAvailableAfter  *time.Time
 	clearedFields      map[string]struct{}
 	location           *uuid.UUID
 	clearedlocation    bool
@@ -2266,42 +2266,6 @@ func (m *OccurrenceMutation) OldDate(ctx context.Context) (v time.Time, err erro
 // ResetDate resets all changes to the "date" field.
 func (m *OccurrenceMutation) ResetDate() {
 	m.date = nil
-}
-
-// SetStatus sets the "status" field.
-func (m *OccurrenceMutation) SetStatus(ss schema.OccurrenceStatus) {
-	m.status = &ss
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *OccurrenceMutation) Status() (r schema.OccurrenceStatus, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the Occurrence entity.
-// If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OccurrenceMutation) OldStatus(ctx context.Context) (v schema.OccurrenceStatus, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *OccurrenceMutation) ResetStatus() {
-	m.status = nil
 }
 
 // SetKj sets the "kj" field.
@@ -3144,6 +3108,55 @@ func (m *OccurrenceMutation) ResetPriceGuest() {
 	delete(m.clearedFields, occurrence.FieldPriceGuest)
 }
 
+// SetNotAvailableAfter sets the "notAvailableAfter" field.
+func (m *OccurrenceMutation) SetNotAvailableAfter(t time.Time) {
+	m.notAvailableAfter = &t
+}
+
+// NotAvailableAfter returns the value of the "notAvailableAfter" field in the mutation.
+func (m *OccurrenceMutation) NotAvailableAfter() (r time.Time, exists bool) {
+	v := m.notAvailableAfter
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNotAvailableAfter returns the old "notAvailableAfter" field's value of the Occurrence entity.
+// If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OccurrenceMutation) OldNotAvailableAfter(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNotAvailableAfter is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNotAvailableAfter requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNotAvailableAfter: %w", err)
+	}
+	return oldValue.NotAvailableAfter, nil
+}
+
+// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+func (m *OccurrenceMutation) ClearNotAvailableAfter() {
+	m.notAvailableAfter = nil
+	m.clearedFields[occurrence.FieldNotAvailableAfter] = struct{}{}
+}
+
+// NotAvailableAfterCleared returns if the "notAvailableAfter" field was cleared in this mutation.
+func (m *OccurrenceMutation) NotAvailableAfterCleared() bool {
+	_, ok := m.clearedFields[occurrence.FieldNotAvailableAfter]
+	return ok
+}
+
+// ResetNotAvailableAfter resets all changes to the "notAvailableAfter" field.
+func (m *OccurrenceMutation) ResetNotAvailableAfter() {
+	m.notAvailableAfter = nil
+	delete(m.clearedFields, occurrence.FieldNotAvailableAfter)
+}
+
 // SetLocationID sets the "location" edge to the Location entity by id.
 func (m *OccurrenceMutation) SetLocationID(id uuid.UUID) {
 	m.location = &id
@@ -3422,9 +3435,6 @@ func (m *OccurrenceMutation) Fields() []string {
 	if m.date != nil {
 		fields = append(fields, occurrence.FieldDate)
 	}
-	if m.status != nil {
-		fields = append(fields, occurrence.FieldStatus)
-	}
 	if m.kj != nil {
 		fields = append(fields, occurrence.FieldKj)
 	}
@@ -3461,6 +3471,9 @@ func (m *OccurrenceMutation) Fields() []string {
 	if m.price_guest != nil {
 		fields = append(fields, occurrence.FieldPriceGuest)
 	}
+	if m.notAvailableAfter != nil {
+		fields = append(fields, occurrence.FieldNotAvailableAfter)
+	}
 	return fields
 }
 
@@ -3471,8 +3484,6 @@ func (m *OccurrenceMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case occurrence.FieldDate:
 		return m.Date()
-	case occurrence.FieldStatus:
-		return m.Status()
 	case occurrence.FieldKj:
 		return m.Kj()
 	case occurrence.FieldKcal:
@@ -3497,6 +3508,8 @@ func (m *OccurrenceMutation) Field(name string) (ent.Value, bool) {
 		return m.PriceStaff()
 	case occurrence.FieldPriceGuest:
 		return m.PriceGuest()
+	case occurrence.FieldNotAvailableAfter:
+		return m.NotAvailableAfter()
 	}
 	return nil, false
 }
@@ -3508,8 +3521,6 @@ func (m *OccurrenceMutation) OldField(ctx context.Context, name string) (ent.Val
 	switch name {
 	case occurrence.FieldDate:
 		return m.OldDate(ctx)
-	case occurrence.FieldStatus:
-		return m.OldStatus(ctx)
 	case occurrence.FieldKj:
 		return m.OldKj(ctx)
 	case occurrence.FieldKcal:
@@ -3534,6 +3545,8 @@ func (m *OccurrenceMutation) OldField(ctx context.Context, name string) (ent.Val
 		return m.OldPriceStaff(ctx)
 	case occurrence.FieldPriceGuest:
 		return m.OldPriceGuest(ctx)
+	case occurrence.FieldNotAvailableAfter:
+		return m.OldNotAvailableAfter(ctx)
 	}
 	return nil, fmt.Errorf("unknown Occurrence field %s", name)
 }
@@ -3549,13 +3562,6 @@ func (m *OccurrenceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDate(v)
-		return nil
-	case occurrence.FieldStatus:
-		v, ok := value.(schema.OccurrenceStatus)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
 		return nil
 	case occurrence.FieldKj:
 		v, ok := value.(int)
@@ -3640,6 +3646,13 @@ func (m *OccurrenceMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetPriceGuest(v)
+		return nil
+	case occurrence.FieldNotAvailableAfter:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNotAvailableAfter(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Occurrence field %s", name)
@@ -3854,6 +3867,9 @@ func (m *OccurrenceMutation) ClearedFields() []string {
 	if m.FieldCleared(occurrence.FieldPriceGuest) {
 		fields = append(fields, occurrence.FieldPriceGuest)
 	}
+	if m.FieldCleared(occurrence.FieldNotAvailableAfter) {
+		fields = append(fields, occurrence.FieldNotAvailableAfter)
+	}
 	return fields
 }
 
@@ -3904,6 +3920,9 @@ func (m *OccurrenceMutation) ClearField(name string) error {
 	case occurrence.FieldPriceGuest:
 		m.ClearPriceGuest()
 		return nil
+	case occurrence.FieldNotAvailableAfter:
+		m.ClearNotAvailableAfter()
+		return nil
 	}
 	return fmt.Errorf("unknown Occurrence nullable field %s", name)
 }
@@ -3914,9 +3933,6 @@ func (m *OccurrenceMutation) ResetField(name string) error {
 	switch name {
 	case occurrence.FieldDate:
 		m.ResetDate()
-		return nil
-	case occurrence.FieldStatus:
-		m.ResetStatus()
 		return nil
 	case occurrence.FieldKj:
 		m.ResetKj()
@@ -3953,6 +3969,9 @@ func (m *OccurrenceMutation) ResetField(name string) error {
 		return nil
 	case occurrence.FieldPriceGuest:
 		m.ResetPriceGuest()
+		return nil
+	case occurrence.FieldNotAvailableAfter:
+		m.ResetNotAvailableAfter()
 		return nil
 	}
 	return fmt.Errorf("unknown Occurrence field %s", name)

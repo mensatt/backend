@@ -3,13 +3,11 @@
 package occurrence
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
-	"github.com/mensatt/backend/internal/database/schema"
 )
 
 const (
@@ -19,8 +17,6 @@ const (
 	FieldID = "id"
 	// FieldDate holds the string denoting the date field in the database.
 	FieldDate = "date"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
 	// FieldKj holds the string denoting the kj field in the database.
 	FieldKj = "kj"
 	// FieldKcal holds the string denoting the kcal field in the database.
@@ -45,6 +41,8 @@ const (
 	FieldPriceStaff = "price_staff"
 	// FieldPriceGuest holds the string denoting the price_guest field in the database.
 	FieldPriceGuest = "price_guest"
+	// FieldNotAvailableAfter holds the string denoting the notavailableafter field in the database.
+	FieldNotAvailableAfter = "not_available_after"
 	// EdgeLocation holds the string denoting the location edge name in mutations.
 	EdgeLocation = "location"
 	// EdgeDish holds the string denoting the dish edge name in mutations.
@@ -96,7 +94,6 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldDate,
-	FieldStatus,
 	FieldKj,
 	FieldKcal,
 	FieldFat,
@@ -109,6 +106,7 @@ var Columns = []string{
 	FieldPriceStudent,
 	FieldPriceStaff,
 	FieldPriceGuest,
+	FieldNotAvailableAfter,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "occurrence"
@@ -149,18 +147,6 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-const DefaultStatus schema.OccurrenceStatus = "AWAITING_APPROVAL"
-
-// StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
-func StatusValidator(s schema.OccurrenceStatus) error {
-	switch s {
-	case "CONFIRMED", "APPROVED", "AWAITING_APPROVAL", "UPDATED", "PENDING_DELETION":
-		return nil
-	default:
-		return fmt.Errorf("occurrence: invalid enum value for status field: %q", s)
-	}
-}
-
 // OrderOption defines the ordering options for the Occurrence queries.
 type OrderOption func(*sql.Selector)
 
@@ -172,11 +158,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 // ByDate orders the results by the date field.
 func ByDate(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDate, opts...).ToFunc()
-}
-
-// ByStatus orders the results by the status field.
-func ByStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
 // ByKj orders the results by the kj field.
@@ -237,6 +218,11 @@ func ByPriceStaff(opts ...sql.OrderTermOption) OrderOption {
 // ByPriceGuest orders the results by the price_guest field.
 func ByPriceGuest(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPriceGuest, opts...).ToFunc()
+}
+
+// ByNotAvailableAfter orders the results by the notAvailableAfter field.
+func ByNotAvailableAfter(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldNotAvailableAfter, opts...).ToFunc()
 }
 
 // ByLocationField orders the results by location field.

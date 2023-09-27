@@ -119,10 +119,6 @@ func (r *mutationResolver) CreateOccurrence(ctx context.Context, input models.Cr
 		queryBuilder = queryBuilder.SetDate(*input.Date)
 	}
 
-	if input.Status != nil {
-		queryBuilder = queryBuilder.SetStatus(*input.Status)
-	}
-
 	if input.Kj != nil {
 		queryBuilder = queryBuilder.SetKj(*input.Kj)
 	}
@@ -188,10 +184,6 @@ func (r *mutationResolver) UpdateOccurrence(ctx context.Context, input models.Up
 
 	if input.Date != nil {
 		queryBuilder = queryBuilder.SetDate(*input.Date)
-	}
-
-	if input.Status != nil {
-		queryBuilder = queryBuilder.SetStatus(*input.Status)
 	}
 
 	if input.Kj != nil {

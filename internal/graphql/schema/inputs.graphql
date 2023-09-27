@@ -62,7 +62,6 @@ input CreateOccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Date
-    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -82,7 +81,6 @@ input UpdateOccurrenceInput {
     id: UUID!
     dish: UUID
     date: Date
-    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -124,7 +122,6 @@ input RemoveSideDishFromOccurrenceInput {
 input OccurrenceFilter {
     occurrences: [UUID!]
     dishes: [UUID!]
-    status: OccurrenceStatus
     startDate: Date
     endDate: Date
     location: UUID

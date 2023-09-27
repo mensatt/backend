@@ -67,10 +67,6 @@ models:
     model:
       - github.com/mensatt/backend/internal/database/schema.TagPriority
 
-  OccurrenceStatus:
-    model:
-      - github.com/mensatt/backend/internal/database/schema.OccurrenceStatus
-
   # Other
   VcsBuildInfo:
     model:

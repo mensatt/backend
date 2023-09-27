@@ -96,10 +96,6 @@ func (r *queryResolver) filteredOccurrences(ctx context.Context, filter *models.
 		queryBuilder = queryBuilder.Where(occurrence.HasDishWith(dish.IDIn(filter.Dishes...)))
 	}
 
-	if filter.Status != nil {
-		queryBuilder = queryBuilder.Where(occurrence.StatusEQ(*filter.Status))
-	}
-
 	if filter.StartDate != nil {
 		queryBuilder = queryBuilder.Where(occurrence.DateGTE(*filter.StartDate))
 	}

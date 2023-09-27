@@ -126,7 +126,6 @@ type ComplexityRoot struct {
 		Salt          func(childComplexity int) int
 		SaturatedFat  func(childComplexity int) int
 		SideDishes    func(childComplexity int) int
-		Status        func(childComplexity int) int
 		Sugar         func(childComplexity int) int
 		Tags          func(childComplexity int) int
 	}
@@ -746,13 +745,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Occurrence.SideDishes(childComplexity), true
 
-	case "Occurrence.status":
-		if e.complexity.Occurrence.Status == nil {
-			break
-		}
-
-		return e.complexity.Occurrence.Status(childComplexity), true
-
 	case "Occurrence.sugar":
 		if e.complexity.Occurrence.Sugar == nil {
 			break
@@ -1313,7 +1305,6 @@ input CreateOccurrenceInput {
     dish: UUID!
     sideDishes: [UUID!]
     date: Date
-    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -1333,7 +1324,6 @@ input UpdateOccurrenceInput {
     id: UUID!
     dish: UUID
     date: Date
-    status: OccurrenceStatus
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -1375,7 +1365,6 @@ input RemoveSideDishFromOccurrenceInput {
 input OccurrenceFilter {
     occurrences: [UUID!]
     dishes: [UUID!]
-    status: OccurrenceStatus
     startDate: Date
     endDate: Date
     location: UUID
@@ -1523,14 +1512,6 @@ scalar Upload`, BuiltIn: false},
     HIGH
 }
 
-enum OccurrenceStatus {
-    CONFIRMED
-    APPROVED
-    AWAITING_APPROVAL
-    UPDATED
-    PENDING_DELETION
-}
-
 type Tag {
     key: String!
     name: String!
@@ -1578,7 +1559,6 @@ type Occurrence {
     dish: Dish!
     sideDishes: [Dish!]!
     date: Date!
-    status: OccurrenceStatus!
     kj: Int,
     kcal: Int,
     fat: Int,
@@ -3379,8 +3359,6 @@ func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "status":
-				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -3496,8 +3474,6 @@ func (ec *executionContext) fieldContext_Mutation_updateOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "status":
-				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -3613,8 +3589,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "status":
-				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -4644,50 +4618,6 @@ func (ec *executionContext) fieldContext_Occurrence_date(ctx context.Context, fi
 	return fc, nil
 }
 
-func (ec *executionContext) _Occurrence_status(ctx context.Context, field graphql.CollectedField, obj *ent.Occurrence) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Occurrence_status(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Status, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(schema.OccurrenceStatus)
-	fc.Result = res
-	return ec.marshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Occurrence_status(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Occurrence",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type OccurrenceStatus does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
 func (ec *executionContext) _Occurrence_kj(ctx context.Context, field graphql.CollectedField, obj *ent.Occurrence) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Occurrence_kj(ctx, field)
 	if err != nil {
@@ -5350,8 +5280,6 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_occurrence(ctx conte
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "status":
-				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -5492,8 +5420,6 @@ func (ec *executionContext) fieldContext_OccurrenceTag_occurrence(ctx context.Co
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "status":
-				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -5808,8 +5734,6 @@ func (ec *executionContext) fieldContext_Query_occurrences(ctx context.Context, 
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "status":
-				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -6267,8 +6191,6 @@ func (ec *executionContext) fieldContext_Review_occurrence(ctx context.Context, 
 				return ec.fieldContext_Occurrence_sideDishes(ctx, field)
 			case "date":
 				return ec.fieldContext_Occurrence_date(ctx, field)
-			case "status":
-				return ec.fieldContext_Occurrence_status(ctx, field)
 			case "kj":
 				return ec.fieldContext_Occurrence_kj(ctx, field)
 			case "kcal":
@@ -9729,7 +9651,7 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"location", "dish", "sideDishes", "date", "status", "kj", "kcal", "fat", "saturatedFat", "carbohydrates", "sugar", "fiber", "protein", "salt", "priceStudent", "priceStaff", "priceGuest", "tags"}
+	fieldsInOrder := [...]string{"location", "dish", "sideDishes", "date", "kj", "kcal", "fat", "saturatedFat", "carbohydrates", "sugar", "fiber", "protein", "salt", "priceStudent", "priceStaff", "priceGuest", "tags"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -9772,15 +9694,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 				return it, err
 			}
 			it.Date = data
-		case "status":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalOOccurrenceStatus2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Status = data
 		case "kj":
 			var err error
 
@@ -10354,7 +10267,7 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"occurrences", "dishes", "status", "startDate", "endDate", "location"}
+	fieldsInOrder := [...]string{"occurrences", "dishes", "startDate", "endDate", "location"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10379,15 +10292,6 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 				return it, err
 			}
 			it.Dishes = data
-		case "status":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalOOccurrenceStatus2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Status = data
 		case "startDate":
 			var err error
 
@@ -10580,7 +10484,7 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"id", "dish", "date", "status", "kj", "kcal", "fat", "saturatedFat", "carbohydrates", "sugar", "fiber", "protein", "salt", "priceStudent", "priceStaff", "priceGuest"}
+	fieldsInOrder := [...]string{"id", "dish", "date", "kj", "kcal", "fat", "saturatedFat", "carbohydrates", "sugar", "fiber", "protein", "salt", "priceStudent", "priceStaff", "priceGuest"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -10614,15 +10518,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 				return it, err
 			}
 			it.Date = data
-		case "status":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
-			data, err := ec.unmarshalOOccurrenceStatus2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Status = data
 		case "kj":
 			var err error
 
@@ -11543,11 +11438,6 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "date":
 			out.Values[i] = ec._Occurrence_date(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
-		case "status":
-			out.Values[i] = ec._Occurrence_status(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				atomic.AddUint32(&out.Invalids, 1)
 			}
@@ -13237,22 +13127,6 @@ func (ec *executionContext) marshalNOccurrenceSideDish2ᚖgithubᚗcomᚋmensatt
 	return ec._OccurrenceSideDish(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx context.Context, v interface{}) (schema.OccurrenceStatus, error) {
-	tmp, err := graphql.UnmarshalString(v)
-	res := schema.OccurrenceStatus(tmp)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNOccurrenceStatus2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx context.Context, sel ast.SelectionSet, v schema.OccurrenceStatus) graphql.Marshaler {
-	res := graphql.MarshalString(string(v))
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) marshalNOccurrenceTag2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐOccurrenceTag(ctx context.Context, sel ast.SelectionSet, v models.OccurrenceTag) graphql.Marshaler {
 	return ec._OccurrenceTag(ctx, sel, &v)
 }
@@ -13939,23 +13813,6 @@ func (ec *executionContext) unmarshalOOccurrenceFilter2ᚖgithubᚗcomᚋmensatt
 	}
 	res, err := ec.unmarshalInputOccurrenceFilter(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalOOccurrenceStatus2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx context.Context, v interface{}) (*schema.OccurrenceStatus, error) {
-	if v == nil {
-		return nil, nil
-	}
-	tmp, err := graphql.UnmarshalString(v)
-	res := schema.OccurrenceStatus(tmp)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalOOccurrenceStatus2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐOccurrenceStatus(ctx context.Context, sel ast.SelectionSet, v *schema.OccurrenceStatus) graphql.Marshaler {
-	if v == nil {
-		return graphql.Null
-	}
-	res := graphql.MarshalString(string(*v))
-	return res
 }
 
 func (ec *executionContext) marshalOReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐReview(ctx context.Context, sel ast.SelectionSet, v *ent.Review) graphql.Marshaler {
