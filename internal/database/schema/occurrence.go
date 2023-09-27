@@ -27,7 +27,6 @@ func (Occurrence) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
 		field.Time("date").Default(time.Now),
-		field.Enum("status").GoType(OccurrenceStatus("")).Default("AWAITING_APPROVAL"),
 		field.Int("kj").Optional().Nillable(),
 		field.Int("kcal").Optional().Nillable(),
 		field.Int("fat").Optional().Nillable(),
@@ -40,6 +39,7 @@ func (Occurrence) Fields() []ent.Field {
 		field.Int("price_student").Optional().Nillable(),
 		field.Int("price_staff").Optional().Nillable(),
 		field.Int("price_guest").Optional().Nillable(),
+		field.Time("notAvailableAfter").Optional().Nillable(),
 	}
 }
 

@@ -78,7 +78,6 @@ var (
 	OccurrenceColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "date", Type: field.TypeTime},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"CONFIRMED", "APPROVED", "AWAITING_APPROVAL", "UPDATED", "PENDING_DELETION"}, Default: "AWAITING_APPROVAL"},
 		{Name: "kj", Type: field.TypeInt, Nullable: true},
 		{Name: "kcal", Type: field.TypeInt, Nullable: true},
 		{Name: "fat", Type: field.TypeInt, Nullable: true},
@@ -91,6 +90,7 @@ var (
 		{Name: "price_student", Type: field.TypeInt, Nullable: true},
 		{Name: "price_staff", Type: field.TypeInt, Nullable: true},
 		{Name: "price_guest", Type: field.TypeInt, Nullable: true},
+		{Name: "not_available_after", Type: field.TypeTime, Nullable: true},
 		{Name: "dish", Type: field.TypeUUID},
 		{Name: "location", Type: field.TypeUUID},
 	}

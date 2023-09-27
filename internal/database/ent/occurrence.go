@@ -13,7 +13,6 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
-	"github.com/mensatt/backend/internal/database/schema"
 )
 
 // Occurrence is the model entity for the Occurrence schema.
@@ -23,8 +22,6 @@ type Occurrence struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// Date holds the value of the "date" field.
 	Date time.Time `json:"date,omitempty"`
-	// Status holds the value of the "status" field.
-	Status schema.OccurrenceStatus `json:"status,omitempty"`
 	// Kj holds the value of the "kj" field.
 	Kj *int `json:"kj,omitempty"`
 	// Kcal holds the value of the "kcal" field.
@@ -49,6 +46,8 @@ type Occurrence struct {
 	PriceStaff *int `json:"price_staff,omitempty"`
 	// PriceGuest holds the value of the "price_guest" field.
 	PriceGuest *int `json:"price_guest,omitempty"`
+	// NotAvailableAfter holds the value of the "notAvailableAfter" field.
+	NotAvailableAfter *time.Time `json:"notAvailableAfter,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OccurrenceQuery when eager-loading is set.
 	Edges        OccurrenceEdges `json:"edges"`
@@ -134,9 +133,7 @@ func (*Occurrence) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case occurrence.FieldKj, occurrence.FieldKcal, occurrence.FieldFat, occurrence.FieldSaturatedFat, occurrence.FieldCarbohydrates, occurrence.FieldSugar, occurrence.FieldFiber, occurrence.FieldProtein, occurrence.FieldSalt, occurrence.FieldPriceStudent, occurrence.FieldPriceStaff, occurrence.FieldPriceGuest:
 			values[i] = new(sql.NullInt64)
-		case occurrence.FieldStatus:
-			values[i] = new(sql.NullString)
-		case occurrence.FieldDate:
+		case occurrence.FieldDate, occurrence.FieldNotAvailableAfter:
 			values[i] = new(sql.NullTime)
 		case occurrence.FieldID:
 			values[i] = new(uuid.UUID)
@@ -170,12 +167,6 @@ func (o *Occurrence) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field date", values[i])
 			} else if value.Valid {
 				o.Date = value.Time
-			}
-		case occurrence.FieldStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				o.Status = schema.OccurrenceStatus(value.String)
 			}
 		case occurrence.FieldKj:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -261,6 +252,13 @@ func (o *Occurrence) assignValues(columns []string, values []any) error {
 				o.PriceGuest = new(int)
 				*o.PriceGuest = int(value.Int64)
 			}
+		case occurrence.FieldNotAvailableAfter:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field notAvailableAfter", values[i])
+			} else if value.Valid {
+				o.NotAvailableAfter = new(time.Time)
+				*o.NotAvailableAfter = value.Time
+			}
 		case occurrence.ForeignKeys[0]:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field dish", values[i])
@@ -339,9 +337,6 @@ func (o *Occurrence) String() string {
 	builder.WriteString("date=")
 	builder.WriteString(o.Date.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", o.Status))
-	builder.WriteString(", ")
 	if v := o.Kj; v != nil {
 		builder.WriteString("kj=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
@@ -400,6 +395,11 @@ func (o *Occurrence) String() string {
 	if v := o.PriceGuest; v != nil {
 		builder.WriteString("price_guest=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	if v := o.NotAvailableAfter; v != nil {
+		builder.WriteString("notAvailableAfter=")
+		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteByte(')')
 	return builder.String()

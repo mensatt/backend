@@ -34,7 +34,7 @@ func seedTags(ctx context.Context, client *ent.Client) error {
 		client.Tag.Create().SetID("CO2").SetName("CO2-Neutral").SetDescription("CO2-Neutral").SetShortName("CO2-Neutral").SetPriority(schema.Medium),
 		client.Tag.Create().SetID("Bio").SetName("Bio").SetDescription("Bio").SetShortName("Bio").SetPriority(schema.Medium),
 		client.Tag.Create().SetID("MV").SetName("MensaVital").SetDescription("MensaVital").SetShortName("MensaVital").SetPriority(schema.Medium),
-		// todo: missing alchohol icon
+		client.Tag.Create().SetID("A").SetName("Alkohol").SetDescription("Alkohol").SetShortName("🍺").SetPriority(schema.Medium).SetIsAllergy(true),
 
 		client.Tag.Create().SetID("Wz").SetName("Weizen").SetDescription("Weizen (Gluten)").SetShortName("🌾").SetPriority(schema.Medium).SetIsAllergy(true),
 		client.Tag.Create().SetID("Ro").SetName("Roggen").SetDescription("Roggen (Gluten)").SetPriority(schema.Medium).SetIsAllergy(true),

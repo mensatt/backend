@@ -15,20 +15,3 @@ func (TagPriority) Values() (kinds []string) {
 	}
 	return
 }
-
-type OccurrenceStatus string
-
-const (
-	Confirmed        OccurrenceStatus = "CONFIRMED"
-	Approved         OccurrenceStatus = "APPROVED"
-	AwaitingApproval OccurrenceStatus = "AWAITING_APPROVAL"
-	Updated          OccurrenceStatus = "UPDATED"
-	PendingDeletion  OccurrenceStatus = "PENDING_DELETION"
-)
-
-func (OccurrenceStatus) Values() (kinds []string) {
-	for _, s := range []OccurrenceStatus{Confirmed, Approved, AwaitingApproval, Updated, PendingDeletion} {
-		kinds = append(kinds, string(s))
-	}
-	return
-}

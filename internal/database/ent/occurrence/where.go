@@ -9,7 +9,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/predicate"
-	"github.com/mensatt/backend/internal/database/schema"
 )
 
 // ID filters vertices based on their ID field.
@@ -122,6 +121,11 @@ func PriceGuest(v int) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldEQ(FieldPriceGuest, v))
 }
 
+// NotAvailableAfter applies equality check predicate on the "notAvailableAfter" field. It's identical to NotAvailableAfterEQ.
+func NotAvailableAfter(v time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldEQ(FieldNotAvailableAfter, v))
+}
+
 // DateEQ applies the EQ predicate on the "date" field.
 func DateEQ(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldEQ(FieldDate, v))
@@ -160,36 +164,6 @@ func DateLT(v time.Time) predicate.Occurrence {
 // DateLTE applies the LTE predicate on the "date" field.
 func DateLTE(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldLTE(FieldDate, v))
-}
-
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v schema.OccurrenceStatus) predicate.Occurrence {
-	vc := v
-	return predicate.Occurrence(sql.FieldEQ(FieldStatus, vc))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v schema.OccurrenceStatus) predicate.Occurrence {
-	vc := v
-	return predicate.Occurrence(sql.FieldNEQ(FieldStatus, vc))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...schema.OccurrenceStatus) predicate.Occurrence {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Occurrence(sql.FieldIn(FieldStatus, v...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...schema.OccurrenceStatus) predicate.Occurrence {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Occurrence(sql.FieldNotIn(FieldStatus, v...))
 }
 
 // KjEQ applies the EQ predicate on the "kj" field.
@@ -790,6 +764,56 @@ func PriceGuestIsNil() predicate.Occurrence {
 // PriceGuestNotNil applies the NotNil predicate on the "price_guest" field.
 func PriceGuestNotNil() predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldNotNull(FieldPriceGuest))
+}
+
+// NotAvailableAfterEQ applies the EQ predicate on the "notAvailableAfter" field.
+func NotAvailableAfterEQ(v time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldEQ(FieldNotAvailableAfter, v))
+}
+
+// NotAvailableAfterNEQ applies the NEQ predicate on the "notAvailableAfter" field.
+func NotAvailableAfterNEQ(v time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldNEQ(FieldNotAvailableAfter, v))
+}
+
+// NotAvailableAfterIn applies the In predicate on the "notAvailableAfter" field.
+func NotAvailableAfterIn(vs ...time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldIn(FieldNotAvailableAfter, vs...))
+}
+
+// NotAvailableAfterNotIn applies the NotIn predicate on the "notAvailableAfter" field.
+func NotAvailableAfterNotIn(vs ...time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldNotIn(FieldNotAvailableAfter, vs...))
+}
+
+// NotAvailableAfterGT applies the GT predicate on the "notAvailableAfter" field.
+func NotAvailableAfterGT(v time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldGT(FieldNotAvailableAfter, v))
+}
+
+// NotAvailableAfterGTE applies the GTE predicate on the "notAvailableAfter" field.
+func NotAvailableAfterGTE(v time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldGTE(FieldNotAvailableAfter, v))
+}
+
+// NotAvailableAfterLT applies the LT predicate on the "notAvailableAfter" field.
+func NotAvailableAfterLT(v time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldLT(FieldNotAvailableAfter, v))
+}
+
+// NotAvailableAfterLTE applies the LTE predicate on the "notAvailableAfter" field.
+func NotAvailableAfterLTE(v time.Time) predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldLTE(FieldNotAvailableAfter, v))
+}
+
+// NotAvailableAfterIsNil applies the IsNil predicate on the "notAvailableAfter" field.
+func NotAvailableAfterIsNil() predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldIsNull(FieldNotAvailableAfter))
+}
+
+// NotAvailableAfterNotNil applies the NotNil predicate on the "notAvailableAfter" field.
+func NotAvailableAfterNotNil() predicate.Occurrence {
+	return predicate.Occurrence(sql.FieldNotNull(FieldNotAvailableAfter))
 }
 
 // HasLocation applies the HasEdge predicate on the "location" edge.

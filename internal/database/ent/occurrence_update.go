@@ -18,7 +18,6 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/predicate"
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/database/ent/tag"
-	"github.com/mensatt/backend/internal/database/schema"
 )
 
 // OccurrenceUpdate is the builder for updating Occurrence entities.
@@ -44,20 +43,6 @@ func (ou *OccurrenceUpdate) SetDate(t time.Time) *OccurrenceUpdate {
 func (ou *OccurrenceUpdate) SetNillableDate(t *time.Time) *OccurrenceUpdate {
 	if t != nil {
 		ou.SetDate(*t)
-	}
-	return ou
-}
-
-// SetStatus sets the "status" field.
-func (ou *OccurrenceUpdate) SetStatus(ss schema.OccurrenceStatus) *OccurrenceUpdate {
-	ou.mutation.SetStatus(ss)
-	return ou
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (ou *OccurrenceUpdate) SetNillableStatus(ss *schema.OccurrenceStatus) *OccurrenceUpdate {
-	if ss != nil {
-		ou.SetStatus(*ss)
 	}
 	return ou
 }
@@ -386,6 +371,26 @@ func (ou *OccurrenceUpdate) ClearPriceGuest() *OccurrenceUpdate {
 	return ou
 }
 
+// SetNotAvailableAfter sets the "notAvailableAfter" field.
+func (ou *OccurrenceUpdate) SetNotAvailableAfter(t time.Time) *OccurrenceUpdate {
+	ou.mutation.SetNotAvailableAfter(t)
+	return ou
+}
+
+// SetNillableNotAvailableAfter sets the "notAvailableAfter" field if the given value is not nil.
+func (ou *OccurrenceUpdate) SetNillableNotAvailableAfter(t *time.Time) *OccurrenceUpdate {
+	if t != nil {
+		ou.SetNotAvailableAfter(*t)
+	}
+	return ou
+}
+
+// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+func (ou *OccurrenceUpdate) ClearNotAvailableAfter() *OccurrenceUpdate {
+	ou.mutation.ClearNotAvailableAfter()
+	return ou
+}
+
 // SetLocationID sets the "location" edge to the Location entity by ID.
 func (ou *OccurrenceUpdate) SetLocationID(id uuid.UUID) *OccurrenceUpdate {
 	ou.mutation.SetLocationID(id)
@@ -562,11 +567,6 @@ func (ou *OccurrenceUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ou *OccurrenceUpdate) check() error {
-	if v, ok := ou.mutation.Status(); ok {
-		if err := occurrence.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Occurrence.status": %w`, err)}
-		}
-	}
 	if _, ok := ou.mutation.LocationID(); ou.mutation.LocationCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Occurrence.location"`)
 	}
@@ -590,9 +590,6 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := ou.mutation.Date(); ok {
 		_spec.SetField(occurrence.FieldDate, field.TypeTime, value)
-	}
-	if value, ok := ou.mutation.Status(); ok {
-		_spec.SetField(occurrence.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := ou.mutation.Kj(); ok {
 		_spec.SetField(occurrence.FieldKj, field.TypeInt, value)
@@ -701,6 +698,12 @@ func (ou *OccurrenceUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if ou.mutation.PriceGuestCleared() {
 		_spec.ClearField(occurrence.FieldPriceGuest, field.TypeInt)
+	}
+	if value, ok := ou.mutation.NotAvailableAfter(); ok {
+		_spec.SetField(occurrence.FieldNotAvailableAfter, field.TypeTime, value)
+	}
+	if ou.mutation.NotAvailableAfterCleared() {
+		_spec.ClearField(occurrence.FieldNotAvailableAfter, field.TypeTime)
 	}
 	if ou.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -925,20 +928,6 @@ func (ouo *OccurrenceUpdateOne) SetDate(t time.Time) *OccurrenceUpdateOne {
 func (ouo *OccurrenceUpdateOne) SetNillableDate(t *time.Time) *OccurrenceUpdateOne {
 	if t != nil {
 		ouo.SetDate(*t)
-	}
-	return ouo
-}
-
-// SetStatus sets the "status" field.
-func (ouo *OccurrenceUpdateOne) SetStatus(ss schema.OccurrenceStatus) *OccurrenceUpdateOne {
-	ouo.mutation.SetStatus(ss)
-	return ouo
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (ouo *OccurrenceUpdateOne) SetNillableStatus(ss *schema.OccurrenceStatus) *OccurrenceUpdateOne {
-	if ss != nil {
-		ouo.SetStatus(*ss)
 	}
 	return ouo
 }
@@ -1267,6 +1256,26 @@ func (ouo *OccurrenceUpdateOne) ClearPriceGuest() *OccurrenceUpdateOne {
 	return ouo
 }
 
+// SetNotAvailableAfter sets the "notAvailableAfter" field.
+func (ouo *OccurrenceUpdateOne) SetNotAvailableAfter(t time.Time) *OccurrenceUpdateOne {
+	ouo.mutation.SetNotAvailableAfter(t)
+	return ouo
+}
+
+// SetNillableNotAvailableAfter sets the "notAvailableAfter" field if the given value is not nil.
+func (ouo *OccurrenceUpdateOne) SetNillableNotAvailableAfter(t *time.Time) *OccurrenceUpdateOne {
+	if t != nil {
+		ouo.SetNotAvailableAfter(*t)
+	}
+	return ouo
+}
+
+// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+func (ouo *OccurrenceUpdateOne) ClearNotAvailableAfter() *OccurrenceUpdateOne {
+	ouo.mutation.ClearNotAvailableAfter()
+	return ouo
+}
+
 // SetLocationID sets the "location" edge to the Location entity by ID.
 func (ouo *OccurrenceUpdateOne) SetLocationID(id uuid.UUID) *OccurrenceUpdateOne {
 	ouo.mutation.SetLocationID(id)
@@ -1456,11 +1465,6 @@ func (ouo *OccurrenceUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (ouo *OccurrenceUpdateOne) check() error {
-	if v, ok := ouo.mutation.Status(); ok {
-		if err := occurrence.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Occurrence.status": %w`, err)}
-		}
-	}
 	if _, ok := ouo.mutation.LocationID(); ouo.mutation.LocationCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Occurrence.location"`)
 	}
@@ -1501,9 +1505,6 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	}
 	if value, ok := ouo.mutation.Date(); ok {
 		_spec.SetField(occurrence.FieldDate, field.TypeTime, value)
-	}
-	if value, ok := ouo.mutation.Status(); ok {
-		_spec.SetField(occurrence.FieldStatus, field.TypeEnum, value)
 	}
 	if value, ok := ouo.mutation.Kj(); ok {
 		_spec.SetField(occurrence.FieldKj, field.TypeInt, value)
@@ -1612,6 +1613,12 @@ func (ouo *OccurrenceUpdateOne) sqlSave(ctx context.Context) (_node *Occurrence,
 	}
 	if ouo.mutation.PriceGuestCleared() {
 		_spec.ClearField(occurrence.FieldPriceGuest, field.TypeInt)
+	}
+	if value, ok := ouo.mutation.NotAvailableAfter(); ok {
+		_spec.SetField(occurrence.FieldNotAvailableAfter, field.TypeTime, value)
+	}
+	if ouo.mutation.NotAvailableAfterCleared() {
+		_spec.ClearField(occurrence.FieldNotAvailableAfter, field.TypeTime)
 	}
 	if ouo.mutation.LocationCleared() {
 		edge := &sqlgraph.EdgeSpec{

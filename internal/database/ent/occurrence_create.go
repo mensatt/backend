@@ -18,7 +18,6 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/database/ent/tag"
-	"github.com/mensatt/backend/internal/database/schema"
 )
 
 // OccurrenceCreate is the builder for creating a Occurrence entity.
@@ -39,20 +38,6 @@ func (oc *OccurrenceCreate) SetDate(t time.Time) *OccurrenceCreate {
 func (oc *OccurrenceCreate) SetNillableDate(t *time.Time) *OccurrenceCreate {
 	if t != nil {
 		oc.SetDate(*t)
-	}
-	return oc
-}
-
-// SetStatus sets the "status" field.
-func (oc *OccurrenceCreate) SetStatus(ss schema.OccurrenceStatus) *OccurrenceCreate {
-	oc.mutation.SetStatus(ss)
-	return oc
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (oc *OccurrenceCreate) SetNillableStatus(ss *schema.OccurrenceStatus) *OccurrenceCreate {
-	if ss != nil {
-		oc.SetStatus(*ss)
 	}
 	return oc
 }
@@ -225,6 +210,20 @@ func (oc *OccurrenceCreate) SetNillablePriceGuest(i *int) *OccurrenceCreate {
 	return oc
 }
 
+// SetNotAvailableAfter sets the "notAvailableAfter" field.
+func (oc *OccurrenceCreate) SetNotAvailableAfter(t time.Time) *OccurrenceCreate {
+	oc.mutation.SetNotAvailableAfter(t)
+	return oc
+}
+
+// SetNillableNotAvailableAfter sets the "notAvailableAfter" field if the given value is not nil.
+func (oc *OccurrenceCreate) SetNillableNotAvailableAfter(t *time.Time) *OccurrenceCreate {
+	if t != nil {
+		oc.SetNotAvailableAfter(*t)
+	}
+	return oc
+}
+
 // SetID sets the "id" field.
 func (oc *OccurrenceCreate) SetID(u uuid.UUID) *OccurrenceCreate {
 	oc.mutation.SetID(u)
@@ -345,10 +344,6 @@ func (oc *OccurrenceCreate) defaults() {
 		v := occurrence.DefaultDate()
 		oc.mutation.SetDate(v)
 	}
-	if _, ok := oc.mutation.Status(); !ok {
-		v := occurrence.DefaultStatus
-		oc.mutation.SetStatus(v)
-	}
 	if _, ok := oc.mutation.ID(); !ok {
 		v := occurrence.DefaultID()
 		oc.mutation.SetID(v)
@@ -359,14 +354,6 @@ func (oc *OccurrenceCreate) defaults() {
 func (oc *OccurrenceCreate) check() error {
 	if _, ok := oc.mutation.Date(); !ok {
 		return &ValidationError{Name: "date", err: errors.New(`ent: missing required field "Occurrence.date"`)}
-	}
-	if _, ok := oc.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Occurrence.status"`)}
-	}
-	if v, ok := oc.mutation.Status(); ok {
-		if err := occurrence.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Occurrence.status": %w`, err)}
-		}
 	}
 	if _, ok := oc.mutation.LocationID(); !ok {
 		return &ValidationError{Name: "location", err: errors.New(`ent: missing required edge "Occurrence.location"`)}
@@ -413,10 +400,6 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 	if value, ok := oc.mutation.Date(); ok {
 		_spec.SetField(occurrence.FieldDate, field.TypeTime, value)
 		_node.Date = value
-	}
-	if value, ok := oc.mutation.Status(); ok {
-		_spec.SetField(occurrence.FieldStatus, field.TypeEnum, value)
-		_node.Status = value
 	}
 	if value, ok := oc.mutation.Kj(); ok {
 		_spec.SetField(occurrence.FieldKj, field.TypeInt, value)
@@ -465,6 +448,10 @@ func (oc *OccurrenceCreate) createSpec() (*Occurrence, *sqlgraph.CreateSpec) {
 	if value, ok := oc.mutation.PriceGuest(); ok {
 		_spec.SetField(occurrence.FieldPriceGuest, field.TypeInt, value)
 		_node.PriceGuest = &value
+	}
+	if value, ok := oc.mutation.NotAvailableAfter(); ok {
+		_spec.SetField(occurrence.FieldNotAvailableAfter, field.TypeTime, value)
+		_node.NotAvailableAfter = &value
 	}
 	if nodes := oc.mutation.LocationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -609,18 +596,6 @@ func (u *OccurrenceUpsert) SetDate(v time.Time) *OccurrenceUpsert {
 // UpdateDate sets the "date" field to the value that was provided on create.
 func (u *OccurrenceUpsert) UpdateDate() *OccurrenceUpsert {
 	u.SetExcluded(occurrence.FieldDate)
-	return u
-}
-
-// SetStatus sets the "status" field.
-func (u *OccurrenceUpsert) SetStatus(v schema.OccurrenceStatus) *OccurrenceUpsert {
-	u.Set(occurrence.FieldStatus, v)
-	return u
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *OccurrenceUpsert) UpdateStatus() *OccurrenceUpsert {
-	u.SetExcluded(occurrence.FieldStatus)
 	return u
 }
 
@@ -912,6 +887,24 @@ func (u *OccurrenceUpsert) ClearPriceGuest() *OccurrenceUpsert {
 	return u
 }
 
+// SetNotAvailableAfter sets the "notAvailableAfter" field.
+func (u *OccurrenceUpsert) SetNotAvailableAfter(v time.Time) *OccurrenceUpsert {
+	u.Set(occurrence.FieldNotAvailableAfter, v)
+	return u
+}
+
+// UpdateNotAvailableAfter sets the "notAvailableAfter" field to the value that was provided on create.
+func (u *OccurrenceUpsert) UpdateNotAvailableAfter() *OccurrenceUpsert {
+	u.SetExcluded(occurrence.FieldNotAvailableAfter)
+	return u
+}
+
+// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+func (u *OccurrenceUpsert) ClearNotAvailableAfter() *OccurrenceUpsert {
+	u.SetNull(occurrence.FieldNotAvailableAfter)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -971,20 +964,6 @@ func (u *OccurrenceUpsertOne) SetDate(v time.Time) *OccurrenceUpsertOne {
 func (u *OccurrenceUpsertOne) UpdateDate() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateDate()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *OccurrenceUpsertOne) SetStatus(v schema.OccurrenceStatus) *OccurrenceUpsertOne {
-	return u.Update(func(s *OccurrenceUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *OccurrenceUpsertOne) UpdateStatus() *OccurrenceUpsertOne {
-	return u.Update(func(s *OccurrenceUpsert) {
-		s.UpdateStatus()
 	})
 }
 
@@ -1324,6 +1303,27 @@ func (u *OccurrenceUpsertOne) ClearPriceGuest() *OccurrenceUpsertOne {
 	})
 }
 
+// SetNotAvailableAfter sets the "notAvailableAfter" field.
+func (u *OccurrenceUpsertOne) SetNotAvailableAfter(v time.Time) *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.SetNotAvailableAfter(v)
+	})
+}
+
+// UpdateNotAvailableAfter sets the "notAvailableAfter" field to the value that was provided on create.
+func (u *OccurrenceUpsertOne) UpdateNotAvailableAfter() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.UpdateNotAvailableAfter()
+	})
+}
+
+// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+func (u *OccurrenceUpsertOne) ClearNotAvailableAfter() *OccurrenceUpsertOne {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearNotAvailableAfter()
+	})
+}
+
 // Exec executes the query.
 func (u *OccurrenceUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
@@ -1546,20 +1546,6 @@ func (u *OccurrenceUpsertBulk) SetDate(v time.Time) *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) UpdateDate() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateDate()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *OccurrenceUpsertBulk) SetStatus(v schema.OccurrenceStatus) *OccurrenceUpsertBulk {
-	return u.Update(func(s *OccurrenceUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *OccurrenceUpsertBulk) UpdateStatus() *OccurrenceUpsertBulk {
-	return u.Update(func(s *OccurrenceUpsert) {
-		s.UpdateStatus()
 	})
 }
 
@@ -1896,6 +1882,27 @@ func (u *OccurrenceUpsertBulk) UpdatePriceGuest() *OccurrenceUpsertBulk {
 func (u *OccurrenceUpsertBulk) ClearPriceGuest() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.ClearPriceGuest()
+	})
+}
+
+// SetNotAvailableAfter sets the "notAvailableAfter" field.
+func (u *OccurrenceUpsertBulk) SetNotAvailableAfter(v time.Time) *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.SetNotAvailableAfter(v)
+	})
+}
+
+// UpdateNotAvailableAfter sets the "notAvailableAfter" field to the value that was provided on create.
+func (u *OccurrenceUpsertBulk) UpdateNotAvailableAfter() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.UpdateNotAvailableAfter()
+	})
+}
+
+// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+func (u *OccurrenceUpsertBulk) ClearNotAvailableAfter() *OccurrenceUpsertBulk {
+	return u.Update(func(s *OccurrenceUpsert) {
+		s.ClearNotAvailableAfter()
 	})
 }
 
