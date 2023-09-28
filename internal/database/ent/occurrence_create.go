@@ -210,13 +210,13 @@ func (oc *OccurrenceCreate) SetNillablePriceGuest(i *int) *OccurrenceCreate {
 	return oc
 }
 
-// SetNotAvailableAfter sets the "notAvailableAfter" field.
+// SetNotAvailableAfter sets the "not_available_after" field.
 func (oc *OccurrenceCreate) SetNotAvailableAfter(t time.Time) *OccurrenceCreate {
 	oc.mutation.SetNotAvailableAfter(t)
 	return oc
 }
 
-// SetNillableNotAvailableAfter sets the "notAvailableAfter" field if the given value is not nil.
+// SetNillableNotAvailableAfter sets the "not_available_after" field if the given value is not nil.
 func (oc *OccurrenceCreate) SetNillableNotAvailableAfter(t *time.Time) *OccurrenceCreate {
 	if t != nil {
 		oc.SetNotAvailableAfter(*t)
@@ -887,19 +887,19 @@ func (u *OccurrenceUpsert) ClearPriceGuest() *OccurrenceUpsert {
 	return u
 }
 
-// SetNotAvailableAfter sets the "notAvailableAfter" field.
+// SetNotAvailableAfter sets the "not_available_after" field.
 func (u *OccurrenceUpsert) SetNotAvailableAfter(v time.Time) *OccurrenceUpsert {
 	u.Set(occurrence.FieldNotAvailableAfter, v)
 	return u
 }
 
-// UpdateNotAvailableAfter sets the "notAvailableAfter" field to the value that was provided on create.
+// UpdateNotAvailableAfter sets the "not_available_after" field to the value that was provided on create.
 func (u *OccurrenceUpsert) UpdateNotAvailableAfter() *OccurrenceUpsert {
 	u.SetExcluded(occurrence.FieldNotAvailableAfter)
 	return u
 }
 
-// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+// ClearNotAvailableAfter clears the value of the "not_available_after" field.
 func (u *OccurrenceUpsert) ClearNotAvailableAfter() *OccurrenceUpsert {
 	u.SetNull(occurrence.FieldNotAvailableAfter)
 	return u
@@ -1303,21 +1303,21 @@ func (u *OccurrenceUpsertOne) ClearPriceGuest() *OccurrenceUpsertOne {
 	})
 }
 
-// SetNotAvailableAfter sets the "notAvailableAfter" field.
+// SetNotAvailableAfter sets the "not_available_after" field.
 func (u *OccurrenceUpsertOne) SetNotAvailableAfter(v time.Time) *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.SetNotAvailableAfter(v)
 	})
 }
 
-// UpdateNotAvailableAfter sets the "notAvailableAfter" field to the value that was provided on create.
+// UpdateNotAvailableAfter sets the "not_available_after" field to the value that was provided on create.
 func (u *OccurrenceUpsertOne) UpdateNotAvailableAfter() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateNotAvailableAfter()
 	})
 }
 
-// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+// ClearNotAvailableAfter clears the value of the "not_available_after" field.
 func (u *OccurrenceUpsertOne) ClearNotAvailableAfter() *OccurrenceUpsertOne {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.ClearNotAvailableAfter()
@@ -1885,21 +1885,21 @@ func (u *OccurrenceUpsertBulk) ClearPriceGuest() *OccurrenceUpsertBulk {
 	})
 }
 
-// SetNotAvailableAfter sets the "notAvailableAfter" field.
+// SetNotAvailableAfter sets the "not_available_after" field.
 func (u *OccurrenceUpsertBulk) SetNotAvailableAfter(v time.Time) *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.SetNotAvailableAfter(v)
 	})
 }
 
-// UpdateNotAvailableAfter sets the "notAvailableAfter" field to the value that was provided on create.
+// UpdateNotAvailableAfter sets the "not_available_after" field to the value that was provided on create.
 func (u *OccurrenceUpsertBulk) UpdateNotAvailableAfter() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.UpdateNotAvailableAfter()
 	})
 }
 
-// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+// ClearNotAvailableAfter clears the value of the "not_available_after" field.
 func (u *OccurrenceUpsertBulk) ClearNotAvailableAfter() *OccurrenceUpsertBulk {
 	return u.Update(func(s *OccurrenceUpsert) {
 		s.ClearNotAvailableAfter()

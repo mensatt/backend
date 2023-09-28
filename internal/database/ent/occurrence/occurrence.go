@@ -41,7 +41,7 @@ const (
 	FieldPriceStaff = "price_staff"
 	// FieldPriceGuest holds the string denoting the price_guest field in the database.
 	FieldPriceGuest = "price_guest"
-	// FieldNotAvailableAfter holds the string denoting the notavailableafter field in the database.
+	// FieldNotAvailableAfter holds the string denoting the not_available_after field in the database.
 	FieldNotAvailableAfter = "not_available_after"
 	// EdgeLocation holds the string denoting the location edge name in mutations.
 	EdgeLocation = "location"
@@ -220,7 +220,7 @@ func ByPriceGuest(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPriceGuest, opts...).ToFunc()
 }
 
-// ByNotAvailableAfter orders the results by the notAvailableAfter field.
+// ByNotAvailableAfter orders the results by the not_available_after field.
 func ByNotAvailableAfter(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNotAvailableAfter, opts...).ToFunc()
 }

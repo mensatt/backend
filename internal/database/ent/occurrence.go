@@ -46,8 +46,8 @@ type Occurrence struct {
 	PriceStaff *int `json:"price_staff,omitempty"`
 	// PriceGuest holds the value of the "price_guest" field.
 	PriceGuest *int `json:"price_guest,omitempty"`
-	// NotAvailableAfter holds the value of the "notAvailableAfter" field.
-	NotAvailableAfter *time.Time `json:"notAvailableAfter,omitempty"`
+	// NotAvailableAfter holds the value of the "not_available_after" field.
+	NotAvailableAfter *time.Time `json:"not_available_after,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OccurrenceQuery when eager-loading is set.
 	Edges        OccurrenceEdges `json:"edges"`
@@ -254,7 +254,7 @@ func (o *Occurrence) assignValues(columns []string, values []any) error {
 			}
 		case occurrence.FieldNotAvailableAfter:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field notAvailableAfter", values[i])
+				return fmt.Errorf("unexpected type %T for field not_available_after", values[i])
 			} else if value.Valid {
 				o.NotAvailableAfter = new(time.Time)
 				*o.NotAvailableAfter = value.Time
@@ -398,7 +398,7 @@ func (o *Occurrence) String() string {
 	}
 	builder.WriteString(", ")
 	if v := o.NotAvailableAfter; v != nil {
-		builder.WriteString("notAvailableAfter=")
+		builder.WriteString("not_available_after=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteByte(')')
