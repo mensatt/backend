@@ -121,7 +121,7 @@ func PriceGuest(v int) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldEQ(FieldPriceGuest, v))
 }
 
-// NotAvailableAfter applies equality check predicate on the "notAvailableAfter" field. It's identical to NotAvailableAfterEQ.
+// NotAvailableAfter applies equality check predicate on the "not_available_after" field. It's identical to NotAvailableAfterEQ.
 func NotAvailableAfter(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldEQ(FieldNotAvailableAfter, v))
 }
@@ -766,52 +766,52 @@ func PriceGuestNotNil() predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldNotNull(FieldPriceGuest))
 }
 
-// NotAvailableAfterEQ applies the EQ predicate on the "notAvailableAfter" field.
+// NotAvailableAfterEQ applies the EQ predicate on the "not_available_after" field.
 func NotAvailableAfterEQ(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldEQ(FieldNotAvailableAfter, v))
 }
 
-// NotAvailableAfterNEQ applies the NEQ predicate on the "notAvailableAfter" field.
+// NotAvailableAfterNEQ applies the NEQ predicate on the "not_available_after" field.
 func NotAvailableAfterNEQ(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldNEQ(FieldNotAvailableAfter, v))
 }
 
-// NotAvailableAfterIn applies the In predicate on the "notAvailableAfter" field.
+// NotAvailableAfterIn applies the In predicate on the "not_available_after" field.
 func NotAvailableAfterIn(vs ...time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldIn(FieldNotAvailableAfter, vs...))
 }
 
-// NotAvailableAfterNotIn applies the NotIn predicate on the "notAvailableAfter" field.
+// NotAvailableAfterNotIn applies the NotIn predicate on the "not_available_after" field.
 func NotAvailableAfterNotIn(vs ...time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldNotIn(FieldNotAvailableAfter, vs...))
 }
 
-// NotAvailableAfterGT applies the GT predicate on the "notAvailableAfter" field.
+// NotAvailableAfterGT applies the GT predicate on the "not_available_after" field.
 func NotAvailableAfterGT(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldGT(FieldNotAvailableAfter, v))
 }
 
-// NotAvailableAfterGTE applies the GTE predicate on the "notAvailableAfter" field.
+// NotAvailableAfterGTE applies the GTE predicate on the "not_available_after" field.
 func NotAvailableAfterGTE(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldGTE(FieldNotAvailableAfter, v))
 }
 
-// NotAvailableAfterLT applies the LT predicate on the "notAvailableAfter" field.
+// NotAvailableAfterLT applies the LT predicate on the "not_available_after" field.
 func NotAvailableAfterLT(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldLT(FieldNotAvailableAfter, v))
 }
 
-// NotAvailableAfterLTE applies the LTE predicate on the "notAvailableAfter" field.
+// NotAvailableAfterLTE applies the LTE predicate on the "not_available_after" field.
 func NotAvailableAfterLTE(v time.Time) predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldLTE(FieldNotAvailableAfter, v))
 }
 
-// NotAvailableAfterIsNil applies the IsNil predicate on the "notAvailableAfter" field.
+// NotAvailableAfterIsNil applies the IsNil predicate on the "not_available_after" field.
 func NotAvailableAfterIsNil() predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldIsNull(FieldNotAvailableAfter))
 }
 
-// NotAvailableAfterNotNil applies the NotNil predicate on the "notAvailableAfter" field.
+// NotAvailableAfterNotNil applies the NotNil predicate on the "not_available_after" field.
 func NotAvailableAfterNotNil() predicate.Occurrence {
 	return predicate.Occurrence(sql.FieldNotNull(FieldNotAvailableAfter))
 }

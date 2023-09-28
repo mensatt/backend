@@ -371,13 +371,13 @@ func (ou *OccurrenceUpdate) ClearPriceGuest() *OccurrenceUpdate {
 	return ou
 }
 
-// SetNotAvailableAfter sets the "notAvailableAfter" field.
+// SetNotAvailableAfter sets the "not_available_after" field.
 func (ou *OccurrenceUpdate) SetNotAvailableAfter(t time.Time) *OccurrenceUpdate {
 	ou.mutation.SetNotAvailableAfter(t)
 	return ou
 }
 
-// SetNillableNotAvailableAfter sets the "notAvailableAfter" field if the given value is not nil.
+// SetNillableNotAvailableAfter sets the "not_available_after" field if the given value is not nil.
 func (ou *OccurrenceUpdate) SetNillableNotAvailableAfter(t *time.Time) *OccurrenceUpdate {
 	if t != nil {
 		ou.SetNotAvailableAfter(*t)
@@ -385,7 +385,7 @@ func (ou *OccurrenceUpdate) SetNillableNotAvailableAfter(t *time.Time) *Occurren
 	return ou
 }
 
-// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+// ClearNotAvailableAfter clears the value of the "not_available_after" field.
 func (ou *OccurrenceUpdate) ClearNotAvailableAfter() *OccurrenceUpdate {
 	ou.mutation.ClearNotAvailableAfter()
 	return ou
@@ -1256,13 +1256,13 @@ func (ouo *OccurrenceUpdateOne) ClearPriceGuest() *OccurrenceUpdateOne {
 	return ouo
 }
 
-// SetNotAvailableAfter sets the "notAvailableAfter" field.
+// SetNotAvailableAfter sets the "not_available_after" field.
 func (ouo *OccurrenceUpdateOne) SetNotAvailableAfter(t time.Time) *OccurrenceUpdateOne {
 	ouo.mutation.SetNotAvailableAfter(t)
 	return ouo
 }
 
-// SetNillableNotAvailableAfter sets the "notAvailableAfter" field if the given value is not nil.
+// SetNillableNotAvailableAfter sets the "not_available_after" field if the given value is not nil.
 func (ouo *OccurrenceUpdateOne) SetNillableNotAvailableAfter(t *time.Time) *OccurrenceUpdateOne {
 	if t != nil {
 		ouo.SetNotAvailableAfter(*t)
@@ -1270,7 +1270,7 @@ func (ouo *OccurrenceUpdateOne) SetNillableNotAvailableAfter(t *time.Time) *Occu
 	return ouo
 }
 
-// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+// ClearNotAvailableAfter clears the value of the "not_available_after" field.
 func (ouo *OccurrenceUpdateOne) ClearNotAvailableAfter() *OccurrenceUpdateOne {
 	ouo.mutation.ClearNotAvailableAfter()
 	return ouo

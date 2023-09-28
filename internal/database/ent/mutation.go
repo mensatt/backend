@@ -2080,52 +2080,52 @@ func (m *LocationMutation) ResetEdge(name string) error {
 // OccurrenceMutation represents an operation that mutates the Occurrence nodes in the graph.
 type OccurrenceMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	date               *time.Time
-	kj                 *int
-	addkj              *int
-	kcal               *int
-	addkcal            *int
-	fat                *int
-	addfat             *int
-	saturated_fat      *int
-	addsaturated_fat   *int
-	carbohydrates      *int
-	addcarbohydrates   *int
-	sugar              *int
-	addsugar           *int
-	fiber              *int
-	addfiber           *int
-	protein            *int
-	addprotein         *int
-	salt               *int
-	addsalt            *int
-	price_student      *int
-	addprice_student   *int
-	price_staff        *int
-	addprice_staff     *int
-	price_guest        *int
-	addprice_guest     *int
-	notAvailableAfter  *time.Time
-	clearedFields      map[string]struct{}
-	location           *uuid.UUID
-	clearedlocation    bool
-	dish               *uuid.UUID
-	cleareddish        bool
-	tags               map[string]struct{}
-	removedtags        map[string]struct{}
-	clearedtags        bool
-	side_dishes        map[uuid.UUID]struct{}
-	removedside_dishes map[uuid.UUID]struct{}
-	clearedside_dishes bool
-	reviews            map[uuid.UUID]struct{}
-	removedreviews     map[uuid.UUID]struct{}
-	clearedreviews     bool
-	done               bool
-	oldValue           func(context.Context) (*Occurrence, error)
-	predicates         []predicate.Occurrence
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	date                *time.Time
+	kj                  *int
+	addkj               *int
+	kcal                *int
+	addkcal             *int
+	fat                 *int
+	addfat              *int
+	saturated_fat       *int
+	addsaturated_fat    *int
+	carbohydrates       *int
+	addcarbohydrates    *int
+	sugar               *int
+	addsugar            *int
+	fiber               *int
+	addfiber            *int
+	protein             *int
+	addprotein          *int
+	salt                *int
+	addsalt             *int
+	price_student       *int
+	addprice_student    *int
+	price_staff         *int
+	addprice_staff      *int
+	price_guest         *int
+	addprice_guest      *int
+	not_available_after *time.Time
+	clearedFields       map[string]struct{}
+	location            *uuid.UUID
+	clearedlocation     bool
+	dish                *uuid.UUID
+	cleareddish         bool
+	tags                map[string]struct{}
+	removedtags         map[string]struct{}
+	clearedtags         bool
+	side_dishes         map[uuid.UUID]struct{}
+	removedside_dishes  map[uuid.UUID]struct{}
+	clearedside_dishes  bool
+	reviews             map[uuid.UUID]struct{}
+	removedreviews      map[uuid.UUID]struct{}
+	clearedreviews      bool
+	done                bool
+	oldValue            func(context.Context) (*Occurrence, error)
+	predicates          []predicate.Occurrence
 }
 
 var _ ent.Mutation = (*OccurrenceMutation)(nil)
@@ -3108,21 +3108,21 @@ func (m *OccurrenceMutation) ResetPriceGuest() {
 	delete(m.clearedFields, occurrence.FieldPriceGuest)
 }
 
-// SetNotAvailableAfter sets the "notAvailableAfter" field.
+// SetNotAvailableAfter sets the "not_available_after" field.
 func (m *OccurrenceMutation) SetNotAvailableAfter(t time.Time) {
-	m.notAvailableAfter = &t
+	m.not_available_after = &t
 }
 
-// NotAvailableAfter returns the value of the "notAvailableAfter" field in the mutation.
+// NotAvailableAfter returns the value of the "not_available_after" field in the mutation.
 func (m *OccurrenceMutation) NotAvailableAfter() (r time.Time, exists bool) {
-	v := m.notAvailableAfter
+	v := m.not_available_after
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldNotAvailableAfter returns the old "notAvailableAfter" field's value of the Occurrence entity.
+// OldNotAvailableAfter returns the old "not_available_after" field's value of the Occurrence entity.
 // If the Occurrence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
 func (m *OccurrenceMutation) OldNotAvailableAfter(ctx context.Context) (v *time.Time, err error) {
@@ -3139,21 +3139,21 @@ func (m *OccurrenceMutation) OldNotAvailableAfter(ctx context.Context) (v *time.
 	return oldValue.NotAvailableAfter, nil
 }
 
-// ClearNotAvailableAfter clears the value of the "notAvailableAfter" field.
+// ClearNotAvailableAfter clears the value of the "not_available_after" field.
 func (m *OccurrenceMutation) ClearNotAvailableAfter() {
-	m.notAvailableAfter = nil
+	m.not_available_after = nil
 	m.clearedFields[occurrence.FieldNotAvailableAfter] = struct{}{}
 }
 
-// NotAvailableAfterCleared returns if the "notAvailableAfter" field was cleared in this mutation.
+// NotAvailableAfterCleared returns if the "not_available_after" field was cleared in this mutation.
 func (m *OccurrenceMutation) NotAvailableAfterCleared() bool {
 	_, ok := m.clearedFields[occurrence.FieldNotAvailableAfter]
 	return ok
 }
 
-// ResetNotAvailableAfter resets all changes to the "notAvailableAfter" field.
+// ResetNotAvailableAfter resets all changes to the "not_available_after" field.
 func (m *OccurrenceMutation) ResetNotAvailableAfter() {
-	m.notAvailableAfter = nil
+	m.not_available_after = nil
 	delete(m.clearedFields, occurrence.FieldNotAvailableAfter)
 }
 
@@ -3471,7 +3471,7 @@ func (m *OccurrenceMutation) Fields() []string {
 	if m.price_guest != nil {
 		fields = append(fields, occurrence.FieldPriceGuest)
 	}
-	if m.notAvailableAfter != nil {
+	if m.not_available_after != nil {
 		fields = append(fields, occurrence.FieldNotAvailableAfter)
 	}
 	return fields

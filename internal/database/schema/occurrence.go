@@ -39,7 +39,7 @@ func (Occurrence) Fields() []ent.Field {
 		field.Int("price_student").Optional().Nillable(),
 		field.Int("price_staff").Optional().Nillable(),
 		field.Int("price_guest").Optional().Nillable(),
-		field.Time("notAvailableAfter").Optional().Nillable(),
+		field.Time("not_available_after").Optional().Nillable(),
 	}
 }
 

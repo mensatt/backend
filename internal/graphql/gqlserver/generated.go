@@ -109,25 +109,26 @@ type ComplexityRoot struct {
 	}
 
 	Occurrence struct {
-		Carbohydrates func(childComplexity int) int
-		Date          func(childComplexity int) int
-		Dish          func(childComplexity int) int
-		Fat           func(childComplexity int) int
-		Fiber         func(childComplexity int) int
-		ID            func(childComplexity int) int
-		Kcal          func(childComplexity int) int
-		Kj            func(childComplexity int) int
-		Location      func(childComplexity int) int
-		PriceGuest    func(childComplexity int) int
-		PriceStaff    func(childComplexity int) int
-		PriceStudent  func(childComplexity int) int
-		Protein       func(childComplexity int) int
-		ReviewData    func(childComplexity int, filter *models.ReviewFilter) int
-		Salt          func(childComplexity int) int
-		SaturatedFat  func(childComplexity int) int
-		SideDishes    func(childComplexity int) int
-		Sugar         func(childComplexity int) int
-		Tags          func(childComplexity int) int
+		Carbohydrates     func(childComplexity int) int
+		Date              func(childComplexity int) int
+		Dish              func(childComplexity int) int
+		Fat               func(childComplexity int) int
+		Fiber             func(childComplexity int) int
+		ID                func(childComplexity int) int
+		Kcal              func(childComplexity int) int
+		Kj                func(childComplexity int) int
+		Location          func(childComplexity int) int
+		NotAvailableAfter func(childComplexity int) int
+		PriceGuest        func(childComplexity int) int
+		PriceStaff        func(childComplexity int) int
+		PriceStudent      func(childComplexity int) int
+		Protein           func(childComplexity int) int
+		ReviewData        func(childComplexity int, filter *models.ReviewFilter) int
+		Salt              func(childComplexity int) int
+		SaturatedFat      func(childComplexity int) int
+		SideDishes        func(childComplexity int) int
+		Sugar             func(childComplexity int) int
+		Tags              func(childComplexity int) int
 	}
 
 	OccurrenceSideDish struct {
@@ -683,6 +684,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Occurrence.Location(childComplexity), true
+
+	case "Occurrence.notAvailableAfter":
+		if e.complexity.Occurrence.NotAvailableAfter == nil {
+			break
+		}
+
+		return e.complexity.Occurrence.NotAvailableAfter(childComplexity), true
 
 	case "Occurrence.priceGuest":
 		if e.complexity.Occurrence.PriceGuest == nil {
@@ -1573,6 +1581,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviewData(filter: ReviewFilter): ReviewDataOccurrence!
+    notAvailableAfter: Date!
 }
 
 type ReviewDataOccurrence {
@@ -3387,6 +3396,8 @@ func (ec *executionContext) fieldContext_Mutation_createOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviewData":
 				return ec.fieldContext_Occurrence_reviewData(ctx, field)
+			case "notAvailableAfter":
+				return ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -3502,6 +3513,8 @@ func (ec *executionContext) fieldContext_Mutation_updateOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviewData":
 				return ec.fieldContext_Occurrence_reviewData(ctx, field)
+			case "notAvailableAfter":
+				return ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -3617,6 +3630,8 @@ func (ec *executionContext) fieldContext_Mutation_deleteOccurrence(ctx context.C
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviewData":
 				return ec.fieldContext_Occurrence_reviewData(ctx, field)
+			case "notAvailableAfter":
+				return ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -5231,6 +5246,50 @@ func (ec *executionContext) fieldContext_Occurrence_reviewData(ctx context.Conte
 	return fc, nil
 }
 
+func (ec *executionContext) _Occurrence_notAvailableAfter(ctx context.Context, field graphql.CollectedField, obj *ent.Occurrence) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.NotAvailableAfter, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*time.Time)
+	fc.Result = res
+	return ec.marshalNDate2ᚖtimeᚐTime(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Occurrence_notAvailableAfter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Occurrence",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Date does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _OccurrenceSideDish_occurrence(ctx context.Context, field graphql.CollectedField, obj *models.OccurrenceSideDish) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_OccurrenceSideDish_occurrence(ctx, field)
 	if err != nil {
@@ -5308,6 +5367,8 @@ func (ec *executionContext) fieldContext_OccurrenceSideDish_occurrence(ctx conte
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviewData":
 				return ec.fieldContext_Occurrence_reviewData(ctx, field)
+			case "notAvailableAfter":
+				return ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -5448,6 +5509,8 @@ func (ec *executionContext) fieldContext_OccurrenceTag_occurrence(ctx context.Co
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviewData":
 				return ec.fieldContext_Occurrence_reviewData(ctx, field)
+			case "notAvailableAfter":
+				return ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -5762,6 +5825,8 @@ func (ec *executionContext) fieldContext_Query_occurrences(ctx context.Context, 
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviewData":
 				return ec.fieldContext_Occurrence_reviewData(ctx, field)
+			case "notAvailableAfter":
+				return ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -6219,6 +6284,8 @@ func (ec *executionContext) fieldContext_Review_occurrence(ctx context.Context, 
 				return ec.fieldContext_Occurrence_tags(ctx, field)
 			case "reviewData":
 				return ec.fieldContext_Occurrence_reviewData(ctx, field)
+			case "notAvailableAfter":
+				return ec.fieldContext_Occurrence_notAvailableAfter(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Occurrence", field.Name)
 		},
@@ -11537,6 +11604,11 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "notAvailableAfter":
+			out.Values[i] = ec._Occurrence_notAvailableAfter(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&out.Invalids, 1)
+			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12753,6 +12825,27 @@ func (ec *executionContext) unmarshalNDate2timeᚐTime(ctx context.Context, v in
 
 func (ec *executionContext) marshalNDate2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	res := scalars.MarshalDate(v)
+	if res == graphql.Null {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+	}
+	return res
+}
+
+func (ec *executionContext) unmarshalNDate2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
+	res, err := scalars.UnmarshalDate(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalNDate2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	res := scalars.MarshalDate(*v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
