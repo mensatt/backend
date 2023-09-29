@@ -66,7 +66,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviewData(filter: ReviewFilter): ReviewDataOccurrence!
-    notAvailableAfter: Date
+    notAvailableAfter: Timestamp
 }
 
 type ReviewDataOccurrence {

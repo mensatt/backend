@@ -1505,7 +1505,8 @@ scalar Date
 scalar UUID
 
 # File Upload
-scalar Upload`, BuiltIn: false},
+scalar Upload
+`, BuiltIn: false},
 	{Name: "../schema/subscriptions.graphql", Input: `type Subscription {
     # Subscription fires when a review is created
     reviewCreated: Review
@@ -1581,7 +1582,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviewData(filter: ReviewFilter): ReviewDataOccurrence!
-    notAvailableAfter: Date
+    notAvailableAfter: Timestamp
 }
 
 type ReviewDataOccurrence {
@@ -5271,7 +5272,7 @@ func (ec *executionContext) _Occurrence_notAvailableAfter(ctx context.Context, f
 	}
 	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalODate2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalOTimestamp2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_notAvailableAfter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -5281,7 +5282,7 @@ func (ec *executionContext) fieldContext_Occurrence_notAvailableAfter(ctx contex
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Date does not have child fields")
+			return nil, errors.New("field of type Timestamp does not have child fields")
 		},
 	}
 	return fc, nil
