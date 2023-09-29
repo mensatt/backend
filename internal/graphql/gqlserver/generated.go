@@ -1581,7 +1581,7 @@ type Occurrence {
     priceGuest: Int
     tags: [Tag!]!
     reviewData(filter: ReviewFilter): ReviewDataOccurrence!
-    notAvailableAfter: Date!
+    notAvailableAfter: Date
 }
 
 type ReviewDataOccurrence {
@@ -5267,14 +5267,11 @@ func (ec *executionContext) _Occurrence_notAvailableAfter(ctx context.Context, f
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*time.Time)
 	fc.Result = res
-	return ec.marshalNDate2ᚖtimeᚐTime(ctx, field.Selections, res)
+	return ec.marshalODate2ᚖtimeᚐTime(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Occurrence_notAvailableAfter(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -11606,9 +11603,6 @@ func (ec *executionContext) _Occurrence(ctx context.Context, sel ast.SelectionSe
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
 		case "notAvailableAfter":
 			out.Values[i] = ec._Occurrence_notAvailableAfter(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				atomic.AddUint32(&out.Invalids, 1)
-			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -12825,27 +12819,6 @@ func (ec *executionContext) unmarshalNDate2timeᚐTime(ctx context.Context, v in
 
 func (ec *executionContext) marshalNDate2timeᚐTime(ctx context.Context, sel ast.SelectionSet, v time.Time) graphql.Marshaler {
 	res := scalars.MarshalDate(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
-func (ec *executionContext) unmarshalNDate2ᚖtimeᚐTime(ctx context.Context, v interface{}) (*time.Time, error) {
-	res, err := scalars.UnmarshalDate(v)
-	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNDate2ᚖtimeᚐTime(ctx context.Context, sel ast.SelectionSet, v *time.Time) graphql.Marshaler {
-	if v == nil {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-		return graphql.Null
-	}
-	res := scalars.MarshalDate(*v)
 	if res == graphql.Null {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
 			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
