@@ -21,3 +21,15 @@ The backend repository for [Mensatt](https://www.mensatt.de) written in go.
 
 - Start dev server: ```make up```
 - Stop the server: ```make down```
+
+## Migrations
+
+Migrations require Atlas to be installed. See [here](https://entgo.io/docs/versioned-migrations/#quick-guide) for installation instructions.
+
+Create a new migration:
+```bash
+atlas migrate diff <migration_name> \
+ --dir "file://internal/database/migrations" \
+ --to "ent://internal/database/schema" \
+ --dev-url "postgres://mensatt:mensatt@localhost:5432/mensatt?search_path=public&sslmode=disable"
+```
