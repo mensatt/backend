@@ -31,5 +31,8 @@ Create a new migration:
 atlas migrate diff <migration_name> \
  --dir "file://internal/database/migrations" \
  --to "ent://internal/database/schema" \
- --dev-url "postgres://mensatt:mensatt@localhost:5432/mensatt?search_path=public&sslmode=disable"
+ --dev-url "postgres://mensatt:mensatt@localhost:5432/mensatt?search_path=public&sslmode=disable" \
+ --format '{{ sql . "	" }}'
 ```
+The `--format` flag uses a tab as indentation. If you want to manually edit this command you can use
+`ctrl + v + tab` to insert a tab character in your shell.
