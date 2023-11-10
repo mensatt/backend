@@ -1,33 +1,34 @@
 type Mutation {
     # User
     loginUser(input: LoginUserInput!): String!
+    updateUser(input: UpdateUserInput!): User!
 
     # Tag
     createTag(input: CreateTagInput!): Tag! @auth(requires: ADMIN)
 
     # Dish
-    createDish(input: CreateDishInput!): Dish! @authenticated
-    updateDish(input: UpdateDishInput!): Dish! @authenticated
+    createDish(input: CreateDishInput!): Dish! @auth(requires: MOD)
+    updateDish(input: UpdateDishInput!): Dish! @auth(requires: MOD)
 #    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
 
     # DishAlias
-    createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated
-    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @authenticated
+    createDishAlias(input: CreateDishAliasInput!): DishAlias! @auth(requires: MOD)
+    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @auth(requires: MOD)
 
     # Occurrence
-    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
-    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @authenticated
-    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @authenticated
+    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @auth(requires: MOD)
+    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @auth(requires: MOD)
+    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @auth(requires: MOD)
 
-    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @authenticated
-    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @authenticated
-    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @authenticated
-    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @authenticated
+    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @auth(requires: MOD)
+    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @auth(requires: MOD)
+    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @auth(requires: MOD)
+    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @auth(requires: MOD)
 
     # Review
     createReview(input: CreateReviewInput!): Review!
-    updateReview(input: UpdateReviewInput!): Review! @authenticated
-    deleteReview(input: DeleteReviewInput!): Review! @authenticated
+    updateReview(input: UpdateReviewInput!): Review! @auth(requires: MOD)
+    deleteReview(input: DeleteReviewInput!): Review! @auth(requires: MOD)
 
     # Image
     addImagesToReview(input: AddImagesToReviewInput!): Review!

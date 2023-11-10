@@ -200,3 +200,11 @@ type UpdateReviewInput struct {
 	Text        *string    `json:"text,omitempty"`
 	Approved    *bool      `json:"approved,omitempty"`
 }
+
+type UpdateUserInput struct {
+	ID       uuid.UUID        `json:"id"`
+	Email    *string          `json:"email,omitempty"`
+	Password *string          `json:"password,omitempty"`
+	Username *string          `json:"username,omitempty"`
+	Role     *schema.UserRole `json:"role,omitempty"`
+}

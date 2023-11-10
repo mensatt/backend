@@ -3,11 +3,13 @@ package resolvers
 import (
 	"context"
 	"fmt"
+	"github.com/google/uuid"
 	ent "github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/review"
+	"github.com/mensatt/backend/internal/database/schema"
 	"github.com/mensatt/backend/internal/graphql/models"
 	"io"
 )
@@ -145,4 +147,29 @@ func (r *queryResolver) filteredLocations(ctx context.Context, filter *models.Lo
 	}
 
 	return queryBuilder.All(ctx)
+}
+
+func userHimself(authenticatedUser *ent.User, targetUserID uuid.UUID) bool {
+	if authenticatedUser.ID == targetUserID {
+		return true
+	}
+	return false
+}
+
+func userHimselfOrRoles(authenticatedUser *ent.User, targetUserID uuid.UUID, roles []schema.UserRole) bool {
+	if userHimself(authenticatedUser, targetUserID) {
+		return true
+	}
+
+	if authenticatedUser.Role == nil {
+		return false
+	}
+
+	for _, role := range roles {
+		if *authenticatedUser.Role == role {
+			return true
+		}
+	}
+
+	return false
 }
