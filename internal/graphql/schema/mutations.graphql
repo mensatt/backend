@@ -7,23 +7,23 @@ type Mutation {
     createTag(input: CreateTagInput!): Tag! @auth(requires: ADMIN)
 
     # Dish
-    createDish(input: CreateDishInput!): Dish! @auth(requires: MOD)
-    updateDish(input: UpdateDishInput!): Dish! @auth(requires: MOD)
+    createDish(input: CreateDishInput!): Dish! @auth(requires: ADMIN)
+    updateDish(input: UpdateDishInput!): Dish! @auth(requires: ADMIN)
 #    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
 
     # DishAlias
-    createDishAlias(input: CreateDishAliasInput!): DishAlias! @auth(requires: MOD)
-    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @auth(requires: MOD)
+    createDishAlias(input: CreateDishAliasInput!): DishAlias! @auth(requires: ADMIN)
+    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @auth(requires: ADMIN)
 
     # Occurrence
-    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @auth(requires: MOD)
-    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @auth(requires: MOD)
-    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @auth(requires: MOD)
+    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
+    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
+    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
 
-    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @auth(requires: MOD)
-    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @auth(requires: MOD)
-    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @auth(requires: MOD)
-    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @auth(requires: MOD)
+    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @auth(requires: ADMIN)
+    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @auth(requires: ADMIN)
+    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @auth(requires: ADMIN)
+    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @auth(requires: ADMIN)
 
     # Review
     createReview(input: CreateReviewInput!): Review!

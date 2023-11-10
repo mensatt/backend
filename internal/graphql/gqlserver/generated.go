@@ -1471,23 +1471,23 @@ input LocationFilter {
     createTag(input: CreateTagInput!): Tag! @auth(requires: ADMIN)
 
     # Dish
-    createDish(input: CreateDishInput!): Dish! @auth(requires: MOD)
-    updateDish(input: UpdateDishInput!): Dish! @auth(requires: MOD)
+    createDish(input: CreateDishInput!): Dish! @auth(requires: ADMIN)
+    updateDish(input: UpdateDishInput!): Dish! @auth(requires: ADMIN)
 #    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
 
     # DishAlias
-    createDishAlias(input: CreateDishAliasInput!): DishAlias! @auth(requires: MOD)
-    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @auth(requires: MOD)
+    createDishAlias(input: CreateDishAliasInput!): DishAlias! @auth(requires: ADMIN)
+    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @auth(requires: ADMIN)
 
     # Occurrence
-    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @auth(requires: MOD)
-    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @auth(requires: MOD)
-    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @auth(requires: MOD)
+    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
+    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
+    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
 
-    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @auth(requires: MOD)
-    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @auth(requires: MOD)
-    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @auth(requires: MOD)
-    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @auth(requires: MOD)
+    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @auth(requires: ADMIN)
+    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @auth(requires: ADMIN)
+    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @auth(requires: ADMIN)
+    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @auth(requires: ADMIN)
 
     # Review
     createReview(input: CreateReviewInput!): Review!
@@ -3113,7 +3113,7 @@ func (ec *executionContext) _Mutation_createDish(ctx context.Context, field grap
 			return ec.resolvers.Mutation().CreateDish(rctx, fc.Args["input"].(models.CreateDishInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3204,7 +3204,7 @@ func (ec *executionContext) _Mutation_updateDish(ctx context.Context, field grap
 			return ec.resolvers.Mutation().UpdateDish(rctx, fc.Args["input"].(models.UpdateDishInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3295,7 +3295,7 @@ func (ec *executionContext) _Mutation_createDishAlias(ctx context.Context, field
 			return ec.resolvers.Mutation().CreateDishAlias(rctx, fc.Args["input"].(models.CreateDishAliasInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3382,7 +3382,7 @@ func (ec *executionContext) _Mutation_deleteDishAlias(ctx context.Context, field
 			return ec.resolvers.Mutation().DeleteDishAlias(rctx, fc.Args["input"].(models.DeleteDishAliasInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3469,7 +3469,7 @@ func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, fiel
 			return ec.resolvers.Mutation().CreateOccurrence(rctx, fc.Args["input"].(models.CreateOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3590,7 +3590,7 @@ func (ec *executionContext) _Mutation_updateOccurrence(ctx context.Context, fiel
 			return ec.resolvers.Mutation().UpdateOccurrence(rctx, fc.Args["input"].(models.UpdateOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3711,7 +3711,7 @@ func (ec *executionContext) _Mutation_deleteOccurrence(ctx context.Context, fiel
 			return ec.resolvers.Mutation().DeleteOccurrence(rctx, fc.Args["input"].(models.DeleteOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3832,7 +3832,7 @@ func (ec *executionContext) _Mutation_addTagToOccurrence(ctx context.Context, fi
 			return ec.resolvers.Mutation().AddTagToOccurrence(rctx, fc.Args["input"].(models.AddTagToOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -3917,7 +3917,7 @@ func (ec *executionContext) _Mutation_removeTagFromOccurrence(ctx context.Contex
 			return ec.resolvers.Mutation().RemoveTagFromOccurrence(rctx, fc.Args["input"].(models.RemoveTagFromOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -4002,7 +4002,7 @@ func (ec *executionContext) _Mutation_addSideDishToOccurrence(ctx context.Contex
 			return ec.resolvers.Mutation().AddSideDishToOccurrence(rctx, fc.Args["input"].(models.AddSideDishToOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}
@@ -4087,7 +4087,7 @@ func (ec *executionContext) _Mutation_removeSideDishFromOccurrence(ctx context.C
 			return ec.resolvers.Mutation().RemoveSideDishFromOccurrence(rctx, fc.Args["input"].(models.RemoveSideDishFromOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
 			if err != nil {
 				return nil, err
 			}

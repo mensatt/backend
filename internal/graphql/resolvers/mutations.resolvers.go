@@ -8,12 +8,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/mensatt/backend/internal/database/schema"
 	"time"
 
 	"github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/ent/user"
+	"github.com/mensatt/backend/internal/database/schema"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/models"
 	"github.com/mensatt/backend/internal/middleware"
