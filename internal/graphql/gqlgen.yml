@@ -67,6 +67,10 @@ models:
     model:
       - github.com/mensatt/backend/internal/database/schema.TagPriority
 
+  UserRole:
+    model:
+      - github.com/mensatt/backend/internal/database/schema.UserRole
+
   # Other
   VcsBuildInfo:
     model:

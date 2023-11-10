@@ -27,6 +27,8 @@ func (User) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
 		field.String("email").Unique().NotEmpty().Sensitive(),
 		field.String("password_hash").NotEmpty().Sensitive(),
+		field.String("username").Unique().NotEmpty().MinLen(3).MaxLen(32),
+		field.Enum("role").GoType(UserRole("")).Optional().Nillable(),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
 	}

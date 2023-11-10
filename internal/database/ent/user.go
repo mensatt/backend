@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent/user"
+	"github.com/mensatt/backend/internal/database/schema"
 )
 
 // User is the model entity for the User schema.
@@ -22,6 +23,10 @@ type User struct {
 	Email string `json:"-"`
 	// PasswordHash holds the value of the "password_hash" field.
 	PasswordHash string `json:"-"`
+	// Username holds the value of the "username" field.
+	Username string `json:"username,omitempty"`
+	// Role holds the value of the "role" field.
+	Role *schema.UserRole `json:"role,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -34,7 +39,7 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldEmail, user.FieldPasswordHash:
+		case user.FieldEmail, user.FieldPasswordHash, user.FieldUsername, user.FieldRole:
 			values[i] = new(sql.NullString)
 		case user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -72,6 +77,19 @@ func (u *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field password_hash", values[i])
 			} else if value.Valid {
 				u.PasswordHash = value.String
+			}
+		case user.FieldUsername:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field username", values[i])
+			} else if value.Valid {
+				u.Username = value.String
+			}
+		case user.FieldRole:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field role", values[i])
+			} else if value.Valid {
+				u.Role = new(schema.UserRole)
+				*u.Role = schema.UserRole(value.String)
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -124,6 +142,14 @@ func (u *User) String() string {
 	builder.WriteString("email=<sensitive>")
 	builder.WriteString(", ")
 	builder.WriteString("password_hash=<sensitive>")
+	builder.WriteString(", ")
+	builder.WriteString("username=")
+	builder.WriteString(u.Username)
+	builder.WriteString(", ")
+	if v := u.Role; v != nil {
+		builder.WriteString("role=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(u.CreatedAt.Format(time.ANSIC))

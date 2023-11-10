@@ -159,6 +159,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "email", Type: field.TypeString, Unique: true},
 		{Name: "password_hash", Type: field.TypeString},
+		{Name: "username", Type: field.TypeString, Unique: true, Size: 32},
+		{Name: "role", Type: field.TypeEnum, Nullable: true, Enums: []string{"ADMIN", "MOD"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

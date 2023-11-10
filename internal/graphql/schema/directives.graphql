@@ -1,16 +1,3 @@
-directive @goModel(
-    model: String
-    models: [String!]
-) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
-
-directive @goField(
-    forceResolver: Boolean
-    name: String
-) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
-
-directive @goTag(
-    key: String!
-    value: String
-) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
+directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
 
 directive @authenticated on FIELD_DEFINITION
