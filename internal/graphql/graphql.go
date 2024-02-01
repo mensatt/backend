@@ -20,6 +20,7 @@ type GraphQLParams struct {
 	Database     *ent.Client
 	JWTKeyStore  *utils.JWTKeyStore
 	ImageBaseURL string
+	ImageAPIKey  string
 }
 
 func Run(g *gin.RouterGroup, params *GraphQLParams) error {
@@ -51,6 +52,7 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 					JWTKeyStore:            params.JWTKeyStore,
 					VCSBuildInfo:           vscBuildInfo,
 					ImageBaseURL:           params.ImageBaseURL,
+					ImageAPIKey:            params.ImageAPIKey,
 					ReviewAcceptedChannels: map[string]chan *ent.Review{},
 					ReviewCreatedChannels:  map[string]chan *ent.Review{},
 				},

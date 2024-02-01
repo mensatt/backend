@@ -8,6 +8,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
+	"net/http"
 	"time"
 
 	"github.com/mensatt/backend/internal/database/ent"
@@ -373,7 +375,36 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 	}
 
 	// Process & store images
-	// todo: image processing
+	if input.Images != nil {
+		var submittedImages []uuid.UUID
+		for _, image := range input.Images {
+			response, err := http.Post("http://localhost:3000/submit/"+image.String(), "application/json", nil)
+			if err != nil {
+				return nil, err // todo!!!!!
+			}
+
+			if response.StatusCode == 200 {
+				submittedImages = append(submittedImages, image)
+				continue
+			}
+
+			// log error: todo improve behaviour
+			fmt.Println("failed to submit image: " + image.String())
+		}
+
+		for _, image := range submittedImages {
+			_, err := tx.Image.Create().
+				SetID(image).
+				SetReviewID(review.ID).
+				Save(ctx)
+			if err != nil {
+				return nil, err // todo!!!!!
+			}
+		}
+
+		//todo: unapprove images on rollback (if db error) --> required unapprove route
+
+	}
 
 	//if input.Images != nil {
 	//	_, err := r.storeImages(tx, ctx, review, input.Images) // only require error (if no error: images are stored)
@@ -439,6 +470,11 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 
 	// notify all subscribers (if approved)
 	if input.Approved != nil && *input.Approved == true && oldAcceptedAt == nil {
+		// todo: approve image
+		err = r.approveImages(review.Edges.Images)
+		if err != nil {
+			return nil, err // todo: handle maybe or maybe not
+		}
 		r.mutex.Lock()
 		for _, channel := range r.ReviewAcceptedChannels {
 			channel <- review
@@ -446,7 +482,21 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 		r.mutex.Unlock()
 	}
 
+	// todo: unapproving images and stuff
+
 	return review, nil
+}
+
+// todo: move this to helper.go
+func (r *mutationResolver) approveImages(images []*ent.Image) error {
+	for _, image := range images {
+		_, err := http.Post("http://localhost:3000/approve/"+image.ID.String(), "application/json", nil)
+		if err != nil {
+			return err // todo: maybe not fail if one image fails and remember to log :)
+		}
+	}
+	return nil
+
 }
 
 // DeleteReview is the resolver for the deleteReview field.
@@ -456,10 +506,11 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 		return nil, err
 	}
 
-	//images, err := review.QueryImages().All(ctx)
-	//if err != nil {
-	//	return nil, err
-	//}
+	// todo: review this again
+	images, err := review.QueryImages().All(ctx)
+	if err != nil {
+		return nil, err
+	}
 
 	// remove the images from the db (cascaded via review) before deleting it from the disk
 	err = r.Database.Review.DeleteOne(review).Exec(ctx)
@@ -467,12 +518,11 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 		return nil, err
 	}
 
-	//err = r.deleteImages(ctx, images) // if a single image fails to delete, the remaining images will be kept
-	//if err != nil {
-	//	return nil, err
-	//}
-
-	// todo: delete image
+	// todo: review this again
+	err = r.deleteImages(ctx, images) // if a single image fails to delete, the remaining images will be kept
+	if err != nil {
+		return nil, err
+	}
 
 	return review, nil
 }

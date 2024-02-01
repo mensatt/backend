@@ -30,6 +30,7 @@ func main() {
 			Algorithm:      utils.MustGet("JWT_ALGORITHM"),
 			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
 		},
+		ImageAPIKey: utils.MustGet("IMAGE_API_KEY"),
 	}
 
 	sentryDSN, err := utils.GetOrFile("SENTRY_DSN")

@@ -8,6 +8,7 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/graphql/models"
+	"net/http"
 )
 
 //func (r *mutationResolver) storeImages(tx *ent.Tx, ctx context.Context, review *ent.Review, images []*models.ImageInput) ([]*ent.Image, error) {
@@ -54,16 +55,46 @@ import (
 //	return imageEntities, nil
 //}
 
-//func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image) error {
-//	for _, image := range images {
-//		err := r.ImageUploader.RemoveImage(image.ID)
-//		if err != nil {
-//			return err
-//		}
-//	}
-//
-//	return nil
-//}
+func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image) error {
+	//for _, image := range images {
+	//	err := r.ImageUploader.RemoveImage(image.ID)
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
+	//
+	//return nil
+
+	for _, image := range images {
+		url := "http://localhost:3000/image/" + image.ID.String()
+		request, err := http.NewRequest("DELETE", url, nil)
+		if err != nil {
+			return err // todo: maybe
+		}
+
+		// Add headers to the request
+		request.Header.Add("Authorization", "Bearer "+r.ImageAPIKey)
+
+		// Create a client
+		client := &http.Client{}
+
+		// Send the request
+		response, err := client.Do(request)
+		if err != nil {
+			return err // todo: maybe
+		}
+		defer response.Body.Close() // unhandled error
+
+		if response.StatusCode != 200 {
+			return err // todo: maybe
+		}
+		err = r.Database.Image.DeleteOne(image).Exec(ctx)
+		if err != nil {
+			return err // todo: maybe
+		}
+	}
+	return nil
+}
 
 func (r *queryResolver) filteredDishes(ctx context.Context, filter *models.DishFilter) ([]*ent.Dish, error) {
 	queryBuilder := r.Database.Dish.Query()
