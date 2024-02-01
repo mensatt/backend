@@ -11,6 +11,8 @@ secrets:
     file: "./.secrets/jwt_public_key.pem"
   jwt_private_key:
     file: "./.secrets/jwt_private_key.pem"
+  iamge_api_key:
+    file: "./.secrets/image_api_key"
 
 services:
   mensatt:
@@ -20,14 +22,14 @@ services:
         USER_ID: 1000
         GROUP_ID: 1000
     volumes:
-      - .:/opt/app/mensatt
-      - asset-data:/opt/app/mensatt/assets
+      - .:/opt/mensatt
     secrets:
       - "sentry_dsn"
       - "database_username"
       - "database_password"
       - "jwt_public_key"
       - "jwt_private_key"
+      - "iamge_api_key"
     environment:
       HOST: 0.0.0.0
       PORT: 4000
@@ -43,9 +45,7 @@ services:
       JWT_PRIVATE_KEY_PATH: /run/secrets/jwt_private_key
       JWT_ALGORITHM: RS256
       JWT_TIMEOUT_SEC: 525600
-      ASSETS_DIR: /opt/app/mensatt/assets
-      IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB: 10
-      IMAGE_PROCESSOR_MAX_RESOLUTION: 8192
+      IMAGE_API_KEY_FILE: /run/secrets/image_api_key
     ports:
       - "4000:4000"
     links:
