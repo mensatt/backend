@@ -11,27 +11,13 @@ import (
 	"github.com/mensatt/backend/internal/database/seeds"
 
 	"github.com/mensatt/backend/internal/database/ent"
-	"github.com/mensatt/backend/pkg/imageuploader"
 	"github.com/mensatt/backend/pkg/server"
 	"github.com/mensatt/backend/pkg/utils"
 	"log"
-	"path/filepath"
 	"time"
 )
 
 func main() {
-	assetDir := utils.MustGet("ASSETS_DIR")
-	err := utils.CreateDirIfNotExists(assetDir)
-	if err != nil {
-		log.Fatalf("failed to create asset dir(%s): %s\n", assetDir, err)
-	}
-
-	imageDir := filepath.Join(assetDir, "images")
-	err = utils.CreateDirIfNotExists(imageDir)
-	if err != nil {
-		log.Fatalf("failed to create image dir(%s): %s\n", imageDir, err)
-	}
-
 	config := server.Config{
 		Host:           utils.MustGet("HOST"),
 		Port:           utils.MustGetInt32("PORT"),
@@ -43,12 +29,6 @@ func main() {
 			PublicKeyPath:  utils.MustGet("JWT_PUBLIC_KEY_PATH"),
 			Algorithm:      utils.MustGet("JWT_ALGORITHM"),
 			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
-		},
-		AssetsDir: assetDir,
-		ImageUploader: imageuploader.Config{
-			ImageDirectory: imageDir,
-			MaxImageSizeMB: utils.MustGetInt32("IMAGE_PROCESSOR_MAX_OUTPUT_SIZE_MB"),
-			MaxResolution:  utils.MustGetInt32("IMAGE_PROCESSOR_MAX_RESOLUTION"),
 		},
 	}
 

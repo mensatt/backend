@@ -5,16 +5,10 @@ package models
 import (
 	"time"
 
-	"github.com/99designs/gqlgen/graphql"
 	"github.com/google/uuid"
 	"github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/schema"
 )
-
-type AddImagesToReviewInput struct {
-	Review uuid.UUID     `json:"review"`
-	Images []*ImageInput `json:"images"`
-}
 
 type AddSideDishToOccurrenceInput struct {
 	Occurrence uuid.UUID `json:"occurrence"`
@@ -58,11 +52,11 @@ type CreateOccurrenceInput struct {
 }
 
 type CreateReviewInput struct {
-	Occurrence  uuid.UUID     `json:"occurrence"`
-	DisplayName *string       `json:"displayName,omitempty"`
-	Images      []*ImageInput `json:"images,omitempty"`
-	Stars       int           `json:"stars"`
-	Text        *string       `json:"text,omitempty"`
+	Occurrence  uuid.UUID   `json:"occurrence"`
+	DisplayName *string     `json:"displayName,omitempty"`
+	Images      []uuid.UUID `json:"images,omitempty"`
+	Stars       int         `json:"stars"`
+	Text        *string     `json:"text,omitempty"`
 }
 
 type CreateTagInput struct {
@@ -78,11 +72,6 @@ type DeleteDishAliasInput struct {
 	AliasName string `json:"aliasName"`
 }
 
-type DeleteImageToReviewInput struct {
-	Review uuid.UUID `json:"review"`
-	ID     uuid.UUID `json:"id"`
-}
-
 type DeleteOccurrenceInput struct {
 	ID uuid.UUID `json:"id"`
 }
@@ -95,11 +84,6 @@ type DishFilter struct {
 	Dishes []uuid.UUID `json:"dishes,omitempty"`
 	NameDe *string     `json:"nameDe,omitempty"`
 	NameEn *string     `json:"nameEn,omitempty"`
-}
-
-type ImageInput struct {
-	Image    graphql.Upload `json:"image"`
-	Rotation *int           `json:"rotation,omitempty"`
 }
 
 type LocationFilter struct {
@@ -166,6 +150,9 @@ type ReviewMetadataDish struct {
 type ReviewMetadataOccurrence struct {
 	AverageStars *float64 `json:"averageStars,omitempty"`
 	ReviewCount  int      `json:"reviewCount"`
+}
+
+type Subscription struct {
 }
 
 type UpdateDishInput struct {

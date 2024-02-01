@@ -30,6 +30,7 @@ import (
 // NewExecutableSchema creates an ExecutableSchema from the ResolverRoot interface.
 func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 	return &executableSchema{
+		schema:     cfg.Schema,
 		resolvers:  cfg.Resolvers,
 		directives: cfg.Directives,
 		complexity: cfg.Complexity,
@@ -37,6 +38,7 @@ func NewExecutableSchema(cfg Config) graphql.ExecutableSchema {
 }
 
 type Config struct {
+	Schema     *ast.Schema
 	Resolvers  ResolverRoot
 	Directives DirectiveRoot
 	Complexity ComplexityRoot
@@ -88,7 +90,6 @@ type ComplexityRoot struct {
 	}
 
 	Mutation struct {
-		AddImagesToReview            func(childComplexity int, input models.AddImagesToReviewInput) int
 		AddSideDishToOccurrence      func(childComplexity int, input models.AddSideDishToOccurrenceInput) int
 		AddTagToOccurrence           func(childComplexity int, input models.AddTagToOccurrenceInput) int
 		CreateDish                   func(childComplexity int, input models.CreateDishInput) int
@@ -97,7 +98,6 @@ type ComplexityRoot struct {
 		CreateReview                 func(childComplexity int, input models.CreateReviewInput) int
 		CreateTag                    func(childComplexity int, input models.CreateTagInput) int
 		DeleteDishAlias              func(childComplexity int, input models.DeleteDishAliasInput) int
-		DeleteImageFromReview        func(childComplexity int, input models.DeleteImageToReviewInput) int
 		DeleteOccurrence             func(childComplexity int, input models.DeleteOccurrenceInput) int
 		DeleteReview                 func(childComplexity int, input models.DeleteReviewInput) int
 		LoginUser                    func(childComplexity int, input models.LoginUserInput) int
@@ -241,8 +241,6 @@ type MutationResolver interface {
 	CreateReview(ctx context.Context, input models.CreateReviewInput) (*ent.Review, error)
 	UpdateReview(ctx context.Context, input models.UpdateReviewInput) (*ent.Review, error)
 	DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*ent.Review, error)
-	AddImagesToReview(ctx context.Context, input models.AddImagesToReviewInput) (*ent.Review, error)
-	DeleteImageFromReview(ctx context.Context, input models.DeleteImageToReviewInput) (*ent.Image, error)
 }
 type OccurrenceResolver interface {
 	Location(ctx context.Context, obj *ent.Occurrence) (*ent.Location, error)
@@ -275,12 +273,16 @@ type TagResolver interface {
 }
 
 type executableSchema struct {
+	schema     *ast.Schema
 	resolvers  ResolverRoot
 	directives DirectiveRoot
 	complexity ComplexityRoot
 }
 
 func (e *executableSchema) Schema() *ast.Schema {
+	if e.schema != nil {
+		return e.schema
+	}
 	return parsedSchema
 }
 
@@ -406,18 +408,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Location.Visible(childComplexity), true
 
-	case "Mutation.addImagesToReview":
-		if e.complexity.Mutation.AddImagesToReview == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_addImagesToReview_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.AddImagesToReview(childComplexity, args["input"].(models.AddImagesToReviewInput)), true
-
 	case "Mutation.addSideDishToOccurrence":
 		if e.complexity.Mutation.AddSideDishToOccurrence == nil {
 			break
@@ -513,18 +503,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.DeleteDishAlias(childComplexity, args["input"].(models.DeleteDishAliasInput)), true
-
-	case "Mutation.deleteImageFromReview":
-		if e.complexity.Mutation.DeleteImageFromReview == nil {
-			break
-		}
-
-		args, err := ec.field_Mutation_deleteImageFromReview_args(context.TODO(), rawArgs)
-		if err != nil {
-			return 0, false
-		}
-
-		return e.complexity.Mutation.DeleteImageFromReview(childComplexity, args["input"].(models.DeleteImageToReviewInput)), true
 
 	case "Mutation.deleteOccurrence":
 		if e.complexity.Mutation.DeleteOccurrence == nil {
@@ -1096,7 +1074,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
-		ec.unmarshalInputAddImagesToReviewInput,
 		ec.unmarshalInputAddSideDishToOccurrenceInput,
 		ec.unmarshalInputAddTagToOccurrenceInput,
 		ec.unmarshalInputCreateDishAliasInput,
@@ -1105,11 +1082,9 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateReviewInput,
 		ec.unmarshalInputCreateTagInput,
 		ec.unmarshalInputDeleteDishAliasInput,
-		ec.unmarshalInputDeleteImageToReviewInput,
 		ec.unmarshalInputDeleteOccurrenceInput,
 		ec.unmarshalInputDeleteReviewInput,
 		ec.unmarshalInputDishFilter,
-		ec.unmarshalInputImageInput,
 		ec.unmarshalInputLocationFilter,
 		ec.unmarshalInputLoginUserInput,
 		ec.unmarshalInputOccurrenceFilter,
@@ -1222,14 +1197,14 @@ func (ec *executionContext) introspectSchema() (*introspection.Schema, error) {
 	if ec.DisableIntrospection {
 		return nil, errors.New("introspection disabled")
 	}
-	return introspection.WrapSchema(parsedSchema), nil
+	return introspection.WrapSchema(ec.Schema()), nil
 }
 
 func (ec *executionContext) introspectType(name string) (*introspection.Type, error) {
 	if ec.DisableIntrospection {
 		return nil, errors.New("introspection disabled")
 	}
-	return introspection.WrapTypeFromDef(parsedSchema, parsedSchema.Types[name]), nil
+	return introspection.WrapTypeFromDef(ec.Schema(), ec.Schema().Types[name]), nil
 }
 
 var sources = []*ast.Source{
@@ -1384,7 +1359,7 @@ input OccurrenceFilter {
 input CreateReviewInput {
     occurrence: UUID!
     displayName: String
-    images: [ImageInput!]
+    images: [UUID!]
     stars: Int!
     text: String
 }
@@ -1409,20 +1384,20 @@ input ReviewFilter {
 
 # Image
 
-input ImageInput {
-    image: Upload!
-    rotation: Int
-}
-
-input AddImagesToReviewInput {
-    review: UUID!
-    images: [ImageInput!]!
-}
-
-input DeleteImageToReviewInput {
-    review: UUID!
-    id: UUID!
-}
+#input ImageInput {
+#    image: Upload!
+#    rotation: Int
+#}
+#
+#input AddImagesToReviewInput {
+#    review: UUID!
+#    images: [ImageInput!]!
+#}
+#
+#input DeleteImageToReviewInput {
+#    review: UUID!
+#    id: UUID!
+#}
 
 
 # Location
@@ -1466,8 +1441,8 @@ input LocationFilter {
     deleteReview(input: DeleteReviewInput!): Review! @authenticated
 
     # Image
-    addImagesToReview(input: AddImagesToReviewInput!): Review!
-    deleteImageFromReview(input: DeleteImageToReviewInput!): Image!
+#    addImagesToReview(input: AddImagesToReviewInput!): Review!
+#    deleteImageFromReview(input: DeleteImageToReviewInput!): Image!
 }
 `, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
@@ -1503,9 +1478,6 @@ scalar Date
 # A UUID is a 128 bit (16 byte) Universal Unique IDentifier as defined in RFC 4122.
 # Format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 scalar UUID
-
-# File Upload
-scalar Upload
 `, BuiltIn: false},
 	{Name: "../schema/subscriptions.graphql", Input: `type Subscription {
     # Subscription fires when a review is created
@@ -1658,21 +1630,6 @@ func (ec *executionContext) field_Dish_reviewData_args(ctx context.Context, rawA
 	return args, nil
 }
 
-func (ec *executionContext) field_Mutation_addImagesToReview_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.AddImagesToReviewInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNAddImagesToReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐAddImagesToReviewInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
 func (ec *executionContext) field_Mutation_addSideDishToOccurrence_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -1785,21 +1742,6 @@ func (ec *executionContext) field_Mutation_deleteDishAlias_args(ctx context.Cont
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNDeleteDishAliasInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteDishAliasInput(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["input"] = arg0
-	return args, nil
-}
-
-func (ec *executionContext) field_Mutation_deleteImageFromReview_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
-	var err error
-	args := map[string]interface{}{}
-	var arg0 models.DeleteImageToReviewInput
-	if tmp, ok := rawArgs["input"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalNDeleteImageToReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteImageToReviewInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -4234,146 +4176,6 @@ func (ec *executionContext) fieldContext_Mutation_deleteReview(ctx context.Conte
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteReview_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_addImagesToReview(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_addImagesToReview(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().AddImagesToReview(rctx, fc.Args["input"].(models.AddImagesToReviewInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Review)
-	fc.Result = res
-	return ec.marshalNReview2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐReview(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_addImagesToReview(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Review_id(ctx, field)
-			case "occurrence":
-				return ec.fieldContext_Review_occurrence(ctx, field)
-			case "displayName":
-				return ec.fieldContext_Review_displayName(ctx, field)
-			case "images":
-				return ec.fieldContext_Review_images(ctx, field)
-			case "stars":
-				return ec.fieldContext_Review_stars(ctx, field)
-			case "text":
-				return ec.fieldContext_Review_text(ctx, field)
-			case "createdAt":
-				return ec.fieldContext_Review_createdAt(ctx, field)
-			case "updatedAt":
-				return ec.fieldContext_Review_updatedAt(ctx, field)
-			case "acceptedAt":
-				return ec.fieldContext_Review_acceptedAt(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_addImagesToReview_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
-		ec.Error(ctx, err)
-		return fc, err
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Mutation_deleteImageFromReview(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Mutation_deleteImageFromReview(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().DeleteImageFromReview(rctx, fc.Args["input"].(models.DeleteImageToReviewInput))
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(*ent.Image)
-	fc.Result = res
-	return ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐImage(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Mutation_deleteImageFromReview(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Mutation",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			switch field.Name {
-			case "id":
-				return ec.fieldContext_Image_id(ctx, field)
-			case "hash":
-				return ec.fieldContext_Image_hash(ctx, field)
-			case "review":
-				return ec.fieldContext_Image_review(ctx, field)
-			case "imageUrl":
-				return ec.fieldContext_Image_imageUrl(ctx, field)
-			}
-			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
-		},
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			err = ec.Recover(ctx, r)
-			ec.Error(ctx, err)
-		}
-	}()
-	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Mutation_deleteImageFromReview_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -9510,44 +9312,6 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
-func (ec *executionContext) unmarshalInputAddImagesToReviewInput(ctx context.Context, obj interface{}) (models.AddImagesToReviewInput, error) {
-	var it models.AddImagesToReviewInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"review", "images"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "review":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("review"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Review = data
-		case "images":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
-			data, err := ec.unmarshalNImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Images = data
-		}
-	}
-
-	return it, nil
-}
-
 func (ec *executionContext) unmarshalInputAddSideDishToOccurrenceInput(ctx context.Context, obj interface{}) (models.AddSideDishToOccurrenceInput, error) {
 	var it models.AddSideDishToOccurrenceInput
 	asMap := map[string]interface{}{}
@@ -9563,8 +9327,6 @@ func (ec *executionContext) unmarshalInputAddSideDishToOccurrenceInput(ctx conte
 		}
 		switch k {
 		case "occurrence":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -9572,8 +9334,6 @@ func (ec *executionContext) unmarshalInputAddSideDishToOccurrenceInput(ctx conte
 			}
 			it.Occurrence = data
 		case "dish":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -9601,8 +9361,6 @@ func (ec *executionContext) unmarshalInputAddTagToOccurrenceInput(ctx context.Co
 		}
 		switch k {
 		case "occurrence":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -9610,8 +9368,6 @@ func (ec *executionContext) unmarshalInputAddTagToOccurrenceInput(ctx context.Co
 			}
 			it.Occurrence = data
 		case "tag":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -9639,8 +9395,6 @@ func (ec *executionContext) unmarshalInputCreateDishAliasInput(ctx context.Conte
 		}
 		switch k {
 		case "aliasName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasName"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -9648,8 +9402,6 @@ func (ec *executionContext) unmarshalInputCreateDishAliasInput(ctx context.Conte
 			}
 			it.AliasName = data
 		case "normalizedAliasName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("normalizedAliasName"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -9657,8 +9409,6 @@ func (ec *executionContext) unmarshalInputCreateDishAliasInput(ctx context.Conte
 			}
 			it.NormalizedAliasName = data
 		case "dish":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -9686,8 +9436,6 @@ func (ec *executionContext) unmarshalInputCreateDishInput(ctx context.Context, o
 		}
 		switch k {
 		case "nameDe":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameDe"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -9695,8 +9443,6 @@ func (ec *executionContext) unmarshalInputCreateDishInput(ctx context.Context, o
 			}
 			it.NameDe = data
 		case "nameEn":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -9724,8 +9470,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 		}
 		switch k {
 		case "location":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("location"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -9733,8 +9477,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Location = data
 		case "dish":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -9742,8 +9484,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Dish = data
 		case "sideDishes":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sideDishes"))
 			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
@@ -9751,8 +9491,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.SideDishes = data
 		case "date":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
 			data, err := ec.unmarshalODate2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
@@ -9760,8 +9498,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Date = data
 		case "kj":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kj"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9769,8 +9505,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Kj = data
 		case "kcal":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kcal"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9778,8 +9512,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Kcal = data
 		case "fat":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fat"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9787,8 +9519,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Fat = data
 		case "saturatedFat":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("saturatedFat"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9796,8 +9526,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.SaturatedFat = data
 		case "carbohydrates":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carbohydrates"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9805,8 +9533,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Carbohydrates = data
 		case "sugar":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sugar"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9814,8 +9540,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Sugar = data
 		case "fiber":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fiber"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9823,8 +9547,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Fiber = data
 		case "protein":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("protein"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9832,8 +9554,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Protein = data
 		case "salt":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("salt"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9841,8 +9561,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.Salt = data
 		case "priceStudent":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStudent"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9850,8 +9568,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.PriceStudent = data
 		case "priceStaff":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStaff"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9859,8 +9575,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.PriceStaff = data
 		case "priceGuest":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceGuest"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -9868,8 +9582,6 @@ func (ec *executionContext) unmarshalInputCreateOccurrenceInput(ctx context.Cont
 			}
 			it.PriceGuest = data
 		case "tags":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tags"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
@@ -9897,8 +9609,6 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 		}
 		switch k {
 		case "occurrence":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -9906,8 +9616,6 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 			}
 			it.Occurrence = data
 		case "displayName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -9915,17 +9623,13 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 			}
 			it.DisplayName = data
 		case "images":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
-			data, err := ec.unmarshalOImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx, v)
+			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.Images = data
 		case "stars":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stars"))
 			data, err := ec.unmarshalNInt2int(ctx, v)
 			if err != nil {
@@ -9933,8 +9637,6 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 			}
 			it.Stars = data
 		case "text":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -9962,8 +9664,6 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 		}
 		switch k {
 		case "key":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("key"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -9971,8 +9671,6 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 			}
 			it.Key = data
 		case "name":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -9980,8 +9678,6 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 			}
 			it.Name = data
 		case "description":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("description"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -9989,8 +9685,6 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 			}
 			it.Description = data
 		case "shortName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("shortName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -9998,8 +9692,6 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 			}
 			it.ShortName = data
 		case "priority":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priority"))
 			data, err := ec.unmarshalOTagPriority2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐTagPriority(ctx, v)
 			if err != nil {
@@ -10007,8 +9699,6 @@ func (ec *executionContext) unmarshalInputCreateTagInput(ctx context.Context, ob
 			}
 			it.Priority = data
 		case "isAllergy":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isAllergy"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -10036,52 +9726,12 @@ func (ec *executionContext) unmarshalInputDeleteDishAliasInput(ctx context.Conte
 		}
 		switch k {
 		case "aliasName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("aliasName"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.AliasName = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputDeleteImageToReviewInput(ctx context.Context, obj interface{}) (models.DeleteImageToReviewInput, error) {
-	var it models.DeleteImageToReviewInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"review", "id"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "review":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("review"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Review = data
-		case "id":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
-			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.ID = data
 		}
 	}
 
@@ -10103,8 +9753,6 @@ func (ec *executionContext) unmarshalInputDeleteOccurrenceInput(ctx context.Cont
 		}
 		switch k {
 		case "id":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10132,8 +9780,6 @@ func (ec *executionContext) unmarshalInputDeleteReviewInput(ctx context.Context,
 		}
 		switch k {
 		case "id":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10161,8 +9807,6 @@ func (ec *executionContext) unmarshalInputDishFilter(ctx context.Context, obj in
 		}
 		switch k {
 		case "dishes":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dishes"))
 			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
@@ -10170,8 +9814,6 @@ func (ec *executionContext) unmarshalInputDishFilter(ctx context.Context, obj in
 			}
 			it.Dishes = data
 		case "nameDe":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameDe"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -10179,52 +9821,12 @@ func (ec *executionContext) unmarshalInputDishFilter(ctx context.Context, obj in
 			}
 			it.NameDe = data
 		case "nameEn":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
 			it.NameEn = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputImageInput(ctx context.Context, obj interface{}) (models.ImageInput, error) {
-	var it models.ImageInput
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"image", "rotation"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
-		case "image":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("image"))
-			data, err := ec.unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Image = data
-		case "rotation":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rotation"))
-			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Rotation = data
 		}
 	}
 
@@ -10246,8 +9848,6 @@ func (ec *executionContext) unmarshalInputLocationFilter(ctx context.Context, ob
 		}
 		switch k {
 		case "ids":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
 			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
@@ -10255,8 +9855,6 @@ func (ec *executionContext) unmarshalInputLocationFilter(ctx context.Context, ob
 			}
 			it.Ids = data
 		case "externalIds":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("externalIds"))
 			data, err := ec.unmarshalOInt2ᚕintᚄ(ctx, v)
 			if err != nil {
@@ -10264,8 +9862,6 @@ func (ec *executionContext) unmarshalInputLocationFilter(ctx context.Context, ob
 			}
 			it.ExternalIds = data
 		case "names":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("names"))
 			data, err := ec.unmarshalOString2ᚕstringᚄ(ctx, v)
 			if err != nil {
@@ -10273,8 +9869,6 @@ func (ec *executionContext) unmarshalInputLocationFilter(ctx context.Context, ob
 			}
 			it.Names = data
 		case "visible":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("visible"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -10302,8 +9896,6 @@ func (ec *executionContext) unmarshalInputLoginUserInput(ctx context.Context, ob
 		}
 		switch k {
 		case "email":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -10311,8 +9903,6 @@ func (ec *executionContext) unmarshalInputLoginUserInput(ctx context.Context, ob
 			}
 			it.Email = data
 		case "password":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -10340,8 +9930,6 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 		}
 		switch k {
 		case "occurrences":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrences"))
 			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
@@ -10349,8 +9937,6 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 			}
 			it.Occurrences = data
 		case "dishes":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dishes"))
 			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
 			if err != nil {
@@ -10358,8 +9944,6 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 			}
 			it.Dishes = data
 		case "startDate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("startDate"))
 			data, err := ec.unmarshalODate2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
@@ -10367,8 +9951,6 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 			}
 			it.StartDate = data
 		case "endDate":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("endDate"))
 			data, err := ec.unmarshalODate2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
@@ -10376,8 +9958,6 @@ func (ec *executionContext) unmarshalInputOccurrenceFilter(ctx context.Context, 
 			}
 			it.EndDate = data
 		case "location":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("location"))
 			data, err := ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10405,8 +9985,6 @@ func (ec *executionContext) unmarshalInputRemoveSideDishFromOccurrenceInput(ctx 
 		}
 		switch k {
 		case "occurrence":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10414,8 +9992,6 @@ func (ec *executionContext) unmarshalInputRemoveSideDishFromOccurrenceInput(ctx 
 			}
 			it.Occurrence = data
 		case "dish":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10443,8 +10019,6 @@ func (ec *executionContext) unmarshalInputRemoveTagFromOccurrenceInput(ctx conte
 		}
 		switch k {
 		case "occurrence":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10452,8 +10026,6 @@ func (ec *executionContext) unmarshalInputRemoveTagFromOccurrenceInput(ctx conte
 			}
 			it.Occurrence = data
 		case "tag":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tag"))
 			data, err := ec.unmarshalNString2string(ctx, v)
 			if err != nil {
@@ -10481,8 +10053,6 @@ func (ec *executionContext) unmarshalInputReviewFilter(ctx context.Context, obj 
 		}
 		switch k {
 		case "approved":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("approved"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -10510,8 +10080,6 @@ func (ec *executionContext) unmarshalInputUpdateDishInput(ctx context.Context, o
 		}
 		switch k {
 		case "id":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10519,8 +10087,6 @@ func (ec *executionContext) unmarshalInputUpdateDishInput(ctx context.Context, o
 			}
 			it.ID = data
 		case "nameDe":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameDe"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -10528,8 +10094,6 @@ func (ec *executionContext) unmarshalInputUpdateDishInput(ctx context.Context, o
 			}
 			it.NameDe = data
 		case "nameEn":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nameEn"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -10557,8 +10121,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 		}
 		switch k {
 		case "id":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10566,8 +10128,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.ID = data
 		case "dish":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("dish"))
 			data, err := ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10575,8 +10135,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Dish = data
 		case "date":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("date"))
 			data, err := ec.unmarshalODate2ᚖtimeᚐTime(ctx, v)
 			if err != nil {
@@ -10584,8 +10142,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Date = data
 		case "kj":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kj"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10593,8 +10149,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Kj = data
 		case "kcal":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("kcal"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10602,8 +10156,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Kcal = data
 		case "fat":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fat"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10611,8 +10163,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Fat = data
 		case "saturatedFat":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("saturatedFat"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10620,8 +10170,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.SaturatedFat = data
 		case "carbohydrates":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("carbohydrates"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10629,8 +10177,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Carbohydrates = data
 		case "sugar":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("sugar"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10638,8 +10184,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Sugar = data
 		case "fiber":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("fiber"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10647,8 +10191,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Fiber = data
 		case "protein":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("protein"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10656,8 +10198,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Protein = data
 		case "salt":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("salt"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10665,8 +10205,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.Salt = data
 		case "priceStudent":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStudent"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10674,8 +10212,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.PriceStudent = data
 		case "priceStaff":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceStaff"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10683,8 +10219,6 @@ func (ec *executionContext) unmarshalInputUpdateOccurrenceInput(ctx context.Cont
 			}
 			it.PriceStaff = data
 		case "priceGuest":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("priceGuest"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10712,8 +10246,6 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 		}
 		switch k {
 		case "id":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
 			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10721,8 +10253,6 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 			}
 			it.ID = data
 		case "occurrence":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("occurrence"))
 			data, err := ec.unmarshalOUUID2ᚖgithubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
 			if err != nil {
@@ -10730,8 +10260,6 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 			}
 			it.Occurrence = data
 		case "displayName":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("displayName"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -10739,8 +10267,6 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 			}
 			it.DisplayName = data
 		case "stars":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("stars"))
 			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
 			if err != nil {
@@ -10748,8 +10274,6 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 			}
 			it.Stars = data
 		case "text":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("text"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
@@ -10757,8 +10281,6 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 			}
 			it.Text = data
 		case "approved":
-			var err error
-
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("approved"))
 			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
 			if err != nil {
@@ -11336,20 +10858,6 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteReview":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteReview(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "addImagesToReview":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_addImagesToReview(ctx, field)
-			})
-			if out.Values[i] == graphql.Null {
-				out.Invalids++
-			}
-		case "deleteImageFromReview":
-			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
-				return ec._Mutation_deleteImageFromReview(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -12758,11 +12266,6 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNAddImagesToReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐAddImagesToReviewInput(ctx context.Context, v interface{}) (models.AddImagesToReviewInput, error) {
-	res, err := ec.unmarshalInputAddImagesToReviewInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
 func (ec *executionContext) unmarshalNAddSideDishToOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐAddSideDishToOccurrenceInput(ctx context.Context, v interface{}) (models.AddSideDishToOccurrenceInput, error) {
 	res, err := ec.unmarshalInputAddSideDishToOccurrenceInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -12830,11 +12333,6 @@ func (ec *executionContext) marshalNDate2timeᚐTime(ctx context.Context, sel as
 
 func (ec *executionContext) unmarshalNDeleteDishAliasInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteDishAliasInput(ctx context.Context, v interface{}) (models.DeleteDishAliasInput, error) {
 	res, err := ec.unmarshalInputDeleteDishAliasInput(ctx, v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNDeleteImageToReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐDeleteImageToReviewInput(ctx context.Context, v interface{}) (models.DeleteImageToReviewInput, error) {
-	res, err := ec.unmarshalInputDeleteImageToReviewInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
@@ -12964,10 +12462,6 @@ func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbacken
 	return ec._DishAlias(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalNImage2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐImage(ctx context.Context, sel ast.SelectionSet, v ent.Image) graphql.Marshaler {
-	return ec._Image(ctx, sel, &v)
-}
-
 func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Image) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -13020,28 +12514,6 @@ func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋ
 		return graphql.Null
 	}
 	return ec._Image(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalNImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx context.Context, v interface{}) ([]*models.ImageInput, error) {
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*models.ImageInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNImageInput2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
-}
-
-func (ec *executionContext) unmarshalNImageInput2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInput(ctx context.Context, v interface{}) (*models.ImageInput, error) {
-	res, err := ec.unmarshalInputImageInput(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
@@ -13458,21 +12930,6 @@ func (ec *executionContext) unmarshalNUpdateReviewInput2githubᚗcomᚋmensatt�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (graphql.Upload, error) {
-	res, err := graphql.UnmarshalUpload(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, sel ast.SelectionSet, v graphql.Upload) graphql.Marshaler {
-	res := graphql.MarshalUpload(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
-}
-
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
 	return ec.___Directive(ctx, sel, &v)
 }
@@ -13790,26 +13247,6 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	}
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
-}
-
-func (ec *executionContext) unmarshalOImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx context.Context, v interface{}) ([]*models.ImageInput, error) {
-	if v == nil {
-		return nil, nil
-	}
-	var vSlice []interface{}
-	if v != nil {
-		vSlice = graphql.CoerceList(v)
-	}
-	var err error
-	res := make([]*models.ImageInput, len(vSlice))
-	for i := range vSlice {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNImageInput2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInput(ctx, vSlice[i])
-		if err != nil {
-			return nil, err
-		}
-	}
-	return res, nil
 }
 
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {

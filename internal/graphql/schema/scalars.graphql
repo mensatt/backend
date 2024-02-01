@@ -7,6 +7,3 @@ scalar Date
 # A UUID is a 128 bit (16 byte) Universal Unique IDentifier as defined in RFC 4122.
 # Format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 scalar UUID
-
-# File Upload
-scalar Upload
