@@ -5,6 +5,14 @@ input LoginUserInput {
     password: String!
 }
 
+input UpdateUserInput {
+    id: UUID!
+    email: String
+    password: String
+    username: String
+    role: UserRole
+}
+
 
 # Tag
 

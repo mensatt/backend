@@ -36,3 +36,10 @@ atlas migrate diff <migration_name> \
 ```
 The `--format` flag uses a tab as indentation. If you want to manually edit this command you can use
 `ctrl + v + tab` to insert a tab character in your shell.
+
+Applying the migration:
+```bash
+atlas migrate apply \
+ --dir file://internal/database/migrations \
+ --url "postgres://mensatt:mensatt@localhost:5432/mensatt?search_path=public&sslmode=disable"
+```

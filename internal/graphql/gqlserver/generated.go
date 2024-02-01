@@ -55,6 +55,7 @@ type ResolverRoot interface {
 }
 
 type DirectiveRoot struct {
+	Auth          func(ctx context.Context, obj interface{}, next graphql.Resolver, requires *schema.UserRole) (res interface{}, err error)
 	Authenticated func(ctx context.Context, obj interface{}, next graphql.Resolver) (res interface{}, err error)
 }
 
@@ -106,6 +107,7 @@ type ComplexityRoot struct {
 		UpdateDish                   func(childComplexity int, input models.UpdateDishInput) int
 		UpdateOccurrence             func(childComplexity int, input models.UpdateOccurrenceInput) int
 		UpdateReview                 func(childComplexity int, input models.UpdateReviewInput) int
+		UpdateUser                   func(childComplexity int, input models.UpdateUserInput) int
 	}
 
 	Occurrence struct {
@@ -200,8 +202,10 @@ type ComplexityRoot struct {
 	}
 
 	User struct {
-		Email func(childComplexity int) int
-		ID    func(childComplexity int) int
+		Email    func(childComplexity int) int
+		ID       func(childComplexity int) int
+		Role     func(childComplexity int) int
+		Username func(childComplexity int) int
 	}
 
 	VcsBuildInfo struct {
@@ -226,6 +230,7 @@ type ImageResolver interface {
 }
 type MutationResolver interface {
 	LoginUser(ctx context.Context, input models.LoginUserInput) (string, error)
+	UpdateUser(ctx context.Context, input models.UpdateUserInput) (*ent.User, error)
 	CreateTag(ctx context.Context, input models.CreateTagInput) (*ent.Tag, error)
 	CreateDish(ctx context.Context, input models.CreateDishInput) (*ent.Dish, error)
 	UpdateDish(ctx context.Context, input models.UpdateDishInput) (*ent.Dish, error)
@@ -621,6 +626,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.UpdateReview(childComplexity, args["input"].(models.UpdateReviewInput)), true
+
+	case "Mutation.updateUser":
+		if e.complexity.Mutation.UpdateUser == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateUser_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateUser(childComplexity, args["input"].(models.UpdateUserInput)), true
 
 	case "Occurrence.carbohydrates":
 		if e.complexity.Occurrence.Carbohydrates == nil {
@@ -1067,6 +1084,20 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.User.ID(childComplexity), true
 
+	case "User.role":
+		if e.complexity.User.Role == nil {
+			break
+		}
+
+		return e.complexity.User.Role(childComplexity), true
+
+	case "User.username":
+		if e.complexity.User.Username == nil {
+			break
+		}
+
+		return e.complexity.User.Username(childComplexity), true
+
 	case "VcsBuildInfo.commit":
 		if e.complexity.VcsBuildInfo.Commit == nil {
 			break
@@ -1119,6 +1150,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputUpdateDishInput,
 		ec.unmarshalInputUpdateOccurrenceInput,
 		ec.unmarshalInputUpdateReviewInput,
+		ec.unmarshalInputUpdateUserInput,
 	)
 	first := true
 
@@ -1233,27 +1265,23 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 }
 
 var sources = []*ast.Source{
-	{Name: "../schema/directives.graphql", Input: `directive @goModel(
-    model: String
-    models: [String!]
-) on OBJECT | INPUT_OBJECT | SCALAR | ENUM | INTERFACE | UNION
+	{Name: "../schema/directives.graphql", Input: `directive @auth(requires: UserRole = ADMIN) on OBJECT | FIELD_DEFINITION
 
-directive @goField(
-    forceResolver: Boolean
-    name: String
-) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
-
-directive @goTag(
-    key: String!
-    value: String
-) on INPUT_FIELD_DEFINITION | FIELD_DEFINITION
-
-directive @authenticated on FIELD_DEFINITION`, BuiltIn: false},
+directive @authenticated on FIELD_DEFINITION
+`, BuiltIn: false},
 	{Name: "../schema/inputs.graphql", Input: `# User
 
 input LoginUserInput {
     email: String!
     password: String!
+}
+
+input UpdateUserInput {
+    id: UUID!
+    email: String
+    password: String
+    username: String
+    role: UserRole
 }
 
 
@@ -1437,33 +1465,34 @@ input LocationFilter {
 	{Name: "../schema/mutations.graphql", Input: `type Mutation {
     # User
     loginUser(input: LoginUserInput!): String!
+    updateUser(input: UpdateUserInput!): User!
 
     # Tag
-    createTag(input: CreateTagInput!): Tag! @authenticated
+    createTag(input: CreateTagInput!): Tag! @auth(requires: ADMIN)
 
     # Dish
-    createDish(input: CreateDishInput!): Dish! @authenticated
-    updateDish(input: UpdateDishInput!): Dish! @authenticated
+    createDish(input: CreateDishInput!): Dish! @auth(requires: ADMIN)
+    updateDish(input: UpdateDishInput!): Dish! @auth(requires: ADMIN)
 #    mergeDishes(input: MergeDishesInput!): Dish! @authenticated
 
     # DishAlias
-    createDishAlias(input: CreateDishAliasInput!): DishAlias! @authenticated
-    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @authenticated
+    createDishAlias(input: CreateDishAliasInput!): DishAlias! @auth(requires: ADMIN)
+    deleteDishAlias(input: DeleteDishAliasInput!): DishAlias! @auth(requires: ADMIN)
 
     # Occurrence
-    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @authenticated
-    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @authenticated
-    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @authenticated
+    createOccurrence(input: CreateOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
+    updateOccurrence(input: UpdateOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
+    deleteOccurrence(input: DeleteOccurrenceInput!): Occurrence! @auth(requires: ADMIN)
 
-    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @authenticated
-    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @authenticated
-    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @authenticated
-    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @authenticated
+    addTagToOccurrence(input: AddTagToOccurrenceInput!): OccurrenceTag! @auth(requires: ADMIN)
+    removeTagFromOccurrence(input: RemoveTagFromOccurrenceInput!): OccurrenceTag! @auth(requires: ADMIN)
+    addSideDishToOccurrence(input: AddSideDishToOccurrenceInput!): OccurrenceSideDish! @auth(requires: ADMIN)
+    removeSideDishFromOccurrence(input: RemoveSideDishFromOccurrenceInput!): OccurrenceSideDish! @auth(requires: ADMIN)
 
     # Review
     createReview(input: CreateReviewInput!): Review!
-    updateReview(input: UpdateReviewInput!): Review! @authenticated
-    deleteReview(input: DeleteReviewInput!): Review! @authenticated
+    updateReview(input: UpdateReviewInput!): Review! @auth(requires: MOD)
+    deleteReview(input: DeleteReviewInput!): Review! @auth(requires: MOD)
 
     # Image
     addImagesToReview(input: AddImagesToReviewInput!): Review!
@@ -1625,9 +1654,16 @@ type Image {
     imageUrl: String!
 }
 
+enum UserRole {
+    ADMIN
+    MOD
+}
+
 type User {
     id: UUID!
     email: String!
+    username: String!
+    role: UserRole
 }
 
 type VcsBuildInfo {
@@ -1642,6 +1678,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // endregion ************************** generated!.gotpl **************************
 
 // region    ***************************** args.gotpl *****************************
+
+func (ec *executionContext) dir_auth_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *schema.UserRole
+	if tmp, ok := rawArgs["requires"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("requires"))
+		arg0, err = ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["requires"] = arg0
+	return args, nil
+}
 
 func (ec *executionContext) field_Dish_reviewData_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
@@ -1920,6 +1971,21 @@ func (ec *executionContext) field_Mutation_updateReview_args(ctx context.Context
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNUpdateReviewInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐUpdateReviewInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateUser_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.UpdateUserInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateUserInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐUpdateUserInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2871,6 +2937,71 @@ func (ec *executionContext) fieldContext_Mutation_loginUser(ctx context.Context,
 	return fc, nil
 }
 
+func (ec *executionContext) _Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateUser(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().UpdateUser(rctx, fc.Args["input"].(models.UpdateUserInput))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.User)
+	fc.Result = res
+	return ec.marshalNUser2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐUser(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateUser(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_User_id(ctx, field)
+			case "email":
+				return ec.fieldContext_User_email(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateUser_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createTag(ctx, field)
 	if err != nil {
@@ -2889,10 +3020,14 @@ func (ec *executionContext) _Mutation_createTag(ctx context.Context, field graph
 			return ec.resolvers.Mutation().CreateTag(rctx, fc.Args["input"].(models.CreateTagInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -2978,10 +3113,14 @@ func (ec *executionContext) _Mutation_createDish(ctx context.Context, field grap
 			return ec.resolvers.Mutation().CreateDish(rctx, fc.Args["input"].(models.CreateDishInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3065,10 +3204,14 @@ func (ec *executionContext) _Mutation_updateDish(ctx context.Context, field grap
 			return ec.resolvers.Mutation().UpdateDish(rctx, fc.Args["input"].(models.UpdateDishInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3152,10 +3295,14 @@ func (ec *executionContext) _Mutation_createDishAlias(ctx context.Context, field
 			return ec.resolvers.Mutation().CreateDishAlias(rctx, fc.Args["input"].(models.CreateDishAliasInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3235,10 +3382,14 @@ func (ec *executionContext) _Mutation_deleteDishAlias(ctx context.Context, field
 			return ec.resolvers.Mutation().DeleteDishAlias(rctx, fc.Args["input"].(models.DeleteDishAliasInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3318,10 +3469,14 @@ func (ec *executionContext) _Mutation_createOccurrence(ctx context.Context, fiel
 			return ec.resolvers.Mutation().CreateOccurrence(rctx, fc.Args["input"].(models.CreateOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3435,10 +3590,14 @@ func (ec *executionContext) _Mutation_updateOccurrence(ctx context.Context, fiel
 			return ec.resolvers.Mutation().UpdateOccurrence(rctx, fc.Args["input"].(models.UpdateOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3552,10 +3711,14 @@ func (ec *executionContext) _Mutation_deleteOccurrence(ctx context.Context, fiel
 			return ec.resolvers.Mutation().DeleteOccurrence(rctx, fc.Args["input"].(models.DeleteOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3669,10 +3832,14 @@ func (ec *executionContext) _Mutation_addTagToOccurrence(ctx context.Context, fi
 			return ec.resolvers.Mutation().AddTagToOccurrence(rctx, fc.Args["input"].(models.AddTagToOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3750,10 +3917,14 @@ func (ec *executionContext) _Mutation_removeTagFromOccurrence(ctx context.Contex
 			return ec.resolvers.Mutation().RemoveTagFromOccurrence(rctx, fc.Args["input"].(models.RemoveTagFromOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3831,10 +4002,14 @@ func (ec *executionContext) _Mutation_addSideDishToOccurrence(ctx context.Contex
 			return ec.resolvers.Mutation().AddSideDishToOccurrence(rctx, fc.Args["input"].(models.AddSideDishToOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -3912,10 +4087,14 @@ func (ec *executionContext) _Mutation_removeSideDishFromOccurrence(ctx context.C
 			return ec.resolvers.Mutation().RemoveSideDishFromOccurrence(rctx, fc.Args["input"].(models.RemoveSideDishFromOccurrenceInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "ADMIN")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -4068,10 +4247,14 @@ func (ec *executionContext) _Mutation_updateReview(ctx context.Context, field gr
 			return ec.resolvers.Mutation().UpdateReview(rctx, fc.Args["input"].(models.UpdateReviewInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -4163,10 +4346,14 @@ func (ec *executionContext) _Mutation_deleteReview(ctx context.Context, field gr
 			return ec.resolvers.Mutation().DeleteReview(rctx, fc.Args["input"].(models.DeleteReviewInput))
 		}
 		directive1 := func(ctx context.Context) (interface{}, error) {
-			if ec.directives.Authenticated == nil {
-				return nil, errors.New("directive authenticated is not implemented")
+			requires, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, "MOD")
+			if err != nil {
+				return nil, err
 			}
-			return ec.directives.Authenticated(ctx, nil, directive0)
+			if ec.directives.Auth == nil {
+				return nil, errors.New("directive auth is not implemented")
+			}
+			return ec.directives.Auth(ctx, nil, directive0, requires)
 		}
 
 		tmp, err := directive1(rctx)
@@ -5614,6 +5801,10 @@ func (ec *executionContext) fieldContext_Query_currentUser(ctx context.Context, 
 				return ec.fieldContext_User_id(ctx, field)
 			case "email":
 				return ec.fieldContext_User_email(ctx, field)
+			case "username":
+				return ec.fieldContext_User_username(ctx, field)
+			case "role":
+				return ec.fieldContext_User_role(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type User", field.Name)
 		},
@@ -7600,6 +7791,91 @@ func (ec *executionContext) fieldContext_User_email(ctx context.Context, field g
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_username(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_username(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Username, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(string)
+	fc.Result = res
+	return ec.marshalNString2string(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_username(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _User_role(ctx context.Context, field graphql.CollectedField, obj *ent.User) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_User_role(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Role, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*schema.UserRole)
+	fc.Result = res
+	return ec.marshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_User_role(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "User",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type UserRole does not have child fields")
 		},
 	}
 	return fc, nil
@@ -10771,6 +11047,71 @@ func (ec *executionContext) unmarshalInputUpdateReviewInput(ctx context.Context,
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateUserInput(ctx context.Context, obj interface{}) (models.UpdateUserInput, error) {
+	var it models.UpdateUserInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "email", "password", "username", "role"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "email":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("email"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Email = data
+		case "password":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("password"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Password = data
+		case "username":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("username"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Username = data
+		case "role":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("role"))
+			data, err := ec.unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Role = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -11231,6 +11572,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "loginUser":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_loginUser(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateUser":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateUser(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -12360,6 +12708,13 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
+		case "username":
+			out.Values[i] = ec._User_username(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "role":
+			out.Values[i] = ec._User_role(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -13458,6 +13813,11 @@ func (ec *executionContext) unmarshalNUpdateReviewInput2githubᚗcomᚋmensatt�
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
+func (ec *executionContext) unmarshalNUpdateUserInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐUpdateUserInput(ctx context.Context, v interface{}) (models.UpdateUserInput, error) {
+	res, err := ec.unmarshalInputUpdateUserInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚐUpload(ctx context.Context, v interface{}) (graphql.Upload, error) {
 	res, err := graphql.UnmarshalUpload(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13471,6 +13831,20 @@ func (ec *executionContext) marshalNUpload2githubᚗcomᚋ99designsᚋgqlgenᚋg
 		}
 	}
 	return res
+}
+
+func (ec *executionContext) marshalNUser2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v ent.User) graphql.Marshaler {
+	return ec._User(ctx, sel, &v)
+}
+
+func (ec *executionContext) marshalNUser2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐUser(ctx context.Context, sel ast.SelectionSet, v *ent.User) graphql.Marshaler {
+	if v == nil {
+		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
+			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
+		}
+		return graphql.Null
+	}
+	return ec._User(ctx, sel, v)
 }
 
 func (ec *executionContext) marshalN__Directive2githubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐDirective(ctx context.Context, sel ast.SelectionSet, v introspection.Directive) graphql.Marshaler {
@@ -14043,6 +14417,23 @@ func (ec *executionContext) marshalOUser2ᚖgithubᚗcomᚋmensattᚋbackendᚋi
 		return graphql.Null
 	}
 	return ec._User(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx context.Context, v interface{}) (*schema.UserRole, error) {
+	if v == nil {
+		return nil, nil
+	}
+	tmp, err := graphql.UnmarshalString(v)
+	res := schema.UserRole(tmp)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOUserRole2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋschemaᚐUserRole(ctx context.Context, sel ast.SelectionSet, v *schema.UserRole) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	res := graphql.MarshalString(string(*v))
+	return res
 }
 
 func (ec *executionContext) marshalOVcsBuildInfo2ᚖgithubᚗcomᚋmensattᚋbackendᚋpkgᚋutilsᚐVCSBuildInfo(ctx context.Context, sel ast.SelectionSet, v *utils.VCSBuildInfo) graphql.Marshaler {

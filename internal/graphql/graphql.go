@@ -59,6 +59,7 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 				},
 				Directives: gqlserver.DirectiveRoot{
 					Authenticated: directives.Authenticated,
+					Auth:          directives.Auth,
 				},
 			},
 		),

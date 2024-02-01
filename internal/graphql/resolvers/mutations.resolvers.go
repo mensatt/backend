@@ -13,8 +13,10 @@ import (
 	"github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/tag"
 	"github.com/mensatt/backend/internal/database/ent/user"
+	"github.com/mensatt/backend/internal/database/schema"
 	"github.com/mensatt/backend/internal/graphql/gqlserver"
 	"github.com/mensatt/backend/internal/graphql/models"
+	"github.com/mensatt/backend/internal/middleware"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
@@ -30,6 +32,65 @@ func (r *mutationResolver) LoginUser(ctx context.Context, input models.LoginUser
 	}
 
 	return r.JWTKeyStore.GenerateJWT(user.ID)
+}
+
+// UpdateUser is the resolver for the updateUser field.
+func (r *mutationResolver) UpdateUser(ctx context.Context, input models.UpdateUserInput) (*ent.User, error) {
+	authenticatedUser := middleware.GetUserIDFromCtx(ctx)
+	if authenticatedUser == nil {
+		return nil, fmt.Errorf("not authenticated")
+	}
+
+	queryBuilder := r.Database.User.UpdateOneID(input.ID)
+
+	if input.Email != nil {
+		if !userHimselfOrRoles(authenticatedUser, input.ID, []schema.UserRole{schema.Admin}) {
+			return nil, fmt.Errorf("not authorized")
+		}
+
+		// check if email is already taken
+		_, err := r.Database.User.Query().Where(user.Email(*input.Email)).Only(ctx)
+		if err == nil {
+			return nil, fmt.Errorf("email already taken")
+		}
+
+		queryBuilder = queryBuilder.SetEmail(*input.Email)
+	}
+
+	if input.Password != nil {
+		if !userHimselfOrRoles(authenticatedUser, input.ID, []schema.UserRole{schema.Admin}) {
+			return nil, fmt.Errorf("not authorized")
+		}
+
+		passwordHash, err := utils.HashPassword(*input.Password)
+		if err != nil {
+			return nil, err
+		}
+		queryBuilder = queryBuilder.SetPasswordHash(passwordHash)
+	}
+
+	if input.Username != nil {
+		if !userHimselfOrRoles(authenticatedUser, input.ID, []schema.UserRole{schema.Mod, schema.Admin}) {
+			return nil, fmt.Errorf("not authorized")
+		}
+
+		// check if username is already taken
+		_, err := r.Database.User.Query().Where(user.Username(*input.Username)).Only(ctx)
+		if err == nil {
+			return nil, fmt.Errorf("username already taken")
+		}
+
+		queryBuilder = queryBuilder.SetUsername(*input.Username)
+	}
+
+	if input.Role != nil {
+		if !userHimselfOrRoles(authenticatedUser, input.ID, []schema.UserRole{schema.Admin}) {
+			return nil, fmt.Errorf("not authorized")
+		}
+		queryBuilder = queryBuilder.SetRole(*input.Role)
+	}
+
+	return queryBuilder.Save(ctx)
 }
 
 // CreateTag is the resolver for the createTag field.

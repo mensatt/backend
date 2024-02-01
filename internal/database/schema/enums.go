@@ -15,3 +15,17 @@ func (TagPriority) Values() (kinds []string) {
 	}
 	return
 }
+
+type UserRole string
+
+const (
+	Admin UserRole = "ADMIN"
+	Mod   UserRole = "MOD"
+)
+
+func (UserRole) Values() (kinds []string) {
+	for _, s := range []UserRole{Admin, Mod} {
+		kinds = append(kinds, string(s))
+	}
+	return
+}

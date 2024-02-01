@@ -109,9 +109,16 @@ type Image {
     imageUrl: String!
 }
 
+enum UserRole {
+    ADMIN
+    MOD
+}
+
 type User {
     id: UUID!
     email: String!
+    username: String!
+    role: UserRole
 }
 
 type VcsBuildInfo {
