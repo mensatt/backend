@@ -2,12 +2,14 @@ package resolvers
 
 import (
 	"context"
+	"github.com/google/uuid"
 	ent "github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/dish"
 	"github.com/mensatt/backend/internal/database/ent/location"
 	"github.com/mensatt/backend/internal/database/ent/occurrence"
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/graphql/models"
+	"io"
 	"net/http"
 )
 
@@ -54,6 +56,67 @@ import (
 //
 //	return imageEntities, nil
 //}
+
+func (r *mutationResolver) submitImages(uuids []uuid.UUID) []uuid.UUID {
+	var submittedImages []uuid.UUID
+
+	for _, imageUUID := range uuids {
+		url := "http://localhost:3000/image/" + imageUUID.String()
+		request, err := http.NewRequest("POST", url, nil)
+		if err != nil {
+			continue // ignore error and continue with the next image
+		}
+
+		request.Header.Add("Authorization", "Bearer "+r.ImageAPIKey)
+		client := &http.Client{}
+
+		response, err := client.Do(request)
+		if err != nil {
+			continue // ignore error and continue with the next image
+		}
+		defer response.Body.Close() // unhandled error
+
+		if response.StatusCode != 200 {
+			continue // ignore error and continue with the next image
+		}
+
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			continue // ignore error and continue with the next image
+		}
+
+		uuid, err := uuid.Parse(string(body))
+		if err != nil {
+			continue // ignore error and continue with the next image
+		}
+
+		submittedImages = append(submittedImages, uuid)
+	}
+
+	return submittedImages
+}
+
+func (r *mutationResolver) approveImages(images []*ent.Image) error {
+	for _, image := range images {
+		_, err := http.Post("http://localhost:3000/approve/"+image.ID.String(), "application/json", nil)
+		if err != nil {
+			return err // todo: maybe not fail if one image fails and remember to log :)
+		}
+	}
+	return nil
+
+}
+
+func (r *mutationResolver) unapproveImages(images []*ent.Image) error {
+	for _, image := range images {
+		_, err := http.Post("http://localhost:3000/unapprove/"+image.ID.String(), "application/json", nil)
+		if err != nil {
+			return err // todo: maybe not fail if one image fails and remember to log :)
+		}
+	}
+	return nil
+
+}
 
 func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image) error {
 	//for _, image := range images {

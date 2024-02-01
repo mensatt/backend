@@ -8,8 +8,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/google/uuid"
-	"net/http"
 	"time"
 
 	"github.com/mensatt/backend/internal/database/ent"
@@ -376,46 +374,17 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 
 	// Process & store images
 	if input.Images != nil {
-		var submittedImages []uuid.UUID
-		for _, image := range input.Images {
-			response, err := http.Post("http://localhost:3000/submit/"+image.String(), "application/json", nil)
-			if err != nil {
-				return nil, err // todo!!!!!
-			}
-
-			if response.StatusCode == 200 {
-				submittedImages = append(submittedImages, image)
-				continue
-			}
-
-			// log error: todo improve behaviour
-			fmt.Println("failed to submit image: " + image.String())
-		}
-
+		submittedImages := r.submitImages(input.Images)
 		for _, image := range submittedImages {
 			_, err := tx.Image.Create().
 				SetID(image).
-				SetReviewID(review.ID).
+				SetReviewID(review.ID). // todo: maybe hash is needed (edit schema: remove hash)
 				Save(ctx)
 			if err != nil {
-				return nil, err // todo!!!!!
+				continue // if one image fails to store, allow the remaining images to be stored
 			}
 		}
-
-		//todo: unapprove images on rollback (if db error) --> required unapprove route
-
 	}
-
-	//if input.Images != nil {
-	//	_, err := r.storeImages(tx, ctx, review, input.Images) // only require error (if no error: images are stored)
-	//	if err != nil {
-	//		txErr := tx.Rollback()
-	//		if txErr != nil {
-	//			return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
-	//		}
-	//		return nil, err
-	//	}
-	//}
 
 	err = tx.Commit()
 	if err != nil {
@@ -485,18 +454,6 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 	// todo: unapproving images and stuff
 
 	return review, nil
-}
-
-// todo: move this to helper.go
-func (r *mutationResolver) approveImages(images []*ent.Image) error {
-	for _, image := range images {
-		_, err := http.Post("http://localhost:3000/approve/"+image.ID.String(), "application/json", nil)
-		if err != nil {
-			return err // todo: maybe not fail if one image fails and remember to log :)
-		}
-	}
-	return nil
-
 }
 
 // DeleteReview is the resolver for the deleteReview field.
