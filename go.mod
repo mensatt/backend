@@ -5,7 +5,6 @@ go 1.19
 require (
 	entgo.io/ent v0.12.3
 	github.com/99designs/gqlgen v0.17.43
-	github.com/davidbyttow/govips/v2 v2.13.0
 	github.com/getsentry/sentry-go v0.26.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-jwt/jwt/v4 v4.5.0
@@ -57,7 +56,6 @@ require (
 	github.com/zclconf/go-cty v1.13.2 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	golang.org/x/arch v0.3.0 // indirect
-	golang.org/x/image v0.10.0 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect

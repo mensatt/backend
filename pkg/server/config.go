@@ -3,7 +3,6 @@ package server
 import (
 	"fmt"
 
-	"github.com/mensatt/backend/pkg/imageuploader"
 	"github.com/mensatt/backend/pkg/utils"
 )
 
@@ -16,7 +15,6 @@ type Config struct {
 	DebugEnabled   bool
 	JWT            utils.JWTKeyStoreConfig
 	AssetsDir      string
-	ImageUploader  imageuploader.Config
 }
 
 // ListenEndpoint builds the endpoint string (host + port)
