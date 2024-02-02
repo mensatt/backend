@@ -77,3 +77,15 @@ func GetOrFile(envVar string) (string, error) {
 
 	return strings.TrimSuffix(string(fileContents), "\n"), nil
 }
+
+// MustGetOrFile attempts to resolve 'key' as an environment variable.
+// Failing that, it will check to see if '<key>_FILE' exists.
+// If so, it will attempt to read from the referenced file to populate a value.
+// If that fails, it will panic.
+func MustGetOrFile(envVar string) string {
+	v, err := GetOrFile(envVar)
+	if err != nil {
+		log.Panic("ENV missing, key: " + envVar)
+	}
+	return v
+}
