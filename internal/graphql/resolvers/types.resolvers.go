@@ -6,7 +6,6 @@ package resolvers
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/dish"
@@ -80,11 +79,6 @@ func (r *imageResolver) Hash(ctx context.Context, obj *ent.Image) (string, error
 // Review is the resolver for the review field.
 func (r *imageResolver) Review(ctx context.Context, obj *ent.Image) (*ent.Review, error) {
 	return r.Database.Image.QueryReview(obj).Only(ctx)
-}
-
-// ImageURL is the resolver for the imageUrl field.
-func (r *imageResolver) ImageURL(ctx context.Context, obj *ent.Image) (string, error) {
-	return fmt.Sprintf("%s/%s", r.ImageBaseURL, obj.ID), nil
 }
 
 // Location is the resolver for the location field.
