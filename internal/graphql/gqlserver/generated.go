@@ -76,10 +76,9 @@ type ComplexityRoot struct {
 	}
 
 	Image struct {
-		Hash     func(childComplexity int) int
-		ID       func(childComplexity int) int
-		ImageURL func(childComplexity int) int
-		Review   func(childComplexity int) int
+		Hash   func(childComplexity int) int
+		ID     func(childComplexity int) int
+		Review func(childComplexity int) int
 	}
 
 	Location struct {
@@ -224,7 +223,6 @@ type DishAliasResolver interface {
 type ImageResolver interface {
 	Hash(ctx context.Context, obj *ent.Image) (string, error)
 	Review(ctx context.Context, obj *ent.Image) (*ent.Review, error)
-	ImageURL(ctx context.Context, obj *ent.Image) (string, error)
 }
 type MutationResolver interface {
 	LoginUser(ctx context.Context, input models.LoginUserInput) (string, error)
@@ -369,13 +367,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Image.ID(childComplexity), true
-
-	case "Image.imageUrl":
-		if e.complexity.Image.ImageURL == nil {
-			break
-		}
-
-		return e.complexity.Image.ImageURL(childComplexity), true
 
 	case "Image.review":
 		if e.complexity.Image.Review == nil {
@@ -1619,7 +1610,6 @@ type Image {
     id: UUID!
     hash: String!
     review: Review!
-    imageUrl: String!
 }
 
 type User {
@@ -2588,50 +2578,6 @@ func (ec *executionContext) fieldContext_Image_review(ctx context.Context, field
 				return ec.fieldContext_Review_acceptedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Image_imageUrl(ctx context.Context, field graphql.CollectedField, obj *ent.Image) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_Image_imageUrl(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Image().ImageURL(rctx, obj)
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
-		return graphql.Null
-	}
-	res := resTmp.(string)
-	fc.Result = res
-	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_Image_imageUrl(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Image",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
 		},
 	}
 	return fc, nil
@@ -6384,8 +6330,6 @@ func (ec *executionContext) fieldContext_Review_images(ctx context.Context, fiel
 				return ec.fieldContext_Image_hash(ctx, field)
 			case "review":
 				return ec.fieldContext_Image_review(ctx, field)
-			case "imageUrl":
-				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -6716,8 +6660,6 @@ func (ec *executionContext) fieldContext_ReviewDataDish_images(ctx context.Conte
 				return ec.fieldContext_Image_hash(ctx, field)
 			case "review":
 				return ec.fieldContext_Image_review(ctx, field)
-			case "imageUrl":
-				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -6884,8 +6826,6 @@ func (ec *executionContext) fieldContext_ReviewDataOccurrence_images(ctx context
 				return ec.fieldContext_Image_hash(ctx, field)
 			case "review":
 				return ec.fieldContext_Image_review(ctx, field)
-			case "imageUrl":
-				return ec.fieldContext_Image_imageUrl(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -10865,42 +10805,6 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 					}
 				}()
 				res = ec._Image_review(ctx, field, obj)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
-				return res
-			}
-
-			if field.Deferrable != nil {
-				dfs, ok := deferred[field.Deferrable.Label]
-				di := 0
-				if ok {
-					dfs.AddField(field)
-					di = len(dfs.Values) - 1
-				} else {
-					dfs = graphql.NewFieldSet([]graphql.CollectedField{field})
-					deferred[field.Deferrable.Label] = dfs
-				}
-				dfs.Concurrently(di, func(ctx context.Context) graphql.Marshaler {
-					return innerFunc(ctx, dfs)
-				})
-
-				// don't run the out.Concurrently() call below
-				out.Values[i] = graphql.Null
-				continue
-			}
-
-			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
-		case "imageUrl":
-			field := field
-
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
-				defer func() {
-					if r := recover(); r != nil {
-						ec.Error(ctx, ec.Recover(ctx, r))
-					}
-				}()
-				res = ec._Image_imageUrl(ctx, field, obj)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
