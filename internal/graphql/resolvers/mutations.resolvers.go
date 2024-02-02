@@ -536,6 +536,54 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 	return review, nil
 }
 
+// AddImagesToReview is the resolver for the addImagesToReview field.
+func (r *mutationResolver) AddImagesToReview(ctx context.Context, input models.AddImagesToReviewInput) (*ent.Review, error) {
+	review, err := r.Database.Review.Get(ctx, input.Review)
+	if err != nil {
+		return nil, err
+	}
+
+	submittedImages := r.submitImages(input.Images)
+	for _, image := range submittedImages {
+		_, err := r.Database.Image.Create().
+			SetID(image).
+			SetReviewID(review.ID). // todo: maybe hash is needed (edit schema: remove hash)
+			Save(ctx)
+		if err != nil {
+			continue // if one image fails to store, allow the remaining images to be stored
+		}
+	}
+
+	return review, nil
+}
+
+// DeleteImagesFromReview is the resolver for the deleteImagesFromReview field.
+func (r *mutationResolver) DeleteImagesFromReview(ctx context.Context, input models.DeleteImagesFromReviewInput) (*ent.Review, error) {
+	review, err := r.Database.Review.Get(ctx, input.Review)
+	if err != nil {
+		return nil, err
+	}
+
+	imagesUUIDs, err := review.QueryImages().IDs(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	deletedImages := r.deleteImages(imagesUUIDs)
+	for _, image := range deletedImages {
+		err := r.Database.Image.DeleteOneID(image).Exec(ctx)
+		if err != nil {
+			continue // if one image fails to delete, allow the remaining images to be deleted
+		}
+	}
+
+	if len(deletedImages) != len(imagesUUIDs) {
+		return nil, fmt.Errorf("failed to delete all images") // dunno if we shouldn't just also return the review
+	}
+
+	return review, nil
+}
+
 // Mutation returns gqlserver.MutationResolver implementation.
 func (r *Resolver) Mutation() gqlserver.MutationResolver { return &mutationResolver{r} }
 
