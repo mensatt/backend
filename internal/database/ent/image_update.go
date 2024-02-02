@@ -29,12 +29,6 @@ func (iu *ImageUpdate) Where(ps ...predicate.Image) *ImageUpdate {
 	return iu
 }
 
-// SetImageHash sets the "image_hash" field.
-func (iu *ImageUpdate) SetImageHash(s string) *ImageUpdate {
-	iu.mutation.SetImageHash(s)
-	return iu
-}
-
 // SetReviewID sets the "review" edge to the Review entity by ID.
 func (iu *ImageUpdate) SetReviewID(id uuid.UUID) *ImageUpdate {
 	iu.mutation.SetReviewID(id)
@@ -86,11 +80,6 @@ func (iu *ImageUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iu *ImageUpdate) check() error {
-	if v, ok := iu.mutation.ImageHash(); ok {
-		if err := image.ImageHashValidator(v); err != nil {
-			return &ValidationError{Name: "image_hash", err: fmt.Errorf(`ent: validator failed for field "Image.image_hash": %w`, err)}
-		}
-	}
 	if _, ok := iu.mutation.ReviewID(); iu.mutation.ReviewCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Image.review"`)
 	}
@@ -108,9 +97,6 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := iu.mutation.ImageHash(); ok {
-		_spec.SetField(image.FieldImageHash, field.TypeString, value)
 	}
 	if iu.mutation.ReviewCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -159,12 +145,6 @@ type ImageUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ImageMutation
-}
-
-// SetImageHash sets the "image_hash" field.
-func (iuo *ImageUpdateOne) SetImageHash(s string) *ImageUpdateOne {
-	iuo.mutation.SetImageHash(s)
-	return iuo
 }
 
 // SetReviewID sets the "review" edge to the Review entity by ID.
@@ -231,11 +211,6 @@ func (iuo *ImageUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iuo *ImageUpdateOne) check() error {
-	if v, ok := iuo.mutation.ImageHash(); ok {
-		if err := image.ImageHashValidator(v); err != nil {
-			return &ValidationError{Name: "image_hash", err: fmt.Errorf(`ent: validator failed for field "Image.image_hash": %w`, err)}
-		}
-	}
 	if _, ok := iuo.mutation.ReviewID(); iuo.mutation.ReviewCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Image.review"`)
 	}
@@ -270,9 +245,6 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := iuo.mutation.ImageHash(); ok {
-		_spec.SetField(image.FieldImageHash, field.TypeString, value)
 	}
 	if iuo.mutation.ReviewCleared() {
 		edge := &sqlgraph.EdgeSpec{

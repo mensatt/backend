@@ -44,7 +44,6 @@ var (
 	// ImageColumns holds the columns for the "image" table.
 	ImageColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "image_hash", Type: field.TypeString},
 		{Name: "review", Type: field.TypeUUID},
 	}
 	// ImageTable holds the schema information for the "image" table.
@@ -55,7 +54,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "image_review_images",
-				Columns:    []*schema.Column{ImageColumns[2]},
+				Columns:    []*schema.Column{ImageColumns[1]},
 				RefColumns: []*schema.Column{ReviewColumns[0]},
 				OnDelete:   schema.Cascade,
 			},

@@ -13,8 +13,6 @@ const (
 	Label = "image"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldImageHash holds the string denoting the image_hash field in the database.
-	FieldImageHash = "image_hash"
 	// EdgeReview holds the string denoting the review edge name in mutations.
 	EdgeReview = "review"
 	// Table holds the table name of the image in the database.
@@ -31,7 +29,6 @@ const (
 // Columns holds all SQL columns for image fields.
 var Columns = []string{
 	FieldID,
-	FieldImageHash,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "image"
@@ -56,8 +53,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// ImageHashValidator is a validator for the "image_hash" field. It is called by the builders before save.
-	ImageHashValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -68,11 +63,6 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
-}
-
-// ByImageHash orders the results by the image_hash field.
-func ByImageHash(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldImageHash, opts...).ToFunc()
 }
 
 // ByReviewField orders the results by review field.

@@ -15,11 +15,9 @@ import (
 
 // Image is the model entity for the Image schema.
 type Image struct {
-	config `json:"-"`
+	config
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// ImageHash holds the value of the "image_hash" field.
-	ImageHash string `json:"image_hash,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges        ImageEdges `json:"edges"`
@@ -54,8 +52,6 @@ func (*Image) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case image.FieldImageHash:
-			values[i] = new(sql.NullString)
 		case image.FieldID:
 			values[i] = new(uuid.UUID)
 		case image.ForeignKeys[0]: // review
@@ -80,12 +76,6 @@ func (i *Image) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field id", values[j])
 			} else if value != nil {
 				i.ID = *value
-			}
-		case image.FieldImageHash:
-			if value, ok := values[j].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field image_hash", values[j])
-			} else if value.Valid {
-				i.ImageHash = value.String
 			}
 		case image.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -134,9 +124,7 @@ func (i *Image) Unwrap() *Image {
 func (i *Image) String() string {
 	var builder strings.Builder
 	builder.WriteString("Image(")
-	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
-	builder.WriteString("image_hash=")
-	builder.WriteString(i.ImageHash)
+	builder.WriteString(fmt.Sprintf("id=%v", i.ID))
 	builder.WriteByte(')')
 	return builder.String()
 }

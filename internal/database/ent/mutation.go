@@ -1115,7 +1115,6 @@ type ImageMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	image_hash    *string
 	clearedFields map[string]struct{}
 	review        *uuid.UUID
 	clearedreview bool
@@ -1228,42 +1227,6 @@ func (m *ImageMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetImageHash sets the "image_hash" field.
-func (m *ImageMutation) SetImageHash(s string) {
-	m.image_hash = &s
-}
-
-// ImageHash returns the value of the "image_hash" field in the mutation.
-func (m *ImageMutation) ImageHash() (r string, exists bool) {
-	v := m.image_hash
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldImageHash returns the old "image_hash" field's value of the Image entity.
-// If the Image object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldImageHash(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldImageHash is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldImageHash requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldImageHash: %w", err)
-	}
-	return oldValue.ImageHash, nil
-}
-
-// ResetImageHash resets all changes to the "image_hash" field.
-func (m *ImageMutation) ResetImageHash() {
-	m.image_hash = nil
-}
-
 // SetReviewID sets the "review" edge to the Review entity by id.
 func (m *ImageMutation) SetReviewID(id uuid.UUID) {
 	m.review = &id
@@ -1337,10 +1300,7 @@ func (m *ImageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ImageMutation) Fields() []string {
-	fields := make([]string, 0, 1)
-	if m.image_hash != nil {
-		fields = append(fields, image.FieldImageHash)
-	}
+	fields := make([]string, 0, 0)
 	return fields
 }
 
@@ -1348,10 +1308,6 @@ func (m *ImageMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *ImageMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case image.FieldImageHash:
-		return m.ImageHash()
-	}
 	return nil, false
 }
 
@@ -1359,10 +1315,6 @@ func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case image.FieldImageHash:
-		return m.OldImageHash(ctx)
-	}
 	return nil, fmt.Errorf("unknown Image field %s", name)
 }
 
@@ -1371,13 +1323,6 @@ func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *ImageMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case image.FieldImageHash:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetImageHash(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Image field %s", name)
 }
@@ -1399,8 +1344,6 @@ func (m *ImageMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *ImageMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
 	return fmt.Errorf("unknown Image numeric field %s", name)
 }
 
@@ -1426,11 +1369,6 @@ func (m *ImageMutation) ClearField(name string) error {
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *ImageMutation) ResetField(name string) error {
-	switch name {
-	case image.FieldImageHash:
-		m.ResetImageHash()
-		return nil
-	}
 	return fmt.Errorf("unknown Image field %s", name)
 }
 

@@ -71,11 +71,6 @@ func (r *dishAliasResolver) AliasName(ctx context.Context, obj *ent.DishAlias) (
 	return obj.ID, nil
 }
 
-// Hash is the resolver for the hash field.
-func (r *imageResolver) Hash(ctx context.Context, obj *ent.Image) (string, error) {
-	return r.Database.Image.Query().Where(image.ID(obj.ID)).OnlyX(ctx).ImageHash, nil
-}
-
 // Review is the resolver for the review field.
 func (r *imageResolver) Review(ctx context.Context, obj *ent.Image) (*ent.Review, error) {
 	return r.Database.Image.QueryReview(obj).Only(ctx)

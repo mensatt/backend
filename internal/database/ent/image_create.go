@@ -24,12 +24,6 @@ type ImageCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetImageHash sets the "image_hash" field.
-func (ic *ImageCreate) SetImageHash(s string) *ImageCreate {
-	ic.mutation.SetImageHash(s)
-	return ic
-}
-
 // SetID sets the "id" field.
 func (ic *ImageCreate) SetID(u uuid.UUID) *ImageCreate {
 	ic.mutation.SetID(u)
@@ -98,14 +92,6 @@ func (ic *ImageCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *ImageCreate) check() error {
-	if _, ok := ic.mutation.ImageHash(); !ok {
-		return &ValidationError{Name: "image_hash", err: errors.New(`ent: missing required field "Image.image_hash"`)}
-	}
-	if v, ok := ic.mutation.ImageHash(); ok {
-		if err := image.ImageHashValidator(v); err != nil {
-			return &ValidationError{Name: "image_hash", err: fmt.Errorf(`ent: validator failed for field "Image.image_hash": %w`, err)}
-		}
-	}
 	if _, ok := ic.mutation.ReviewID(); !ok {
 		return &ValidationError{Name: "review", err: errors.New(`ent: missing required edge "Image.review"`)}
 	}
@@ -145,10 +131,6 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := ic.mutation.ImageHash(); ok {
-		_spec.SetField(image.FieldImageHash, field.TypeString, value)
-		_node.ImageHash = value
-	}
 	if nodes := ic.mutation.ReviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -173,17 +155,11 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Image.Create().
-//		SetImageHash(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
 //			sql.ResolveWithNewValues(),
 //		).
-//		// Override some of the fields with custom
-//		// update values.
-//		Update(func(u *ent.ImageUpsert) {
-//			SetImageHash(v+v).
-//		}).
 //		Exec(ctx)
 func (ic *ImageCreate) OnConflict(opts ...sql.ConflictOption) *ImageUpsertOne {
 	ic.conflict = opts
@@ -217,18 +193,6 @@ type (
 		*sql.UpdateSet
 	}
 )
-
-// SetImageHash sets the "image_hash" field.
-func (u *ImageUpsert) SetImageHash(v string) *ImageUpsert {
-	u.Set(image.FieldImageHash, v)
-	return u
-}
-
-// UpdateImageHash sets the "image_hash" field to the value that was provided on create.
-func (u *ImageUpsert) UpdateImageHash() *ImageUpsert {
-	u.SetExcluded(image.FieldImageHash)
-	return u
-}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -276,20 +240,6 @@ func (u *ImageUpsertOne) Update(set func(*ImageUpsert)) *ImageUpsertOne {
 		set(&ImageUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetImageHash sets the "image_hash" field.
-func (u *ImageUpsertOne) SetImageHash(v string) *ImageUpsertOne {
-	return u.Update(func(s *ImageUpsert) {
-		s.SetImageHash(v)
-	})
-}
-
-// UpdateImageHash sets the "image_hash" field to the value that was provided on create.
-func (u *ImageUpsertOne) UpdateImageHash() *ImageUpsertOne {
-	return u.Update(func(s *ImageUpsert) {
-		s.UpdateImageHash()
-	})
 }
 
 // Exec executes the query.
@@ -421,11 +371,6 @@ func (icb *ImageCreateBulk) ExecX(ctx context.Context) {
 //			// the was proposed for insertion.
 //			sql.ResolveWithNewValues(),
 //		).
-//		// Override some of the fields with custom
-//		// update values.
-//		Update(func(u *ent.ImageUpsert) {
-//			SetImageHash(v+v).
-//		}).
 //		Exec(ctx)
 func (icb *ImageCreateBulk) OnConflict(opts ...sql.ConflictOption) *ImageUpsertBulk {
 	icb.conflict = opts
@@ -501,20 +446,6 @@ func (u *ImageUpsertBulk) Update(set func(*ImageUpsert)) *ImageUpsertBulk {
 		set(&ImageUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetImageHash sets the "image_hash" field.
-func (u *ImageUpsertBulk) SetImageHash(v string) *ImageUpsertBulk {
-	return u.Update(func(s *ImageUpsert) {
-		s.SetImageHash(v)
-	})
-}
-
-// UpdateImageHash sets the "image_hash" field to the value that was provided on create.
-func (u *ImageUpsertBulk) UpdateImageHash() *ImageUpsertBulk {
-	return u.Update(func(s *ImageUpsert) {
-		s.UpdateImageHash()
-	})
 }
 
 // Exec executes the query.
