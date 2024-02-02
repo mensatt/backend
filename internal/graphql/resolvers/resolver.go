@@ -15,6 +15,7 @@ type Resolver struct {
 	JWTKeyStore            *utils.JWTKeyStore
 	VCSBuildInfo           *utils.VCSBuildInfo
 	ImageBaseURL           string
+	ImageAPIURL            string
 	ImageAPIKey            string
 	ReviewCreatedChannels  map[string]chan *ent.Review
 	ReviewAcceptedChannels map[string]chan *ent.Review

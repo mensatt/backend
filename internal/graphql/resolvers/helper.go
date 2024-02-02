@@ -17,7 +17,7 @@ func (r *mutationResolver) submitImages(uuids []uuid.UUID) []uuid.UUID {
 	var submittedImages []uuid.UUID
 
 	for _, imageUUID := range uuids {
-		url := "http://localhost:3000/image/" + imageUUID.String()
+		url := r.ImageAPIURL + "image/" + imageUUID.String()
 		request, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			continue // ignore error and continue with the next image
@@ -56,7 +56,7 @@ func (r *mutationResolver) approveImages(uuids []uuid.UUID) ([]uuid.UUID, error)
 	var approvedImages []uuid.UUID
 
 	for _, imageUUID := range uuids {
-		url := "http://localhost:3000/approve/" + imageUUID.String()
+		url := r.ImageAPIURL + "approve/" + imageUUID.String()
 		request, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			return approvedImages, err
@@ -94,7 +94,7 @@ func (r *mutationResolver) unapproveImages(uuids []uuid.UUID) ([]uuid.UUID, erro
 	var unapprovedImages []uuid.UUID
 
 	for _, imageUUID := range uuids {
-		url := "http://localhost:3000/unapprove/" + imageUUID.String()
+		url := r.ImageAPIURL + "unapprove/" + imageUUID.String()
 		request, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			return unapprovedImages, err
@@ -132,7 +132,7 @@ func (r *mutationResolver) deleteImages(uuids []uuid.UUID) []uuid.UUID {
 	var deletedImages []uuid.UUID
 
 	for _, imageUUID := range uuids {
-		url := "http://localhost:3000/image/" + imageUUID.String()
+		url := r.ImageAPIURL + "image/" + imageUUID.String()
 		request, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
 			continue // ignore error and continue with the next image

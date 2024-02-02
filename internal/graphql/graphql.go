@@ -20,6 +20,7 @@ type GraphQLParams struct {
 	Database     *ent.Client
 	JWTKeyStore  *utils.JWTKeyStore
 	ImageBaseURL string
+	ImageAPIURL  string
 	ImageAPIKey  string
 }
 
@@ -52,6 +53,7 @@ func graphqlHandler(params *GraphQLParams) gin.HandlerFunc {
 					JWTKeyStore:            params.JWTKeyStore,
 					VCSBuildInfo:           vscBuildInfo,
 					ImageBaseURL:           params.ImageBaseURL,
+					ImageAPIURL:            params.ImageAPIURL,
 					ImageAPIKey:            params.ImageAPIKey,
 					ReviewAcceptedChannels: map[string]chan *ent.Review{},
 					ReviewCreatedChannels:  map[string]chan *ent.Review{},

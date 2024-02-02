@@ -30,6 +30,7 @@ func main() {
 			Algorithm:      utils.MustGet("JWT_ALGORITHM"),
 			TimeoutSec:     utils.MustGetInt32("JWT_TIMEOUT_SEC"),
 		},
+		ImageAPIURL: utils.MustGet("IMAGE_API_URL"),
 		ImageAPIKey: utils.MustGet("IMAGE_API_KEY"),
 	}
 

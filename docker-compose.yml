@@ -45,6 +45,7 @@ services:
       JWT_PRIVATE_KEY_PATH: /run/secrets/jwt_private_key
       JWT_ALGORITHM: RS256
       JWT_TIMEOUT_SEC: 525600
+      IMAGE_API_URL: https://localhost:3000/
       IMAGE_API_KEY_FILE: /run/secrets/image_api_key
     ports:
       - "4000:4000"
