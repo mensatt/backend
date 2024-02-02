@@ -378,7 +378,7 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 		for _, image := range submittedImages {
 			_, err := tx.Image.Create().
 				SetID(image).
-				SetReviewID(review.ID). // todo: maybe hash is needed (edit schema: remove hash)
+				SetReviewID(review.ID).
 				Save(ctx)
 			if err != nil {
 				continue // if one image fails to store, allow the remaining images to be stored
@@ -547,7 +547,7 @@ func (r *mutationResolver) AddImagesToReview(ctx context.Context, input models.A
 	for _, image := range submittedImages {
 		_, err := r.Database.Image.Create().
 			SetID(image).
-			SetReviewID(review.ID). // todo: maybe hash is needed (edit schema: remove hash)
+			SetReviewID(review.ID).
 			Save(ctx)
 		if err != nil {
 			continue // if one image fails to store, allow the remaining images to be stored
