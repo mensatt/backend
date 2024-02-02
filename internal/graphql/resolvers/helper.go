@@ -113,7 +113,6 @@ func (r *mutationResolver) approveImages(uuids []uuid.UUID) ([]uuid.UUID, error)
 		if err != nil {
 			return approvedImages, err
 		}
-
 		defer response.Body.Close() // unhandled error
 
 		if response.StatusCode != 200 {
@@ -152,7 +151,6 @@ func (r *mutationResolver) unapproveImages(uuids []uuid.UUID) ([]uuid.UUID, erro
 		if err != nil {
 			return unapprovedImages, err
 		}
-
 		defer response.Body.Close() // unhandled error
 
 		if response.StatusCode != 200 {
@@ -174,45 +172,42 @@ func (r *mutationResolver) unapproveImages(uuids []uuid.UUID) ([]uuid.UUID, erro
 	return unapprovedImages, nil
 }
 
-func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image) error {
-	//for _, image := range images {
-	//	err := r.ImageUploader.RemoveImage(image.ID)
-	//	if err != nil {
-	//		return err
-	//	}
-	//}
-	//
-	//return nil
+func (r *mutationResolver) deleteImages(uuids []uuid.UUID) []uuid.UUID {
+	var deletedImages []uuid.UUID
 
-	for _, image := range images {
-		url := "http://localhost:3000/image/" + image.ID.String()
+	for _, imageUUID := range uuids {
+		url := "http://localhost:3000/image/" + imageUUID.String()
 		request, err := http.NewRequest("DELETE", url, nil)
 		if err != nil {
-			return err // todo: maybe
+			continue // ignore error and continue with the next image
 		}
 
-		// Add headers to the request
 		request.Header.Add("Authorization", "Bearer "+r.ImageAPIKey)
-
-		// Create a client
 		client := &http.Client{}
 
-		// Send the request
 		response, err := client.Do(request)
 		if err != nil {
-			return err // todo: maybe
+			continue // ignore error and continue with the next image
 		}
 		defer response.Body.Close() // unhandled error
 
 		if response.StatusCode != 200 {
-			return err // todo: maybe
+			continue // ignore error and continue with the next image
 		}
-		err = r.Database.Image.DeleteOne(image).Exec(ctx)
+
+		body, err := io.ReadAll(response.Body)
 		if err != nil {
-			return err // todo: maybe
+			continue // ignore error and continue with the next image
 		}
+
+		uuid, err := uuid.Parse(string(body))
+		if err != nil {
+			continue // ignore error and continue with the next image
+		}
+
+		deletedImages = append(deletedImages, uuid)
 	}
-	return nil
+	return deletedImages
 }
 
 func (r *queryResolver) filteredDishes(ctx context.Context, filter *models.DishFilter) ([]*ent.Dish, error) {
