@@ -43,10 +43,6 @@ func init() {
 	dishalias.NormalizedAliasNameValidator = dishaliasDescNormalizedAliasName.Validators[0].(func(string) error)
 	imageFields := schema.Image{}.Fields()
 	_ = imageFields
-	// imageDescImageHash is the schema descriptor for image_hash field.
-	imageDescImageHash := imageFields[1].Descriptor()
-	// image.ImageHashValidator is a validator for the "image_hash" field. It is called by the builders before save.
-	image.ImageHashValidator = imageDescImageHash.Validators[0].(func(string) error)
 	// imageDescID is the schema descriptor for id field.
 	imageDescID := imageFields[0].Descriptor()
 	// image.DefaultID holds the default value on creation for the id field.
