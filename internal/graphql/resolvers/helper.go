@@ -96,26 +96,82 @@ func (r *mutationResolver) submitImages(uuids []uuid.UUID) []uuid.UUID {
 	return submittedImages
 }
 
-func (r *mutationResolver) approveImages(images []*ent.Image) error {
-	for _, image := range images {
-		_, err := http.Post("http://localhost:3000/approve/"+image.ID.String(), "application/json", nil)
-		if err != nil {
-			return err // todo: maybe not fail if one image fails and remember to log :)
-		}
-	}
-	return nil
+func (r *mutationResolver) approveImages(uuids []uuid.UUID) ([]uuid.UUID, error) {
+	var approvedImages []uuid.UUID
 
+	for _, imageUUID := range uuids {
+		url := "http://localhost:3000/approve/" + imageUUID.String()
+		request, err := http.NewRequest("POST", url, nil)
+		if err != nil {
+			return approvedImages, err
+		}
+
+		request.Header.Add("Authorization", "Bearer "+r.ImageAPIKey)
+		client := &http.Client{}
+
+		response, err := client.Do(request)
+		if err != nil {
+			return approvedImages, err
+		}
+
+		defer response.Body.Close() // unhandled error
+
+		if response.StatusCode != 200 {
+			return approvedImages, err
+		}
+
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			return approvedImages, err
+		}
+
+		uuid, err := uuid.Parse(string(body))
+		if err != nil {
+			return approvedImages, err
+		}
+
+		approvedImages = append(approvedImages, uuid)
+	}
+	return approvedImages, nil
 }
 
-func (r *mutationResolver) unapproveImages(images []*ent.Image) error {
-	for _, image := range images {
-		_, err := http.Post("http://localhost:3000/unapprove/"+image.ID.String(), "application/json", nil)
-		if err != nil {
-			return err // todo: maybe not fail if one image fails and remember to log :)
-		}
-	}
-	return nil
+func (r *mutationResolver) unapproveImages(uuids []uuid.UUID) ([]uuid.UUID, error) {
+	var unapprovedImages []uuid.UUID
 
+	for _, imageUUID := range uuids {
+		url := "http://localhost:3000/unapprove/" + imageUUID.String()
+		request, err := http.NewRequest("POST", url, nil)
+		if err != nil {
+			return unapprovedImages, err
+		}
+
+		request.Header.Add("Authorization", "Bearer "+r.ImageAPIKey)
+		client := &http.Client{}
+
+		response, err := client.Do(request)
+		if err != nil {
+			return unapprovedImages, err
+		}
+
+		defer response.Body.Close() // unhandled error
+
+		if response.StatusCode != 200 {
+			return unapprovedImages, err
+		}
+
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			return unapprovedImages, err
+		}
+
+		uuid, err := uuid.Parse(string(body))
+		if err != nil {
+			return unapprovedImages, err
+		}
+
+		unapprovedImages = append(unapprovedImages, uuid)
+	}
+	return unapprovedImages, nil
 }
 
 func (r *mutationResolver) deleteImages(ctx context.Context, images []*ent.Image) error {
