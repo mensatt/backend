@@ -48,6 +48,7 @@ func Run(config *Config, client *ent.Client) error {
 		DebugEnabled: config.DebugEnabled,
 		Database:     client,
 		JWTKeyStore:  jwtKeyStore,
+		ImageAPIURL:  config.ImageAPIURL,
 		ImageAPIKey:  config.ImageAPIKey,
 	}
 	err = graphql.Run(gqlRouterGroup, &gqlServerParams)

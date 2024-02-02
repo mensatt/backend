@@ -14,6 +14,7 @@ type Config struct {
 	ServiceVersion string
 	DebugEnabled   bool
 	JWT            utils.JWTKeyStoreConfig
+	ImageAPIURL    string
 	ImageAPIKey    string
 }
 
