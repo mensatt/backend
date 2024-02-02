@@ -17,7 +17,7 @@ func (r *mutationResolver) submitImages(uuids []uuid.UUID) []uuid.UUID {
 	var submittedImages []uuid.UUID
 
 	for _, imageUUID := range uuids {
-		url := r.ImageAPIURL + "image/" + imageUUID.String()
+		url := r.ImageAPIURL + "submit/" + imageUUID.String()
 		request, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			continue // ignore error and continue with the next image
