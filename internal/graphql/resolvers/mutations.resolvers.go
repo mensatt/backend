@@ -516,22 +516,21 @@ func (r *mutationResolver) DeleteReview(ctx context.Context, input models.Delete
 		return nil, err
 	}
 
-	// todo: review this again
-	images, err := review.QueryImages().All(ctx)
+	// Save image uuids as the images will be deleted by deleting the review (cascaded)
+	imagesUUIDs, err := review.QueryImages().IDs(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// remove the images from the db (cascaded via review) before deleting it from the disk
+	// Remove the images from the db (cascaded via review) before deleting it from the disk
 	err = r.Database.Review.DeleteOne(review).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	// todo: review this again
-	err = r.deleteImages(ctx, images) // if a single image fails to delete, the remaining images will be kept
-	if err != nil {
-		return nil, err
+	deletedImages := r.deleteImages(imagesUUIDs)
+	if len(deletedImages) != len(imagesUUIDs) {
+		return nil, fmt.Errorf("failed to delete all images") // dunno if we shouldn't just also return the review
 	}
 
 	return review, nil
