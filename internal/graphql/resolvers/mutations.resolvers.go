@@ -403,14 +403,19 @@ func (r *mutationResolver) CreateReview(ctx context.Context, input models.Create
 
 // UpdateReview is the resolver for the updateReview field.
 func (r *mutationResolver) UpdateReview(ctx context.Context, input models.UpdateReviewInput) (*ent.Review, error) {
-	review, err := r.Database.Review.Get(ctx, input.ID)
+	tx, err := r.Database.Tx(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to start transaction: %w", err)
+	}
+
+	review, err := tx.Review.Get(ctx, input.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	oldAcceptedAt := review.AcceptedAt
 
-	queryBuilder := r.Database.Review.UpdateOne(review)
+	queryBuilder := tx.Review.UpdateOne(review)
 
 	if input.Occurrence != nil {
 		queryBuilder = queryBuilder.SetOccurrenceID(*input.Occurrence)
@@ -434,16 +439,40 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 
 	review, err = queryBuilder.Save(ctx)
 	if err != nil {
+		txErr := tx.Rollback()
+		if txErr != nil {
+			return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+		}
 		return nil, err
 	}
 
-	// notify all subscribers (if approved)
+	// If an unapproved review is now approved
 	if input.Approved != nil && *input.Approved == true && oldAcceptedAt == nil {
-		// todo: approve image
-		err = r.approveImages(review.Edges.Images)
+		// Query all images of the review
+		imageUUIDs, err := review.QueryImages().IDs(ctx)
 		if err != nil {
-			return nil, err // todo: handle maybe or maybe not
+			txErr := tx.Rollback()
+			if txErr != nil {
+				return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+			}
+			return nil, err
 		}
+
+		// Approve all images in the image service
+		approvedImages, err := r.approveImages(imageUUIDs)
+		if err != nil {
+			txErr := tx.Rollback()
+			if txErr != nil {
+				return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+			}
+			// Rollback approved images on failure
+			_, err := r.unapproveImages(approvedImages) // rollback approved images
+			if err != nil {
+				return nil, fmt.Errorf("failed to rollback approved images: %w", err)
+			}
+		}
+
+		// Notify all subscribers (if approved)
 		r.mutex.Lock()
 		for _, channel := range r.ReviewAcceptedChannels {
 			channel <- review
@@ -451,8 +480,32 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 		r.mutex.Unlock()
 	}
 
-	// todo: unapproving images and stuff
+	// If an approved review is now unapproved
+	if input.Approved != nil && *input.Approved == false && oldAcceptedAt != nil {
+		// Query all images of the review
+		approvedUUIDs, err := review.QueryImages().IDs(ctx)
+		if err != nil {
+			txErr := tx.Rollback()
+			if txErr != nil {
+				return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+			}
+			return nil, err
+		}
 
+		// Unapprove all images in the image service
+		unapprovedImages, err := r.unapproveImages(approvedUUIDs)
+		if err != nil {
+			txErr := tx.Rollback()
+			if txErr != nil {
+				return nil, fmt.Errorf("failed to rollback transaction: %w", txErr)
+			}
+			// Rollback unapproved images on failure
+			_, err := r.approveImages(unapprovedImages) // rollback unapproved images
+			if err != nil {
+				return nil, fmt.Errorf("failed to rollback unapproved images: %w", err)
+			}
+		}
+	}
 	return review, nil
 }
 
