@@ -12,7 +12,7 @@ RUN addgroup -g $GROUP_ID mensatt && \
     adduser -D -s /bin/sh -u $USER_ID -G mensatt mensatt
 
 # This is required to set proper permissions for the assets directory when using a volume
-RUN mkdir -p /opt/app/mensatt/assets && chown -R mensatt:mensatt /opt/app/mensatt/assets
+RUN mkdir -p /opt/mensatt/assets && chown -R mensatt:mensatt /opt/mensatt/assets
 
 # Use the new user
 USER mensatt
@@ -24,7 +24,7 @@ FROM base as dev
 RUN go install github.com/cosmtrek/air@latest
 
 # Run the air command in the directory where our code will live
-WORKDIR /opt/app/mensatt
+WORKDIR /opt/mensatt
 
 # Start air hot-reload server
 CMD ["air"]

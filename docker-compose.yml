@@ -11,7 +11,7 @@ secrets:
     file: "./.secrets/jwt_public_key.pem"
   jwt_private_key:
     file: "./.secrets/jwt_private_key.pem"
-  iamge_api_key:
+  image_api_key:
     file: "./.secrets/image_api_key"
 
 services:
@@ -29,7 +29,7 @@ services:
       - "database_password"
       - "jwt_public_key"
       - "jwt_private_key"
-      - "iamge_api_key"
+      - "image_api_key"
     environment:
       HOST: 0.0.0.0
       PORT: 4000
