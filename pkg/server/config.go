@@ -28,13 +28,13 @@ func (cfg *Config) ListenEndpoint() string {
 
 // VersionedPath builds the path string (version + path)
 func (cfg *Config) VersionedPath(path string) string {
-	return "/" + cfg.ServiceVersion + path
+	return "/data/" + cfg.ServiceVersion + path
 }
 
 // SchemaVersionedEndpoint builds the schema endpoint string (schema + host + port + version + path)
 func (cfg *Config) SchemaVersionedEndpoint(path string) string {
 	if cfg.Port == 80 {
-		return fmt.Sprintf("http://%s/%s%s", cfg.Host, cfg.ServiceVersion, path)
+		return fmt.Sprintf("http://%s/data/%s%s", cfg.Host, cfg.ServiceVersion, path)
 	}
-	return fmt.Sprintf("http://%s:%d/%s%s", cfg.Host, cfg.Port, cfg.ServiceVersion, path)
+	return fmt.Sprintf("http://%s:%d/data/%s%s", cfg.Host, cfg.Port, cfg.ServiceVersion, path)
 }
