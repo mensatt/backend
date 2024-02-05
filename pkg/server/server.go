@@ -23,12 +23,14 @@ func Run(config *Config, client *ent.Client) error {
 	}
 
 	app := gin.Default()
+
 	err = app.SetTrustedProxies(nil)
 	if err != nil {
 		return err
 	}
 
 	app.Use(cors)
+
 	app.Use(sentrygin.New(sentrygin.Options{}))
 	app.Use(middleware.Auth(middleware.AuthParams{
 		JWTKeyStore: jwtKeyStore,
