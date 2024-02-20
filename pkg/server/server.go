@@ -37,13 +37,13 @@ func Run(config *Config, client *ent.Client) error {
 		Database:    client,
 	}))
 
-	miscRouterGroup := app.Group(config.VersionedPath("/misc"))
+	miscRouterGroup := app.Group("/data/misc")
 	err = misc.Run(miscRouterGroup)
 	if err != nil {
 		return err
 	}
 
-	gqlRouterGroup := app.Group(config.VersionedPath("/graphql"))
+	gqlRouterGroup := app.Group("/data/graphql")
 	gqlServerParams := graphql.GraphQLParams{
 		DebugEnabled: config.DebugEnabled,
 		Database:     client,

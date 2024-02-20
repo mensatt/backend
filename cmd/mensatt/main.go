@@ -22,7 +22,6 @@ func main() {
 		Host:           utils.MustGet("HOST"),
 		Port:           utils.MustGetInt32("PORT"),
 		MaxConnections: utils.MustGetInt32("MAX_CONNECTIONS"),
-		ServiceVersion: utils.MustGet("SERVER_PATH_VERSION"),
 		DebugEnabled:   utils.MustGetBool("DEBUG_ENABLED"),
 		JWT: utils.JWTKeyStoreConfig{
 			PrivateKeyPath: utils.MustGet("JWT_PRIVATE_KEY_PATH"),
