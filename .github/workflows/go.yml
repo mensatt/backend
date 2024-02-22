@@ -16,10 +16,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.19
+          go-version: 1.22
 
-      - name: Install dependencies
-        run: sudo apt update && sudo apt install -y libvips-dev --no-install-recommends
+#      - name: Install dependencies
+#        run: sudo apt update && sudo apt install -y libvips-dev --no-install-recommends
 
       - name: Build
         run: go build -v ./...
