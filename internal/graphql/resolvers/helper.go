@@ -71,6 +71,10 @@ func (r *mutationResolver) submitImages(images []*models.ImageInput) []uuid.UUID
 		}
 
 		submittedImages = append(submittedImages, uuid)
+
+		if image.Rotation != nil {
+			_ = r.rotateImage(uuid, *image.Rotation) // ignore error
+		}
 	}
 
 	return submittedImages
