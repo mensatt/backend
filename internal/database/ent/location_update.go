@@ -36,6 +36,14 @@ func (lu *LocationUpdate) SetExternalID(i int) *LocationUpdate {
 	return lu
 }
 
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (lu *LocationUpdate) SetNillableExternalID(i *int) *LocationUpdate {
+	if i != nil {
+		lu.SetExternalID(*i)
+	}
+	return lu
+}
+
 // AddExternalID adds i to the "external_id" field.
 func (lu *LocationUpdate) AddExternalID(i int) *LocationUpdate {
 	lu.mutation.AddExternalID(i)
@@ -45,6 +53,14 @@ func (lu *LocationUpdate) AddExternalID(i int) *LocationUpdate {
 // SetName sets the "name" field.
 func (lu *LocationUpdate) SetName(s string) *LocationUpdate {
 	lu.mutation.SetName(s)
+	return lu
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (lu *LocationUpdate) SetNillableName(s *string) *LocationUpdate {
+	if s != nil {
+		lu.SetName(*s)
+	}
 	return lu
 }
 
@@ -236,6 +252,14 @@ func (luo *LocationUpdateOne) SetExternalID(i int) *LocationUpdateOne {
 	return luo
 }
 
+// SetNillableExternalID sets the "external_id" field if the given value is not nil.
+func (luo *LocationUpdateOne) SetNillableExternalID(i *int) *LocationUpdateOne {
+	if i != nil {
+		luo.SetExternalID(*i)
+	}
+	return luo
+}
+
 // AddExternalID adds i to the "external_id" field.
 func (luo *LocationUpdateOne) AddExternalID(i int) *LocationUpdateOne {
 	luo.mutation.AddExternalID(i)
@@ -245,6 +269,14 @@ func (luo *LocationUpdateOne) AddExternalID(i int) *LocationUpdateOne {
 // SetName sets the "name" field.
 func (luo *LocationUpdateOne) SetName(s string) *LocationUpdateOne {
 	luo.mutation.SetName(s)
+	return luo
+}
+
+// SetNillableName sets the "name" field if the given value is not nil.
+func (luo *LocationUpdateOne) SetNillableName(s *string) *LocationUpdateOne {
+	if s != nil {
+		luo.SetName(*s)
+	}
 	return luo
 }
 

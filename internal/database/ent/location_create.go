@@ -436,12 +436,16 @@ func (u *LocationUpsertOne) IDX(ctx context.Context) uuid.UUID {
 // LocationCreateBulk is the builder for creating many Location entities in bulk.
 type LocationCreateBulk struct {
 	config
+	err      error
 	builders []*LocationCreate
 	conflict []sql.ConflictOption
 }
 
 // Save creates the Location entities in the database.
 func (lcb *LocationCreateBulk) Save(ctx context.Context) ([]*Location, error) {
+	if lcb.err != nil {
+		return nil, lcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(lcb.builders))
 	nodes := make([]*Location, len(lcb.builders))
 	mutators := make([]Mutator, len(lcb.builders))
@@ -657,6 +661,9 @@ func (u *LocationUpsertBulk) UpdateVisible() *LocationUpsertBulk {
 
 // Exec executes the query.
 func (u *LocationUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
 			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the LocationCreateBulk instead", i)

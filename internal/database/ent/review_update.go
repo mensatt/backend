@@ -58,6 +58,14 @@ func (ru *ReviewUpdate) SetStars(i int) *ReviewUpdate {
 	return ru
 }
 
+// SetNillableStars sets the "stars" field if the given value is not nil.
+func (ru *ReviewUpdate) SetNillableStars(i *int) *ReviewUpdate {
+	if i != nil {
+		ru.SetStars(*i)
+	}
+	return ru
+}
+
 // AddStars adds i to the "stars" field.
 func (ru *ReviewUpdate) AddStars(i int) *ReviewUpdate {
 	ru.mutation.AddStars(i)
@@ -384,6 +392,14 @@ func (ruo *ReviewUpdateOne) ClearDisplayName() *ReviewUpdateOne {
 func (ruo *ReviewUpdateOne) SetStars(i int) *ReviewUpdateOne {
 	ruo.mutation.ResetStars()
 	ruo.mutation.SetStars(i)
+	return ruo
+}
+
+// SetNillableStars sets the "stars" field if the given value is not nil.
+func (ruo *ReviewUpdateOne) SetNillableStars(i *int) *ReviewUpdateOne {
+	if i != nil {
+		ruo.SetStars(*i)
+	}
 	return ruo
 }
 

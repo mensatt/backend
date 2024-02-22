@@ -36,6 +36,14 @@ func (du *DishUpdate) SetNameDe(s string) *DishUpdate {
 	return du
 }
 
+// SetNillableNameDe sets the "name_de" field if the given value is not nil.
+func (du *DishUpdate) SetNillableNameDe(s *string) *DishUpdate {
+	if s != nil {
+		du.SetNameDe(*s)
+	}
+	return du
+}
+
 // SetNameEn sets the "name_en" field.
 func (du *DishUpdate) SetNameEn(s string) *DishUpdate {
 	du.mutation.SetNameEn(s)
@@ -390,6 +398,14 @@ type DishUpdateOne struct {
 // SetNameDe sets the "name_de" field.
 func (duo *DishUpdateOne) SetNameDe(s string) *DishUpdateOne {
 	duo.mutation.SetNameDe(s)
+	return duo
+}
+
+// SetNillableNameDe sets the "name_de" field if the given value is not nil.
+func (duo *DishUpdateOne) SetNillableNameDe(s *string) *DishUpdateOne {
+	if s != nil {
+		duo.SetNameDe(*s)
+	}
 	return duo
 }
 
