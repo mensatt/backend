@@ -13,6 +13,30 @@ import (
 	"net/http"
 )
 
+func (r *mutationResolver) rotateImage(uuid uuid.UUID, angle int) error {
+	url := r.ImageAPIURL + "rotate?id=" + uuid.String() + "&angle=" + string(rune(angle))
+	request, err := http.NewRequest("POST", url, nil)
+	if err != nil {
+		return err
+	}
+
+	request.Header.Add("Authorization", "Bearer "+r.ImageAPIKey)
+	client := &http.Client{}
+
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+
+	defer response.Body.Close() // unhandled error
+
+	if response.StatusCode != 200 {
+		return err
+	}
+
+	return nil
+}
+
 func (r *mutationResolver) submitImages(images []*models.ImageInput) []uuid.UUID {
 	var submittedImages []uuid.UUID
 
