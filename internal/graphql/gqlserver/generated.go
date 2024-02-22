@@ -1097,6 +1097,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputDeleteOccurrenceInput,
 		ec.unmarshalInputDeleteReviewInput,
 		ec.unmarshalInputDishFilter,
+		ec.unmarshalInputImageInput,
 		ec.unmarshalInputLocationFilter,
 		ec.unmarshalInputLoginUserInput,
 		ec.unmarshalInputOccurrenceFilter,
@@ -1371,7 +1372,7 @@ input OccurrenceFilter {
 input CreateReviewInput {
     occurrence: UUID!
     displayName: String
-    images: [UUID!]
+    images: [ImageInput!]
     stars: Int!
     text: String
 }
@@ -1396,9 +1397,14 @@ input ReviewFilter {
 
 # Image
 
+input ImageInput {
+    id: UUID!
+    rotation: Int
+}
+
 input AddImagesToReviewInput {
     review: UUID!
-    images: [UUID!]!
+    images: [ImageInput!]!
 }
 
 input DeleteImagesFromReviewInput {
@@ -9420,7 +9426,7 @@ func (ec *executionContext) unmarshalInputAddImagesToReviewInput(ctx context.Con
 			it.Review = data
 		case "images":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
-			data, err := ec.unmarshalNUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			data, err := ec.unmarshalNImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9743,7 +9749,7 @@ func (ec *executionContext) unmarshalInputCreateReviewInput(ctx context.Context,
 			it.DisplayName = data
 		case "images":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("images"))
-			data, err := ec.unmarshalOUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUIDᚄ(ctx, v)
+			data, err := ec.unmarshalOImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -9980,6 +9986,40 @@ func (ec *executionContext) unmarshalInputDishFilter(ctx context.Context, obj in
 				return it, err
 			}
 			it.NameEn = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputImageInput(ctx context.Context, obj interface{}) (models.ImageInput, error) {
+	var it models.ImageInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "rotation"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "rotation":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("rotation"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Rotation = data
 		}
 	}
 
@@ -12621,6 +12661,28 @@ func (ec *executionContext) marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋ
 	return ec._Image(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx context.Context, v interface{}) ([]*models.ImageInput, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*models.ImageInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNImageInput2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNImageInput2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInput(ctx context.Context, v interface{}) (*models.ImageInput, error) {
+	res, err := ec.unmarshalInputImageInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
 	res, err := graphql.UnmarshalInt(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -13384,6 +13446,26 @@ func (ec *executionContext) marshalOFloat2ᚖfloat64(ctx context.Context, sel as
 	}
 	res := graphql.MarshalFloatContext(*v)
 	return graphql.WrapContextMarshaler(ctx, res)
+}
+
+func (ec *executionContext) unmarshalOImageInput2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInputᚄ(ctx context.Context, v interface{}) ([]*models.ImageInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*models.ImageInput, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNImageInput2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐImageInput(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
 }
 
 func (ec *executionContext) unmarshalOInt2ᚕintᚄ(ctx context.Context, v interface{}) ([]int, error) {

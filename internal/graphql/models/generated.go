@@ -11,8 +11,8 @@ import (
 )
 
 type AddImagesToReviewInput struct {
-	Review uuid.UUID   `json:"review"`
-	Images []uuid.UUID `json:"images"`
+	Review uuid.UUID     `json:"review"`
+	Images []*ImageInput `json:"images"`
 }
 
 type AddSideDishToOccurrenceInput struct {
@@ -57,11 +57,11 @@ type CreateOccurrenceInput struct {
 }
 
 type CreateReviewInput struct {
-	Occurrence  uuid.UUID   `json:"occurrence"`
-	DisplayName *string     `json:"displayName,omitempty"`
-	Images      []uuid.UUID `json:"images,omitempty"`
-	Stars       int         `json:"stars"`
-	Text        *string     `json:"text,omitempty"`
+	Occurrence  uuid.UUID     `json:"occurrence"`
+	DisplayName *string       `json:"displayName,omitempty"`
+	Images      []*ImageInput `json:"images,omitempty"`
+	Stars       int           `json:"stars"`
+	Text        *string       `json:"text,omitempty"`
 }
 
 type CreateTagInput struct {
@@ -94,6 +94,11 @@ type DishFilter struct {
 	Dishes []uuid.UUID `json:"dishes,omitempty"`
 	NameDe *string     `json:"nameDe,omitempty"`
 	NameEn *string     `json:"nameEn,omitempty"`
+}
+
+type ImageInput struct {
+	ID       uuid.UUID `json:"id"`
+	Rotation *int      `json:"rotation,omitempty"`
 }
 
 type LocationFilter struct {

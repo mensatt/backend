@@ -13,11 +13,11 @@ import (
 	"net/http"
 )
 
-func (r *mutationResolver) submitImages(uuids []uuid.UUID) []uuid.UUID {
+func (r *mutationResolver) submitImages(images []*models.ImageInput) []uuid.UUID {
 	var submittedImages []uuid.UUID
 
-	for _, imageUUID := range uuids {
-		url := r.ImageAPIURL + "submit/" + imageUUID.String()
+	for _, image := range images {
+		url := r.ImageAPIURL + "submit/" + image.ID.String()
 		request, err := http.NewRequest("POST", url, nil)
 		if err != nil {
 			continue // ignore error and continue with the next image

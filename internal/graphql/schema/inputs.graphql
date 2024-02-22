@@ -133,7 +133,7 @@ input OccurrenceFilter {
 input CreateReviewInput {
     occurrence: UUID!
     displayName: String
-    images: [UUID!]
+    images: [ImageInput!]
     stars: Int!
     text: String
 }
@@ -158,9 +158,14 @@ input ReviewFilter {
 
 # Image
 
+input ImageInput {
+    id: UUID!
+    rotation: Int
+}
+
 input AddImagesToReviewInput {
     review: UUID!
-    images: [UUID!]!
+    images: [ImageInput!]!
 }
 
 input DeleteImagesFromReviewInput {
