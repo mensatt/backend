@@ -1,4 +1,4 @@
-FROM golang:1.19-alpine as base
+FROM golang:1.22-alpine as base
 
 # Set environment variables for the user
 ARG USER_ID

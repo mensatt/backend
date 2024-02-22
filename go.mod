@@ -1,6 +1,6 @@
 module github.com/mensatt/backend
 
-go 1.19
+go 1.22
 
 require (
 	entgo.io/ent v0.12.3
