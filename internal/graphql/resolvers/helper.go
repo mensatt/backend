@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	ent "github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/dish"
@@ -31,7 +32,7 @@ func (r *mutationResolver) rotateImage(uuid uuid.UUID, angle int) error {
 	defer response.Body.Close() // unhandled error
 
 	if response.StatusCode != 200 {
-		return err
+		return fmt.Errorf("img-service: error rotating image")
 	}
 
 	return nil
