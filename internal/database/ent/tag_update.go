@@ -36,9 +36,25 @@ func (tu *TagUpdate) SetName(s string) *TagUpdate {
 	return tu
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tu *TagUpdate) SetNillableName(s *string) *TagUpdate {
+	if s != nil {
+		tu.SetName(*s)
+	}
+	return tu
+}
+
 // SetDescription sets the "description" field.
 func (tu *TagUpdate) SetDescription(s string) *TagUpdate {
 	tu.mutation.SetDescription(s)
+	return tu
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tu *TagUpdate) SetNillableDescription(s *string) *TagUpdate {
+	if s != nil {
+		tu.SetDescription(*s)
+	}
 	return tu
 }
 
@@ -284,9 +300,25 @@ func (tuo *TagUpdateOne) SetName(s string) *TagUpdateOne {
 	return tuo
 }
 
+// SetNillableName sets the "name" field if the given value is not nil.
+func (tuo *TagUpdateOne) SetNillableName(s *string) *TagUpdateOne {
+	if s != nil {
+		tuo.SetName(*s)
+	}
+	return tuo
+}
+
 // SetDescription sets the "description" field.
 func (tuo *TagUpdateOne) SetDescription(s string) *TagUpdateOne {
 	tuo.mutation.SetDescription(s)
+	return tuo
+}
+
+// SetNillableDescription sets the "description" field if the given value is not nil.
+func (tuo *TagUpdateOne) SetNillableDescription(s *string) *TagUpdateOne {
+	if s != nil {
+		tuo.SetDescription(*s)
+	}
 	return tuo
 }
 

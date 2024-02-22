@@ -316,12 +316,16 @@ func (u *DishAliasUpsertOne) IDX(ctx context.Context) string {
 // DishAliasCreateBulk is the builder for creating many DishAlias entities in bulk.
 type DishAliasCreateBulk struct {
 	config
+	err      error
 	builders []*DishAliasCreate
 	conflict []sql.ConflictOption
 }
 
 // Save creates the DishAlias entities in the database.
 func (dacb *DishAliasCreateBulk) Save(ctx context.Context) ([]*DishAlias, error) {
+	if dacb.err != nil {
+		return nil, dacb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(dacb.builders))
 	nodes := make([]*DishAlias, len(dacb.builders))
 	mutators := make([]Mutator, len(dacb.builders))
@@ -501,6 +505,9 @@ func (u *DishAliasUpsertBulk) UpdateNormalizedAliasName() *DishAliasUpsertBulk {
 
 // Exec executes the query.
 func (u *DishAliasUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
 			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DishAliasCreateBulk instead", i)

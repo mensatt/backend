@@ -639,12 +639,16 @@ func (u *ReviewUpsertOne) IDX(ctx context.Context) uuid.UUID {
 // ReviewCreateBulk is the builder for creating many Review entities in bulk.
 type ReviewCreateBulk struct {
 	config
+	err      error
 	builders []*ReviewCreate
 	conflict []sql.ConflictOption
 }
 
 // Save creates the Review entities in the database.
 func (rcb *ReviewCreateBulk) Save(ctx context.Context) ([]*Review, error) {
+	if rcb.err != nil {
+		return nil, rcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(rcb.builders))
 	nodes := make([]*Review, len(rcb.builders))
 	mutators := make([]Mutator, len(rcb.builders))
@@ -912,6 +916,9 @@ func (u *ReviewUpsertBulk) ClearAcceptedAt() *ReviewUpsertBulk {
 
 // Exec executes the query.
 func (u *ReviewUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
 			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the ReviewCreateBulk instead", i)

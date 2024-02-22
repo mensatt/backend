@@ -458,12 +458,16 @@ func (u *DishUpsertOne) IDX(ctx context.Context) uuid.UUID {
 // DishCreateBulk is the builder for creating many Dish entities in bulk.
 type DishCreateBulk struct {
 	config
+	err      error
 	builders []*DishCreate
 	conflict []sql.ConflictOption
 }
 
 // Save creates the Dish entities in the database.
 func (dcb *DishCreateBulk) Save(ctx context.Context) ([]*Dish, error) {
+	if dcb.err != nil {
+		return nil, dcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(dcb.builders))
 	nodes := make([]*Dish, len(dcb.builders))
 	mutators := make([]Mutator, len(dcb.builders))
@@ -665,6 +669,9 @@ func (u *DishUpsertBulk) ClearNameEn() *DishUpsertBulk {
 
 // Exec executes the query.
 func (u *DishUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
 			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DishCreateBulk instead", i)

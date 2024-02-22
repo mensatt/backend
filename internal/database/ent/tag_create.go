@@ -535,12 +535,16 @@ func (u *TagUpsertOne) IDX(ctx context.Context) string {
 // TagCreateBulk is the builder for creating many Tag entities in bulk.
 type TagCreateBulk struct {
 	config
+	err      error
 	builders []*TagCreate
 	conflict []sql.ConflictOption
 }
 
 // Save creates the Tag entities in the database.
 func (tcb *TagCreateBulk) Save(ctx context.Context) ([]*Tag, error) {
+	if tcb.err != nil {
+		return nil, tcb.err
+	}
 	specs := make([]*sqlgraph.CreateSpec, len(tcb.builders))
 	nodes := make([]*Tag, len(tcb.builders))
 	mutators := make([]Mutator, len(tcb.builders))
@@ -784,6 +788,9 @@ func (u *TagUpsertBulk) UpdateIsAllergy() *TagUpsertBulk {
 
 // Exec executes the query.
 func (u *TagUpsertBulk) Exec(ctx context.Context) error {
+	if u.create.err != nil {
+		return u.create.err
+	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
 			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TagCreateBulk instead", i)

@@ -35,6 +35,14 @@ func (dau *DishAliasUpdate) SetNormalizedAliasName(s string) *DishAliasUpdate {
 	return dau
 }
 
+// SetNillableNormalizedAliasName sets the "normalized_alias_name" field if the given value is not nil.
+func (dau *DishAliasUpdate) SetNillableNormalizedAliasName(s *string) *DishAliasUpdate {
+	if s != nil {
+		dau.SetNormalizedAliasName(*s)
+	}
+	return dau
+}
+
 // SetDishID sets the "dish" edge to the Dish entity by ID.
 func (dau *DishAliasUpdate) SetDishID(id uuid.UUID) *DishAliasUpdate {
 	dau.mutation.SetDishID(id)
@@ -164,6 +172,14 @@ type DishAliasUpdateOne struct {
 // SetNormalizedAliasName sets the "normalized_alias_name" field.
 func (dauo *DishAliasUpdateOne) SetNormalizedAliasName(s string) *DishAliasUpdateOne {
 	dauo.mutation.SetNormalizedAliasName(s)
+	return dauo
+}
+
+// SetNillableNormalizedAliasName sets the "normalized_alias_name" field if the given value is not nil.
+func (dauo *DishAliasUpdateOne) SetNillableNormalizedAliasName(s *string) *DishAliasUpdateOne {
+	if s != nil {
+		dauo.SetNormalizedAliasName(*s)
+	}
 	return dauo
 }
 
