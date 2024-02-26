@@ -3,6 +3,7 @@ package resolvers
 import (
 	"context"
 	"fmt"
+	"github.com/getsentry/sentry-go"
 	"github.com/google/uuid"
 	ent "github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/internal/database/ent/dish"
@@ -32,7 +33,7 @@ func (r *mutationResolver) rotateImage(uuid uuid.UUID, angle int) error {
 	defer response.Body.Close() // unhandled error
 
 	if response.StatusCode != 200 {
-		return fmt.Errorf("img-service: error rotating image")
+		return fmt.Errorf("img-service: error rotating image! Responded with status code: %d", response.StatusCode)
 	}
 
 	return nil
@@ -53,21 +54,25 @@ func (r *mutationResolver) submitImages(images []*models.ImageInput) []uuid.UUID
 
 		response, err := client.Do(request)
 		if err != nil {
+			sentry.CaptureException(fmt.Errorf("img-service: error submitting image: %v", err))
 			continue // ignore error and continue with the next image
 		}
 		defer response.Body.Close() // unhandled error
 
 		if response.StatusCode != 200 {
+			sentry.CaptureException(fmt.Errorf("img-service: error submitting image! Responded with status code: %d", response.StatusCode))
 			continue // ignore error and continue with the next image
 		}
 
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
+			sentry.CaptureException(fmt.Errorf("img-service: error reading response body: %v", err))
 			continue // ignore error and continue with the next image
 		}
 
 		uuid, err := uuid.Parse(string(body))
 		if err != nil {
+			sentry.CaptureException(fmt.Errorf("img-service: error parsing response body as uuid: %v", err))
 			continue // ignore error and continue with the next image
 		}
 
