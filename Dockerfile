@@ -4,15 +4,9 @@ FROM golang:1.22-alpine as base
 ARG USER_ID
 ARG GROUP_ID
 
-# Install libvips-dev for image processing
-RUN apk add --no-cache vips-dev build-base git
-
 # Create a group and user
 RUN addgroup -g $GROUP_ID mensatt && \
     adduser -D -s /bin/sh -u $USER_ID -G mensatt mensatt
-
-# This is required to set proper permissions for the assets directory when using a volume
-RUN mkdir -p /opt/mensatt/assets && chown -R mensatt:mensatt /opt/mensatt/assets
 
 # Use the new user
 USER mensatt
@@ -37,12 +31,9 @@ COPY . .
 RUN go mod download
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
-FROM alpine:3.18 as prod
+FROM alpine:3.19 as prod
 
 COPY --from=built /tmp/mensatt /usr/bin/mensatt
-
-# Install libvips-dev for image processing
-RUN apk add --no-cache vips
 
 EXPOSE 4000
 CMD ["mensatt"]

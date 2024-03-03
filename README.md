@@ -8,7 +8,7 @@ The backend repository for [Mensatt](https://www.mensatt.de) written in go.
 ## Requirements
 
 - Docker & Docker Compose
-- Go 1.20
+- Go 1.22
 
 ## Building
 
