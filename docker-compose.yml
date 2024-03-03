@@ -18,9 +18,6 @@ services:
   mensatt:
     build:
       target: dev
-      args:
-        USER_ID: 1000
-        GROUP_ID: 1000
     volumes:
       - .:/opt/mensatt
     secrets:

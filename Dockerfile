@@ -35,5 +35,6 @@ FROM alpine:3.19 as prod
 
 COPY --from=built /tmp/mensatt /usr/bin/mensatt
 
+USER nobody:nobody
 EXPOSE 4000
 CMD ["mensatt"]
