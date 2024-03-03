@@ -1,16 +1,5 @@
 FROM golang:1.22-alpine as base
 
-# Set environment variables for the user
-ARG USER_ID
-ARG GROUP_ID
-
-# Create a group and user
-RUN addgroup -g $GROUP_ID mensatt && \
-    adduser -D -s /bin/sh -u $USER_ID -G mensatt mensatt
-
-# Use the new user
-USER mensatt
-
 # Create another stage called "dev" that is based off of our "base" stage (so we have golang available to us)
 FROM base as dev
 
