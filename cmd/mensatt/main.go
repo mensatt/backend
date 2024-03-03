@@ -90,9 +90,11 @@ func main() {
 	ctx := context.Background()
 
 	// todo: run migration tool here in the future
-	if err := client.Schema.Create(ctx); err != nil {
-		log.Fatalln("Error creating schema:", err)
-	}
+
+	// todo: this might delete the database, so be careful!!... uncommented for now!!
+	//if err := client.Schema.Create(ctx); err != nil {
+	//	log.Fatalln("Error creating schema:", err)
+	//}
 
 	if err := seeds.Seed(ctx, client); err != nil {
 		log.Fatalln("Error seeding database:", err)
