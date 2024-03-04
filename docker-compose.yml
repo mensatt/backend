@@ -28,6 +28,7 @@ services:
       - "jwt_private_key"
       - "image_api_key"
     environment:
+      ENVIRONMENT: local
       HOST: 0.0.0.0
       PORT: 4000
       MAX_CONNECTIONS: 90

@@ -1,5 +1,9 @@
 FROM golang:1.22-alpine as base
 
+# Adds version as a build argument
+ARG VERSION=latest
+ENV VERSION=${VERSION}
+
 # Install git for VCS build information
 RUN apk add --no-cache git
 
@@ -19,7 +23,7 @@ CMD ["air"]
 FROM base as built
 
 WORKDIR /opt/mensatt
-#RUN git config --global --add safe.directory /opt/mensatt
+RUN git config --global --add safe.directory /opt/mensatt
 
 # Install required dependencies here for better cache utilization
 COPY go.mod go.sum ./
@@ -30,6 +34,9 @@ COPY . .
 RUN go build -o ./build/mensatt ./cmd/mensatt
 
 FROM alpine:3.19 as prod
+
+ARG VERSION=latest
+ENV VERSION=${VERSION}
 
 COPY --from=built /opt/mensatt/build/mensatt /usr/bin/mensatt
 
