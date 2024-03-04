@@ -1,5 +1,8 @@
 FROM golang:1.22-alpine as base
 
+# Install git for VCS build information
+RUN apk add --no-cache git
+
 # Create another stage called "dev" that is based off of our "base" stage (so we have golang available to us)
 FROM base as dev
 
@@ -15,9 +18,13 @@ CMD ["air"]
 FROM base as built
 
 WORKDIR /go/app/mensatt
-COPY . .
 
+# Install required dependencies here for better cache utilization
+COPY go.mod go.sum ./
 RUN go mod download
+
+# Copy the rest of the code and build the binary
+COPY . .
 RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
 
 FROM alpine:3.19 as prod
