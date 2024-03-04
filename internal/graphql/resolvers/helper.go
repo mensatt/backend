@@ -47,6 +47,9 @@ func (r *mutationResolver) submitImages(images []*models.ImageInput) []uuid.UUID
 		url := r.ImageAPIURL + "submit/" + image.ID.String()
 		request, err := http.NewRequest("POST", url, nil)
 		if err != nil {
+			err = fmt.Errorf("img-service: error creating request: %v", err)
+			sentry.CaptureException(err)
+			log.Println(err)
 			continue // ignore error and continue with the next image
 		}
 
