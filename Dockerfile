@@ -11,13 +11,15 @@ RUN go install github.com/cosmtrek/air@latest
 
 # Run the air command in the directory where our code will live
 WORKDIR /opt/mensatt
+RUN git config --global --add safe.directory /opt/mensatt
 
 # Start air hot-reload server
 CMD ["air"]
 
 FROM base as built
 
-WORKDIR /go/app/mensatt
+WORKDIR /opt/mensatt
+#RUN git config --global --add safe.directory /opt/mensatt
 
 # Install required dependencies here for better cache utilization
 COPY go.mod go.sum ./
@@ -25,11 +27,11 @@ RUN go mod download
 
 # Copy the rest of the code and build the binary
 COPY . .
-RUN go build -o /tmp/mensatt ./cmd/mensatt/main.go
+RUN go build -o ./build/mensatt ./cmd/mensatt
 
 FROM alpine:3.19 as prod
 
-COPY --from=built /tmp/mensatt /usr/bin/mensatt
+COPY --from=built /opt/mensatt/build/mensatt /usr/bin/mensatt
 
 USER nobody:nobody
 
