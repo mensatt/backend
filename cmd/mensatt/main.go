@@ -9,6 +9,7 @@ import (
 	"github.com/getsentry/sentry-go"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/mensatt/backend/internal/database/seeds"
+	"os"
 
 	"github.com/mensatt/backend/internal/database/ent"
 	"github.com/mensatt/backend/pkg/server"
@@ -18,6 +19,10 @@ import (
 )
 
 func main() {
+	fmt.Println("Starting Mensatt Backend...")
+	fmt.Println("Environment:", utils.GetEnvironment())
+	fmt.Println("Version:", os.Getenv("VERSION"))
+
 	config := server.Config{
 		Host:           utils.MustGet("HOST"),
 		Port:           utils.MustGetInt32("PORT"),
@@ -41,6 +46,8 @@ func main() {
 	// Initialize sentry.io client for error reporting & logging
 	sentryOptions := sentry.ClientOptions{
 		Dsn:              sentryDSN,
+		Environment:      utils.GetEnvironment(),
+		Release:          os.Getenv("VERSION"),
 		AttachStacktrace: true,
 		EnableTracing:    true,
 		TracesSampleRate: 0.5,

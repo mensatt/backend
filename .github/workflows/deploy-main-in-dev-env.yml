@@ -27,8 +27,13 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
+          context: . # Includes the .git directory
           push: true # Will only build if this is not here
           tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ steps.meta.outputs.version }}
+
   deploy:
     needs: [ build ]
     runs-on: ubuntu-latest
@@ -45,4 +50,3 @@ jobs:
             docker compose pull
             docker compose down
             docker compose up -d
-

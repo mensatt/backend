@@ -89,3 +89,13 @@ func MustGetOrFile(envVar string) string {
 	}
 	return v
 }
+
+// GetEnvironment returns the value of the 'ENVIRONMENT' environment variable.
+// If it is not set, we will default to 'local'
+func GetEnvironment() string {
+	env := os.Getenv("ENVIRONMENT")
+	if env == "" {
+		return "local"
+	}
+	return env
+}
