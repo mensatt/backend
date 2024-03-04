@@ -53,10 +53,6 @@ func main() {
 		TracesSampleRate: 0.5,
 	}
 
-	if config.DebugEnabled {
-		sentryOptions.Debug = true
-	}
-
 	err = sentry.Init(sentryOptions)
 	if err != nil {
 		log.Fatalln("Sentry initialization failed:", err)
