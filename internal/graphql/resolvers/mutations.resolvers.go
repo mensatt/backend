@@ -471,13 +471,6 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 				return nil, fmt.Errorf("failed to rollback approved images: %w", err)
 			}
 		}
-
-		// Notify all subscribers (if approved)
-		r.mutex.Lock()
-		for _, channel := range r.ReviewAcceptedChannels {
-			channel <- review
-		}
-		r.mutex.Unlock()
 	}
 
 	// If an approved review is now unapproved
@@ -506,6 +499,23 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 			}
 		}
 	}
+
+	// Commit transaction
+	err = tx.Commit()
+	if err != nil {
+		return nil, fmt.Errorf("failed to commit transaction: %w", err)
+	}
+
+	// If an unapproved review is now approved
+	if input.Approved != nil && *input.Approved == true && oldAcceptedAt == nil {
+		// Notify all subscribers (if approved)
+		r.mutex.Lock()
+		for _, channel := range r.ReviewAcceptedChannels {
+			channel <- review
+		}
+		r.mutex.Unlock()
+	}
+
 	return review, nil
 }
 
