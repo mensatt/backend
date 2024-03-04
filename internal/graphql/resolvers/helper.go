@@ -12,6 +12,7 @@ import (
 	"github.com/mensatt/backend/internal/database/ent/review"
 	"github.com/mensatt/backend/internal/graphql/models"
 	"io"
+	"log"
 	"net/http"
 )
 
@@ -54,25 +55,33 @@ func (r *mutationResolver) submitImages(images []*models.ImageInput) []uuid.UUID
 
 		response, err := client.Do(request)
 		if err != nil {
-			sentry.CaptureException(fmt.Errorf("img-service: error submitting image: %v", err))
+			err = fmt.Errorf("img-service: error submitting image: %v", err)
+			sentry.CaptureException(err)
+			log.Println(err)
 			continue // ignore error and continue with the next image
 		}
 		defer response.Body.Close() // unhandled error
 
 		if response.StatusCode != 200 {
-			sentry.CaptureException(fmt.Errorf("img-service: error submitting image! Responded with status code: %d", response.StatusCode))
+			err = fmt.Errorf("img-service: error submitting image! Responded with status code: %d", response.StatusCode)
+			sentry.CaptureException(err)
+			log.Println(err)
 			continue // ignore error and continue with the next image
 		}
 
 		body, err := io.ReadAll(response.Body)
 		if err != nil {
-			sentry.CaptureException(fmt.Errorf("img-service: error reading response body: %v", err))
+			err = fmt.Errorf("img-service: error reading response body: %v", err)
+			sentry.CaptureException(err)
+			log.Println(err)
 			continue // ignore error and continue with the next image
 		}
 
 		uuid, err := uuid.Parse(string(body))
 		if err != nil {
-			sentry.CaptureException(fmt.Errorf("img-service: error parsing response body as uuid: %v", err))
+			err = fmt.Errorf("img-service: error parsing response body as uuid: %v", err)
+			sentry.CaptureException(err)
+			log.Println(err)
 			continue // ignore error and continue with the next image
 		}
 
