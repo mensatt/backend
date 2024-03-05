@@ -434,10 +434,10 @@ func (r *mutationResolver) UpdateReview(ctx context.Context, input models.Update
 	}
 
 	if input.Approved != nil {
-		if *input.Approved == false {
-			queryBuilder = queryBuilder.SetNillableAcceptedAt(nil) // unapproved (null) at current time
-		} else {
+		if *input.Approved == true {
 			queryBuilder = queryBuilder.SetAcceptedAt(time.Now()) // approved (not null) at current time
+		} else {
+			queryBuilder = queryBuilder.ClearAcceptedAt() // unapproved (null)
 		}
 	}
 
