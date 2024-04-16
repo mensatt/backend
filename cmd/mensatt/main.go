@@ -45,12 +45,13 @@ func main() {
 
 	// Initialize sentry.io client for error reporting & logging
 	sentryOptions := sentry.ClientOptions{
-		Dsn:              sentryDSN,
-		Environment:      utils.GetEnvironment(),
-		Release:          os.Getenv("VERSION"),
-		AttachStacktrace: true,
-		EnableTracing:    true,
-		TracesSampleRate: 0.5,
+		Dsn:                sentryDSN,
+		Environment:        utils.GetEnvironment(),
+		Release:            os.Getenv("VERSION"),
+		AttachStacktrace:   true,
+		EnableTracing:      true,
+		TracesSampleRate:   0.5, // tracks journey of a request
+		ProfilesSampleRate: 0.5, // performance profiling
 	}
 
 	err = sentry.Init(sentryOptions)
