@@ -91,6 +91,10 @@ func main() {
 	driver := entsql.OpenDB(dialect.Postgres, db)
 	client := ent.NewClient(ent.Driver(driver))
 
+	if config.DebugEnabled {
+		client = client.Debug() // print sql queries, good enough for now... add logger in the future
+	}
+
 	ctx := context.Background()
 
 	// todo: run migration tool here in the future
