@@ -1,5 +1,3 @@
-version: "3.9"
-
 secrets:
   sentry_dsn:
     file: "./.secrets/sentry_dsn"
