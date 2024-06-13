@@ -5,7 +5,7 @@ go 1.22
 require (
 	entgo.io/ent v0.13.0
 	github.com/99designs/gqlgen v0.17.43
-	github.com/getsentry/sentry-go v0.27.0
+	github.com/getsentry/sentry-go v0.28.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/google/uuid v1.6.0
