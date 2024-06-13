@@ -52,12 +52,10 @@ type ReviewEdges struct {
 // OccurrenceOrErr returns the Occurrence value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ReviewEdges) OccurrenceOrErr() (*Occurrence, error) {
-	if e.loadedTypes[0] {
-		if e.Occurrence == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: occurrence.Label}
-		}
+	if e.Occurrence != nil {
 		return e.Occurrence, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: occurrence.Label}
 	}
 	return nil, &NotLoadedError{edge: "occurrence"}
 }

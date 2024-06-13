@@ -37,12 +37,10 @@ type ImageEdges struct {
 // ReviewOrErr returns the Review value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e ImageEdges) ReviewOrErr() (*Review, error) {
-	if e.loadedTypes[0] {
-		if e.Review == nil {
-			// Edge was loaded but was not found.
-			return nil, &NotFoundError{label: review.Label}
-		}
+	if e.Review != nil {
 		return e.Review, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: review.Label}
 	}
 	return nil, &NotLoadedError{edge: "review"}
 }

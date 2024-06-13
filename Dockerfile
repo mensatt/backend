@@ -1,4 +1,4 @@
-FROM golang:1.22-alpine as base
+FROM golang:1.22.4-alpine as base
 
 # Adds version as a build argument
 ARG VERSION=latest
@@ -11,7 +11,7 @@ RUN apk add --no-cache git
 FROM base as dev
 
 # Install the air binary so we get live code-reloading when we save files
-RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/air-verse/air@latest
 
 # Run the air command in the directory where our code will live
 WORKDIR /opt/mensatt
@@ -33,7 +33,7 @@ RUN go mod download
 COPY . .
 RUN go build -o ./build/mensatt ./cmd/mensatt
 
-FROM alpine:3.19 as prod
+FROM alpine:3.20 as prod
 
 ARG VERSION=latest
 ENV VERSION=${VERSION}
