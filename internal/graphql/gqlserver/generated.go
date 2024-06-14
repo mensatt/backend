@@ -76,8 +76,10 @@ type ComplexityRoot struct {
 	}
 
 	Image struct {
+		Height func(childComplexity int) int
 		ID     func(childComplexity int) int
 		Review func(childComplexity int) int
+		Width  func(childComplexity int) int
 	}
 
 	Location struct {
@@ -103,6 +105,7 @@ type ComplexityRoot struct {
 		LoginUser                    func(childComplexity int, input models.LoginUserInput) int
 		RemoveSideDishFromOccurrence func(childComplexity int, input models.RemoveSideDishFromOccurrenceInput) int
 		RemoveTagFromOccurrence      func(childComplexity int, input models.RemoveTagFromOccurrenceInput) int
+		UpdateDimensions             func(childComplexity int, input models.UpdateDimensionsInput) int
 		UpdateDish                   func(childComplexity int, input models.UpdateDishInput) int
 		UpdateOccurrence             func(childComplexity int, input models.UpdateOccurrenceInput) int
 		UpdateReview                 func(childComplexity int, input models.UpdateReviewInput) int
@@ -241,6 +244,7 @@ type MutationResolver interface {
 	DeleteReview(ctx context.Context, input models.DeleteReviewInput) (*ent.Review, error)
 	AddImagesToReview(ctx context.Context, input models.AddImagesToReviewInput) (*ent.Review, error)
 	DeleteImagesFromReview(ctx context.Context, input models.DeleteImagesFromReviewInput) (*ent.Review, error)
+	UpdateDimensions(ctx context.Context, input models.UpdateDimensionsInput) (*ent.Image, error)
 }
 type OccurrenceResolver interface {
 	Location(ctx context.Context, obj *ent.Occurrence) (*ent.Location, error)
@@ -352,6 +356,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.DishAlias.NormalizedAliasName(childComplexity), true
 
+	case "Image.height":
+		if e.complexity.Image.Height == nil {
+			break
+		}
+
+		return e.complexity.Image.Height(childComplexity), true
+
 	case "Image.id":
 		if e.complexity.Image.ID == nil {
 			break
@@ -365,6 +376,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Image.Review(childComplexity), true
+
+	case "Image.width":
+		if e.complexity.Image.Width == nil {
+			break
+		}
+
+		return e.complexity.Image.Width(childComplexity), true
 
 	case "Location.externalId":
 		if e.complexity.Location.ExternalID == nil {
@@ -573,6 +591,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.RemoveTagFromOccurrence(childComplexity, args["input"].(models.RemoveTagFromOccurrenceInput)), true
+
+	case "Mutation.updateDimensions":
+		if e.complexity.Mutation.UpdateDimensions == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_updateDimensions_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.UpdateDimensions(childComplexity, args["input"].(models.UpdateDimensionsInput)), true
 
 	case "Mutation.updateDish":
 		if e.complexity.Mutation.UpdateDish == nil {
@@ -1104,6 +1134,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputRemoveSideDishFromOccurrenceInput,
 		ec.unmarshalInputRemoveTagFromOccurrenceInput,
 		ec.unmarshalInputReviewFilter,
+		ec.unmarshalInputUpdateDimensionsInput,
 		ec.unmarshalInputUpdateDishInput,
 		ec.unmarshalInputUpdateOccurrenceInput,
 		ec.unmarshalInputUpdateReviewInput,
@@ -1412,6 +1443,12 @@ input DeleteImagesFromReviewInput {
     images: [UUID!]!
 }
 
+input UpdateDimensionsInput {
+    id: UUID!
+    width: Int
+    height: Int
+}
+
 
 # Location
 
@@ -1456,6 +1493,7 @@ input LocationFilter {
     # Image
     addImagesToReview(input: AddImagesToReviewInput!): Review!
     deleteImagesFromReview(input: DeleteImagesFromReviewInput!): Review!
+    updateDimensions(input: UpdateDimensionsInput!): Image! @authenticated
 }
 `, BuiltIn: false},
 	{Name: "../schema/queries.graphql", Input: `type Query {
@@ -1606,6 +1644,8 @@ type Review {
 type Image {
     id: UUID!
     review: Review!
+    width: Int
+    height: Int
 }
 
 type User {
@@ -1858,6 +1898,21 @@ func (ec *executionContext) field_Mutation_removeTagFromOccurrence_args(ctx cont
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
 		arg0, err = ec.unmarshalNRemoveTagFromOccurrenceInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐRemoveTagFromOccurrenceInput(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["input"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Mutation_updateDimensions_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 models.UpdateDimensionsInput
+	if tmp, ok := rawArgs["input"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
+		arg0, err = ec.unmarshalNUpdateDimensionsInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐUpdateDimensionsInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -2530,6 +2585,88 @@ func (ec *executionContext) fieldContext_Image_review(_ context.Context, field g
 				return ec.fieldContext_Review_acceptedAt(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Review", field.Name)
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_width(ctx context.Context, field graphql.CollectedField, obj *ent.Image) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Image_width(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Width, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Image_width(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Image_height(ctx context.Context, field graphql.CollectedField, obj *ent.Image) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Image_height(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Height, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*int)
+	fc.Result = res
+	return ec.marshalOInt2ᚖint(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Image_height(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Image",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type Int does not have child fields")
 		},
 	}
 	return fc, nil
@@ -4279,6 +4416,91 @@ func (ec *executionContext) fieldContext_Mutation_deleteImagesFromReview(ctx con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_deleteImagesFromReview_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_updateDimensions(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_updateDimensions(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		directive0 := func(rctx context.Context) (interface{}, error) {
+			ctx = rctx // use context from middleware stack in children
+			return ec.resolvers.Mutation().UpdateDimensions(rctx, fc.Args["input"].(models.UpdateDimensionsInput))
+		}
+		directive1 := func(ctx context.Context) (interface{}, error) {
+			if ec.directives.Authenticated == nil {
+				return nil, errors.New("directive authenticated is not implemented")
+			}
+			return ec.directives.Authenticated(ctx, nil, directive0)
+		}
+
+		tmp, err := directive1(rctx)
+		if err != nil {
+			return nil, graphql.ErrorOnPath(ctx, err)
+		}
+		if tmp == nil {
+			return nil, nil
+		}
+		if data, ok := tmp.(*ent.Image); ok {
+			return data, nil
+		}
+		return nil, fmt.Errorf(`unexpected type %T from directive, should be *github.com/mensatt/backend/internal/database/ent.Image`, tmp)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(*ent.Image)
+	fc.Result = res
+	return ec.marshalNImage2ᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐImage(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_updateDimensions(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "id":
+				return ec.fieldContext_Image_id(ctx, field)
+			case "review":
+				return ec.fieldContext_Image_review(ctx, field)
+			case "width":
+				return ec.fieldContext_Image_width(ctx, field)
+			case "height":
+				return ec.fieldContext_Image_height(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_updateDimensions_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -6280,6 +6502,10 @@ func (ec *executionContext) fieldContext_Review_images(_ context.Context, field 
 				return ec.fieldContext_Image_id(ctx, field)
 			case "review":
 				return ec.fieldContext_Image_review(ctx, field)
+			case "width":
+				return ec.fieldContext_Image_width(ctx, field)
+			case "height":
+				return ec.fieldContext_Image_height(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -6608,6 +6834,10 @@ func (ec *executionContext) fieldContext_ReviewDataDish_images(_ context.Context
 				return ec.fieldContext_Image_id(ctx, field)
 			case "review":
 				return ec.fieldContext_Image_review(ctx, field)
+			case "width":
+				return ec.fieldContext_Image_width(ctx, field)
+			case "height":
+				return ec.fieldContext_Image_height(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -6772,6 +7002,10 @@ func (ec *executionContext) fieldContext_ReviewDataOccurrence_images(_ context.C
 				return ec.fieldContext_Image_id(ctx, field)
 			case "review":
 				return ec.fieldContext_Image_review(ctx, field)
+			case "width":
+				return ec.fieldContext_Image_width(ctx, field)
+			case "height":
+				return ec.fieldContext_Image_height(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type Image", field.Name)
 		},
@@ -10258,6 +10492,47 @@ func (ec *executionContext) unmarshalInputReviewFilter(ctx context.Context, obj 
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputUpdateDimensionsInput(ctx context.Context, obj interface{}) (models.UpdateDimensionsInput, error) {
+	var it models.UpdateDimensionsInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"id", "width", "height"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "id":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("id"))
+			data, err := ec.unmarshalNUUID2githubᚗcomᚋgoogleᚋuuidᚐUUID(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ID = data
+		case "width":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("width"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Width = data
+		case "height":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("height"))
+			data, err := ec.unmarshalOInt2ᚖint(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Height = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputUpdateDishInput(ctx context.Context, obj interface{}) (models.UpdateDishInput, error) {
 	var it models.UpdateDishInput
 	asMap := map[string]interface{}{}
@@ -10775,6 +11050,10 @@ func (ec *executionContext) _Image(ctx context.Context, sel ast.SelectionSet, ob
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return innerFunc(ctx, out) })
+		case "width":
+			out.Values[i] = ec._Image_width(ctx, field, obj)
+		case "height":
+			out.Values[i] = ec._Image_height(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -10993,6 +11272,13 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "deleteImagesFromReview":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_deleteImagesFromReview(ctx, field)
+			})
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
+		case "updateDimensions":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_updateDimensions(ctx, field)
 			})
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
@@ -12607,6 +12893,10 @@ func (ec *executionContext) marshalNDishAlias2ᚖgithubᚗcomᚋmensattᚋbacken
 	return ec._DishAlias(ctx, sel, v)
 }
 
+func (ec *executionContext) marshalNImage2githubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐImage(ctx context.Context, sel ast.SelectionSet, v ent.Image) graphql.Marshaler {
+	return ec._Image(ctx, sel, &v)
+}
+
 func (ec *executionContext) marshalNImage2ᚕᚖgithubᚗcomᚋmensattᚋbackendᚋinternalᚋdatabaseᚋentᚐImageᚄ(ctx context.Context, sel ast.SelectionSet, v []*ent.Image) graphql.Marshaler {
 	ret := make(graphql.Array, len(v))
 	var wg sync.WaitGroup
@@ -13112,6 +13402,11 @@ func (ec *executionContext) marshalNUUID2ᚕgithubᚗcomᚋgoogleᚋuuidᚐUUID�
 	}
 
 	return ret
+}
+
+func (ec *executionContext) unmarshalNUpdateDimensionsInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐUpdateDimensionsInput(ctx context.Context, v interface{}) (models.UpdateDimensionsInput, error) {
+	res, err := ec.unmarshalInputUpdateDimensionsInput(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalNUpdateDishInput2githubᚗcomᚋmensattᚋbackendᚋinternalᚋgraphqlᚋmodelsᚐUpdateDishInput(ctx context.Context, v interface{}) (models.UpdateDishInput, error) {

@@ -105,6 +105,8 @@ type Review {
 type Image {
     id: UUID!
     review: Review!
+    width: Int
+    height: Int
 }
 
 type User {

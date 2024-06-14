@@ -54,6 +54,106 @@ func IDLTE(id uuid.UUID) predicate.Image {
 	return predicate.Image(sql.FieldLTE(FieldID, id))
 }
 
+// Width applies equality check predicate on the "width" field. It's identical to WidthEQ.
+func Width(v int) predicate.Image {
+	return predicate.Image(sql.FieldEQ(FieldWidth, v))
+}
+
+// Height applies equality check predicate on the "height" field. It's identical to HeightEQ.
+func Height(v int) predicate.Image {
+	return predicate.Image(sql.FieldEQ(FieldHeight, v))
+}
+
+// WidthEQ applies the EQ predicate on the "width" field.
+func WidthEQ(v int) predicate.Image {
+	return predicate.Image(sql.FieldEQ(FieldWidth, v))
+}
+
+// WidthNEQ applies the NEQ predicate on the "width" field.
+func WidthNEQ(v int) predicate.Image {
+	return predicate.Image(sql.FieldNEQ(FieldWidth, v))
+}
+
+// WidthIn applies the In predicate on the "width" field.
+func WidthIn(vs ...int) predicate.Image {
+	return predicate.Image(sql.FieldIn(FieldWidth, vs...))
+}
+
+// WidthNotIn applies the NotIn predicate on the "width" field.
+func WidthNotIn(vs ...int) predicate.Image {
+	return predicate.Image(sql.FieldNotIn(FieldWidth, vs...))
+}
+
+// WidthGT applies the GT predicate on the "width" field.
+func WidthGT(v int) predicate.Image {
+	return predicate.Image(sql.FieldGT(FieldWidth, v))
+}
+
+// WidthGTE applies the GTE predicate on the "width" field.
+func WidthGTE(v int) predicate.Image {
+	return predicate.Image(sql.FieldGTE(FieldWidth, v))
+}
+
+// WidthLT applies the LT predicate on the "width" field.
+func WidthLT(v int) predicate.Image {
+	return predicate.Image(sql.FieldLT(FieldWidth, v))
+}
+
+// WidthLTE applies the LTE predicate on the "width" field.
+func WidthLTE(v int) predicate.Image {
+	return predicate.Image(sql.FieldLTE(FieldWidth, v))
+}
+
+// WidthIsNil applies the IsNil predicate on the "width" field.
+func WidthIsNil() predicate.Image {
+	return predicate.Image(sql.FieldIsNull(FieldWidth))
+}
+
+// WidthNotNil applies the NotNil predicate on the "width" field.
+func WidthNotNil() predicate.Image {
+	return predicate.Image(sql.FieldNotNull(FieldWidth))
+}
+
+// HeightEQ applies the EQ predicate on the "height" field.
+func HeightEQ(v int) predicate.Image {
+	return predicate.Image(sql.FieldEQ(FieldHeight, v))
+}
+
+// HeightNEQ applies the NEQ predicate on the "height" field.
+func HeightNEQ(v int) predicate.Image {
+	return predicate.Image(sql.FieldNEQ(FieldHeight, v))
+}
+
+// HeightIn applies the In predicate on the "height" field.
+func HeightIn(vs ...int) predicate.Image {
+	return predicate.Image(sql.FieldIn(FieldHeight, vs...))
+}
+
+// HeightNotIn applies the NotIn predicate on the "height" field.
+func HeightNotIn(vs ...int) predicate.Image {
+	return predicate.Image(sql.FieldNotIn(FieldHeight, vs...))
+}
+
+// HeightGT applies the GT predicate on the "height" field.
+func HeightGT(v int) predicate.Image {
+	return predicate.Image(sql.FieldGT(FieldHeight, v))
+}
+
+// HeightGTE applies the GTE predicate on the "height" field.
+func HeightGTE(v int) predicate.Image {
+	return predicate.Image(sql.FieldGTE(FieldHeight, v))
+}
+
+// HeightLT applies the LT predicate on the "height" field.
+func HeightLT(v int) predicate.Image {
+	return predicate.Image(sql.FieldLT(FieldHeight, v))
+}
+
+// HeightLTE applies the LTE predicate on the "height" field.
+func HeightLTE(v int) predicate.Image {
+	return predicate.Image(sql.FieldLTE(FieldHeight, v))
+}
+
 // HasReview applies the HasEdge predicate on the "review" edge.
 func HasReview() predicate.Image {
 	return predicate.Image(func(s *sql.Selector) {

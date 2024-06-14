@@ -170,6 +170,12 @@ type ReviewMetadataOccurrence struct {
 type Subscription struct {
 }
 
+type UpdateDimensionsInput struct {
+	ID     uuid.UUID `json:"id"`
+	Width  *int      `json:"width,omitempty"`
+	Height *int      `json:"height,omitempty"`
+}
+
 type UpdateDishInput struct {
 	ID     uuid.UUID `json:"id"`
 	NameDe *string   `json:"nameDe,omitempty"`

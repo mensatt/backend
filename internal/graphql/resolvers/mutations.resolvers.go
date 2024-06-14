@@ -598,6 +598,26 @@ func (r *mutationResolver) DeleteImagesFromReview(ctx context.Context, input mod
 	return review, nil
 }
 
+// UpdateDimensions is the resolver for the updateDimensions field.
+func (r *mutationResolver) UpdateDimensions(ctx context.Context, input models.UpdateDimensionsInput) (*ent.Image, error) {
+	image, err := r.Database.Image.Get(ctx, input.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	queryBuilder := r.Database.Image.UpdateOne(image)
+
+	if input.Width != nil {
+		queryBuilder = queryBuilder.SetWidth(*input.Width)
+	}
+
+	if input.Height != nil {
+		queryBuilder = queryBuilder.SetHeight(*input.Height)
+	}
+
+	return queryBuilder.Save(ctx)
+}
+
 // Mutation returns gqlserver.MutationResolver implementation.
 func (r *Resolver) Mutation() gqlserver.MutationResolver { return &mutationResolver{r} }
 

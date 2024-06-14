@@ -29,6 +29,54 @@ func (iu *ImageUpdate) Where(ps ...predicate.Image) *ImageUpdate {
 	return iu
 }
 
+// SetWidth sets the "width" field.
+func (iu *ImageUpdate) SetWidth(i int) *ImageUpdate {
+	iu.mutation.ResetWidth()
+	iu.mutation.SetWidth(i)
+	return iu
+}
+
+// SetNillableWidth sets the "width" field if the given value is not nil.
+func (iu *ImageUpdate) SetNillableWidth(i *int) *ImageUpdate {
+	if i != nil {
+		iu.SetWidth(*i)
+	}
+	return iu
+}
+
+// AddWidth adds i to the "width" field.
+func (iu *ImageUpdate) AddWidth(i int) *ImageUpdate {
+	iu.mutation.AddWidth(i)
+	return iu
+}
+
+// ClearWidth clears the value of the "width" field.
+func (iu *ImageUpdate) ClearWidth() *ImageUpdate {
+	iu.mutation.ClearWidth()
+	return iu
+}
+
+// SetHeight sets the "height" field.
+func (iu *ImageUpdate) SetHeight(i int) *ImageUpdate {
+	iu.mutation.ResetHeight()
+	iu.mutation.SetHeight(i)
+	return iu
+}
+
+// SetNillableHeight sets the "height" field if the given value is not nil.
+func (iu *ImageUpdate) SetNillableHeight(i *int) *ImageUpdate {
+	if i != nil {
+		iu.SetHeight(*i)
+	}
+	return iu
+}
+
+// AddHeight adds i to the "height" field.
+func (iu *ImageUpdate) AddHeight(i int) *ImageUpdate {
+	iu.mutation.AddHeight(i)
+	return iu
+}
+
 // SetReviewID sets the "review" edge to the Review entity by ID.
 func (iu *ImageUpdate) SetReviewID(id uuid.UUID) *ImageUpdate {
 	iu.mutation.SetReviewID(id)
@@ -80,6 +128,16 @@ func (iu *ImageUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iu *ImageUpdate) check() error {
+	if v, ok := iu.mutation.Width(); ok {
+		if err := image.WidthValidator(v); err != nil {
+			return &ValidationError{Name: "width", err: fmt.Errorf(`ent: validator failed for field "Image.width": %w`, err)}
+		}
+	}
+	if v, ok := iu.mutation.Height(); ok {
+		if err := image.HeightValidator(v); err != nil {
+			return &ValidationError{Name: "height", err: fmt.Errorf(`ent: validator failed for field "Image.height": %w`, err)}
+		}
+	}
 	if _, ok := iu.mutation.ReviewID(); iu.mutation.ReviewCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Image.review"`)
 	}
@@ -97,6 +155,21 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := iu.mutation.Width(); ok {
+		_spec.SetField(image.FieldWidth, field.TypeInt, value)
+	}
+	if value, ok := iu.mutation.AddedWidth(); ok {
+		_spec.AddField(image.FieldWidth, field.TypeInt, value)
+	}
+	if iu.mutation.WidthCleared() {
+		_spec.ClearField(image.FieldWidth, field.TypeInt)
+	}
+	if value, ok := iu.mutation.Height(); ok {
+		_spec.SetField(image.FieldHeight, field.TypeInt, value)
+	}
+	if value, ok := iu.mutation.AddedHeight(); ok {
+		_spec.AddField(image.FieldHeight, field.TypeInt, value)
 	}
 	if iu.mutation.ReviewCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -145,6 +218,54 @@ type ImageUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *ImageMutation
+}
+
+// SetWidth sets the "width" field.
+func (iuo *ImageUpdateOne) SetWidth(i int) *ImageUpdateOne {
+	iuo.mutation.ResetWidth()
+	iuo.mutation.SetWidth(i)
+	return iuo
+}
+
+// SetNillableWidth sets the "width" field if the given value is not nil.
+func (iuo *ImageUpdateOne) SetNillableWidth(i *int) *ImageUpdateOne {
+	if i != nil {
+		iuo.SetWidth(*i)
+	}
+	return iuo
+}
+
+// AddWidth adds i to the "width" field.
+func (iuo *ImageUpdateOne) AddWidth(i int) *ImageUpdateOne {
+	iuo.mutation.AddWidth(i)
+	return iuo
+}
+
+// ClearWidth clears the value of the "width" field.
+func (iuo *ImageUpdateOne) ClearWidth() *ImageUpdateOne {
+	iuo.mutation.ClearWidth()
+	return iuo
+}
+
+// SetHeight sets the "height" field.
+func (iuo *ImageUpdateOne) SetHeight(i int) *ImageUpdateOne {
+	iuo.mutation.ResetHeight()
+	iuo.mutation.SetHeight(i)
+	return iuo
+}
+
+// SetNillableHeight sets the "height" field if the given value is not nil.
+func (iuo *ImageUpdateOne) SetNillableHeight(i *int) *ImageUpdateOne {
+	if i != nil {
+		iuo.SetHeight(*i)
+	}
+	return iuo
+}
+
+// AddHeight adds i to the "height" field.
+func (iuo *ImageUpdateOne) AddHeight(i int) *ImageUpdateOne {
+	iuo.mutation.AddHeight(i)
+	return iuo
 }
 
 // SetReviewID sets the "review" edge to the Review entity by ID.
@@ -211,6 +332,16 @@ func (iuo *ImageUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (iuo *ImageUpdateOne) check() error {
+	if v, ok := iuo.mutation.Width(); ok {
+		if err := image.WidthValidator(v); err != nil {
+			return &ValidationError{Name: "width", err: fmt.Errorf(`ent: validator failed for field "Image.width": %w`, err)}
+		}
+	}
+	if v, ok := iuo.mutation.Height(); ok {
+		if err := image.HeightValidator(v); err != nil {
+			return &ValidationError{Name: "height", err: fmt.Errorf(`ent: validator failed for field "Image.height": %w`, err)}
+		}
+	}
 	if _, ok := iuo.mutation.ReviewID(); iuo.mutation.ReviewCleared() && !ok {
 		return errors.New(`ent: clearing a required unique edge "Image.review"`)
 	}
@@ -245,6 +376,21 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := iuo.mutation.Width(); ok {
+		_spec.SetField(image.FieldWidth, field.TypeInt, value)
+	}
+	if value, ok := iuo.mutation.AddedWidth(); ok {
+		_spec.AddField(image.FieldWidth, field.TypeInt, value)
+	}
+	if iuo.mutation.WidthCleared() {
+		_spec.ClearField(image.FieldWidth, field.TypeInt)
+	}
+	if value, ok := iuo.mutation.Height(); ok {
+		_spec.SetField(image.FieldHeight, field.TypeInt, value)
+	}
+	if value, ok := iuo.mutation.AddedHeight(); ok {
+		_spec.AddField(image.FieldHeight, field.TypeInt, value)
 	}
 	if iuo.mutation.ReviewCleared() {
 		edge := &sqlgraph.EdgeSpec{
