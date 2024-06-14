@@ -19,9 +19,9 @@ type Image struct {
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// Width holds the value of the "width" field.
-	Width *int `json:"width,omitempty"`
+	Width int `json:"width,omitempty"`
 	// Height holds the value of the "height" field.
-	Height *int `json:"height,omitempty"`
+	Height int `json:"height,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ImageQuery when eager-loading is set.
 	Edges        ImageEdges `json:"edges"`
@@ -85,15 +85,13 @@ func (i *Image) assignValues(columns []string, values []any) error {
 			if value, ok := values[j].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field width", values[j])
 			} else if value.Valid {
-				i.Width = new(int)
-				*i.Width = int(value.Int64)
+				i.Width = int(value.Int64)
 			}
 		case image.FieldHeight:
 			if value, ok := values[j].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field height", values[j])
 			} else if value.Valid {
-				i.Height = new(int)
-				*i.Height = int(value.Int64)
+				i.Height = int(value.Int64)
 			}
 		case image.ForeignKeys[0]:
 			if value, ok := values[j].(*sql.NullScanner); !ok {
@@ -143,15 +141,11 @@ func (i *Image) String() string {
 	var builder strings.Builder
 	builder.WriteString("Image(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", i.ID))
-	if v := i.Width; v != nil {
-		builder.WriteString("width=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("width=")
+	builder.WriteString(fmt.Sprintf("%v", i.Width))
 	builder.WriteString(", ")
-	if v := i.Height; v != nil {
-		builder.WriteString("height=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("height=")
+	builder.WriteString(fmt.Sprintf("%v", i.Height))
 	builder.WriteByte(')')
 	return builder.String()
 }

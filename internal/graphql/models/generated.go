@@ -172,8 +172,8 @@ type Subscription struct {
 
 type UpdateDimensionsInput struct {
 	ID     uuid.UUID `json:"id"`
-	Width  *int      `json:"width,omitempty"`
-	Height *int      `json:"height,omitempty"`
+	Width  int       `json:"width"`
+	Height int       `json:"height"`
 }
 
 type UpdateDishInput struct {

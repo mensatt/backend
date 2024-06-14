@@ -30,14 +30,6 @@ func (ic *ImageCreate) SetWidth(i int) *ImageCreate {
 	return ic
 }
 
-// SetNillableWidth sets the "width" field if the given value is not nil.
-func (ic *ImageCreate) SetNillableWidth(i *int) *ImageCreate {
-	if i != nil {
-		ic.SetWidth(*i)
-	}
-	return ic
-}
-
 // SetHeight sets the "height" field.
 func (ic *ImageCreate) SetHeight(i int) *ImageCreate {
 	ic.mutation.SetHeight(i)
@@ -112,6 +104,9 @@ func (ic *ImageCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *ImageCreate) check() error {
+	if _, ok := ic.mutation.Width(); !ok {
+		return &ValidationError{Name: "width", err: errors.New(`ent: missing required field "Image.width"`)}
+	}
 	if v, ok := ic.mutation.Width(); ok {
 		if err := image.WidthValidator(v); err != nil {
 			return &ValidationError{Name: "width", err: fmt.Errorf(`ent: validator failed for field "Image.width": %w`, err)}
@@ -166,11 +161,11 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 	}
 	if value, ok := ic.mutation.Width(); ok {
 		_spec.SetField(image.FieldWidth, field.TypeInt, value)
-		_node.Width = &value
+		_node.Width = value
 	}
 	if value, ok := ic.mutation.Height(); ok {
 		_spec.SetField(image.FieldHeight, field.TypeInt, value)
-		_node.Height = &value
+		_node.Height = value
 	}
 	if nodes := ic.mutation.ReviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -259,12 +254,6 @@ func (u *ImageUpsert) AddWidth(v int) *ImageUpsert {
 	return u
 }
 
-// ClearWidth clears the value of the "width" field.
-func (u *ImageUpsert) ClearWidth() *ImageUpsert {
-	u.SetNull(image.FieldWidth)
-	return u
-}
-
 // SetHeight sets the "height" field.
 func (u *ImageUpsert) SetHeight(v int) *ImageUpsert {
 	u.Set(image.FieldHeight, v)
@@ -349,13 +338,6 @@ func (u *ImageUpsertOne) AddWidth(v int) *ImageUpsertOne {
 func (u *ImageUpsertOne) UpdateWidth() *ImageUpsertOne {
 	return u.Update(func(s *ImageUpsert) {
 		s.UpdateWidth()
-	})
-}
-
-// ClearWidth clears the value of the "width" field.
-func (u *ImageUpsertOne) ClearWidth() *ImageUpsertOne {
-	return u.Update(func(s *ImageUpsert) {
-		s.ClearWidth()
 	})
 }
 
@@ -613,13 +595,6 @@ func (u *ImageUpsertBulk) AddWidth(v int) *ImageUpsertBulk {
 func (u *ImageUpsertBulk) UpdateWidth() *ImageUpsertBulk {
 	return u.Update(func(s *ImageUpsert) {
 		s.UpdateWidth()
-	})
-}
-
-// ClearWidth clears the value of the "width" field.
-func (u *ImageUpsertBulk) ClearWidth() *ImageUpsertBulk {
-	return u.Update(func(s *ImageUpsert) {
-		s.ClearWidth()
 	})
 }
 

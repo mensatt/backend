@@ -104,16 +104,6 @@ func WidthLTE(v int) predicate.Image {
 	return predicate.Image(sql.FieldLTE(FieldWidth, v))
 }
 
-// WidthIsNil applies the IsNil predicate on the "width" field.
-func WidthIsNil() predicate.Image {
-	return predicate.Image(sql.FieldIsNull(FieldWidth))
-}
-
-// WidthNotNil applies the NotNil predicate on the "width" field.
-func WidthNotNil() predicate.Image {
-	return predicate.Image(sql.FieldNotNull(FieldWidth))
-}
-
 // HeightEQ applies the EQ predicate on the "height" field.
 func HeightEQ(v int) predicate.Image {
 	return predicate.Image(sql.FieldEQ(FieldHeight, v))

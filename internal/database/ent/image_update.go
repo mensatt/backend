@@ -50,12 +50,6 @@ func (iu *ImageUpdate) AddWidth(i int) *ImageUpdate {
 	return iu
 }
 
-// ClearWidth clears the value of the "width" field.
-func (iu *ImageUpdate) ClearWidth() *ImageUpdate {
-	iu.mutation.ClearWidth()
-	return iu
-}
-
 // SetHeight sets the "height" field.
 func (iu *ImageUpdate) SetHeight(i int) *ImageUpdate {
 	iu.mutation.ResetHeight()
@@ -162,9 +156,6 @@ func (iu *ImageUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := iu.mutation.AddedWidth(); ok {
 		_spec.AddField(image.FieldWidth, field.TypeInt, value)
 	}
-	if iu.mutation.WidthCleared() {
-		_spec.ClearField(image.FieldWidth, field.TypeInt)
-	}
 	if value, ok := iu.mutation.Height(); ok {
 		_spec.SetField(image.FieldHeight, field.TypeInt, value)
 	}
@@ -238,12 +229,6 @@ func (iuo *ImageUpdateOne) SetNillableWidth(i *int) *ImageUpdateOne {
 // AddWidth adds i to the "width" field.
 func (iuo *ImageUpdateOne) AddWidth(i int) *ImageUpdateOne {
 	iuo.mutation.AddWidth(i)
-	return iuo
-}
-
-// ClearWidth clears the value of the "width" field.
-func (iuo *ImageUpdateOne) ClearWidth() *ImageUpdateOne {
-	iuo.mutation.ClearWidth()
 	return iuo
 }
 
@@ -382,9 +367,6 @@ func (iuo *ImageUpdateOne) sqlSave(ctx context.Context) (_node *Image, err error
 	}
 	if value, ok := iuo.mutation.AddedWidth(); ok {
 		_spec.AddField(image.FieldWidth, field.TypeInt, value)
-	}
-	if iuo.mutation.WidthCleared() {
-		_spec.ClearField(image.FieldWidth, field.TypeInt)
 	}
 	if value, ok := iuo.mutation.Height(); ok {
 		_spec.SetField(image.FieldHeight, field.TypeInt, value)

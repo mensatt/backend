@@ -44,7 +44,7 @@ var (
 	// ImageColumns holds the columns for the "image" table.
 	ImageColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "width", Type: field.TypeInt, Nullable: true},
+		{Name: "width", Type: field.TypeInt},
 		{Name: "height", Type: field.TypeInt},
 		{Name: "review", Type: field.TypeUUID},
 	}

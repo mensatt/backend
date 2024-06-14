@@ -175,8 +175,8 @@ input DeleteImagesFromReviewInput {
 
 input UpdateDimensionsInput {
     id: UUID!
-    width: Int
-    height: Int
+    width: Int!
+    height: Int!
 }
 
 

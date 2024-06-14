@@ -1249,7 +1249,7 @@ func (m *ImageMutation) Width() (r int, exists bool) {
 // OldWidth returns the old "width" field's value of the Image entity.
 // If the Image object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldWidth(ctx context.Context) (v *int, err error) {
+func (m *ImageMutation) OldWidth(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldWidth is only allowed on UpdateOne operations")
 	}
@@ -1281,24 +1281,10 @@ func (m *ImageMutation) AddedWidth() (r int, exists bool) {
 	return *v, true
 }
 
-// ClearWidth clears the value of the "width" field.
-func (m *ImageMutation) ClearWidth() {
-	m.width = nil
-	m.addwidth = nil
-	m.clearedFields[image.FieldWidth] = struct{}{}
-}
-
-// WidthCleared returns if the "width" field was cleared in this mutation.
-func (m *ImageMutation) WidthCleared() bool {
-	_, ok := m.clearedFields[image.FieldWidth]
-	return ok
-}
-
 // ResetWidth resets all changes to the "width" field.
 func (m *ImageMutation) ResetWidth() {
 	m.width = nil
 	m.addwidth = nil
-	delete(m.clearedFields, image.FieldWidth)
 }
 
 // SetHeight sets the "height" field.
@@ -1319,7 +1305,7 @@ func (m *ImageMutation) Height() (r int, exists bool) {
 // OldHeight returns the old "height" field's value of the Image entity.
 // If the Image object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ImageMutation) OldHeight(ctx context.Context) (v *int, err error) {
+func (m *ImageMutation) OldHeight(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldHeight is only allowed on UpdateOne operations")
 	}
@@ -1541,11 +1527,7 @@ func (m *ImageMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *ImageMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(image.FieldWidth) {
-		fields = append(fields, image.FieldWidth)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -1558,11 +1540,6 @@ func (m *ImageMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *ImageMutation) ClearField(name string) error {
-	switch name {
-	case image.FieldWidth:
-		m.ClearWidth()
-		return nil
-	}
 	return fmt.Errorf("unknown Image nullable field %s", name)
 }
 

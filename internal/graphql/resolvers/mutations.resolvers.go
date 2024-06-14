@@ -562,6 +562,8 @@ func (r *mutationResolver) AddImagesToReview(ctx context.Context, input models.A
 		_, err := r.Database.Image.Create().
 			SetID(image).
 			SetReviewID(review.ID).
+			SetWidth(0).  // todo: read from image service
+			SetHeight(0). // todo: read from image service
 			Save(ctx)
 		if err != nil {
 			continue // if one image fails to store, allow the remaining images to be stored
@@ -605,15 +607,7 @@ func (r *mutationResolver) UpdateDimensions(ctx context.Context, input models.Up
 		return nil, err
 	}
 
-	queryBuilder := r.Database.Image.UpdateOne(image)
-
-	if input.Width != nil {
-		queryBuilder = queryBuilder.SetWidth(*input.Width)
-	}
-
-	if input.Height != nil {
-		queryBuilder = queryBuilder.SetHeight(*input.Height)
-	}
+	queryBuilder := r.Database.Image.UpdateOne(image).SetHeight(input.Height).SetWidth(input.Width)
 
 	return queryBuilder.Save(ctx)
 }
