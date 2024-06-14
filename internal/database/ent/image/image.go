@@ -13,6 +13,10 @@ const (
 	Label = "image"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldWidth holds the string denoting the width field in the database.
+	FieldWidth = "width"
+	// FieldHeight holds the string denoting the height field in the database.
+	FieldHeight = "height"
 	// EdgeReview holds the string denoting the review edge name in mutations.
 	EdgeReview = "review"
 	// Table holds the table name of the image in the database.
@@ -29,6 +33,8 @@ const (
 // Columns holds all SQL columns for image fields.
 var Columns = []string{
 	FieldID,
+	FieldWidth,
+	FieldHeight,
 }
 
 // ForeignKeys holds the SQL foreign-keys that are owned by the "image"
@@ -53,6 +59,10 @@ func ValidColumn(column string) bool {
 }
 
 var (
+	// WidthValidator is a validator for the "width" field. It is called by the builders before save.
+	WidthValidator func(int) error
+	// HeightValidator is a validator for the "height" field. It is called by the builders before save.
+	HeightValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -63,6 +73,16 @@ type OrderOption func(*sql.Selector)
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByWidth orders the results by the width field.
+func ByWidth(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWidth, opts...).ToFunc()
+}
+
+// ByHeight orders the results by the height field.
+func ByHeight(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldHeight, opts...).ToFunc()
 }
 
 // ByReviewField orders the results by review field.

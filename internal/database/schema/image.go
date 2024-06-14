@@ -25,6 +25,8 @@ func (Image) Annotations() []schema.Annotation {
 func (Image) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New).Immutable(),
+		field.Int("width").Positive(),
+		field.Int("height").Positive(),
 	}
 }
 

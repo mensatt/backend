@@ -30,8 +30,16 @@ Create a new migration:
 atlas migrate diff <migration_name> \
  --dir "file://internal/database/migrations" \
  --to "ent://internal/database/schema" \
- --dev-url "postgres://mensatt:mensatt@localhost:5432/mensatt?search_path=public&sslmode=disable" \
+ --dev-url "docker://postgres/15/dev?search_path=public" \
  --format '{{ sql . "	" }}'
 ```
 The `--format` flag uses a tab as indentation. If you want to manually edit this command you can use
 `ctrl + v + tab` to insert a tab character in your shell.
+The `--dev-url` flag is used to connect to an ephemeral local Docker container containing a PostgreSQL instance required for creating the migration.
+
+Apply the migration:
+```bash
+atlas migrate apply \
+ --dir "file://internal/database/migrations" \
+ --url "postgres://mensatt:mensatt@localhost:5432/mensatt?search_path=public&sslmode=disable"
+```

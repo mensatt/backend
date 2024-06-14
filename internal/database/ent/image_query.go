@@ -295,6 +295,18 @@ func (iq *ImageQuery) WithReview(opts ...func(*ReviewQuery)) *ImageQuery {
 
 // GroupBy is used to group vertices by one or more fields/columns.
 // It is often used with aggregate functions, like: count, max, mean, min, sum.
+//
+// Example:
+//
+//	var v []struct {
+//		Width int `json:"width,omitempty"`
+//		Count int `json:"count,omitempty"`
+//	}
+//
+//	client.Image.Query().
+//		GroupBy(image.FieldWidth).
+//		Aggregate(ent.Count()).
+//		Scan(ctx, &v)
 func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
 	iq.ctx.Fields = append([]string{field}, fields...)
 	grbuild := &ImageGroupBy{build: iq}
@@ -306,6 +318,16 @@ func (iq *ImageQuery) GroupBy(field string, fields ...string) *ImageGroupBy {
 
 // Select allows the selection one or more fields/columns for the given query,
 // instead of selecting all fields in the entity.
+//
+// Example:
+//
+//	var v []struct {
+//		Width int `json:"width,omitempty"`
+//	}
+//
+//	client.Image.Query().
+//		Select(image.FieldWidth).
+//		Scan(ctx, &v)
 func (iq *ImageQuery) Select(fields ...string) *ImageSelect {
 	iq.ctx.Fields = append(iq.ctx.Fields, fields...)
 	sbuild := &ImageSelect{ImageQuery: iq}

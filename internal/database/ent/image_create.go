@@ -24,6 +24,18 @@ type ImageCreate struct {
 	conflict []sql.ConflictOption
 }
 
+// SetWidth sets the "width" field.
+func (ic *ImageCreate) SetWidth(i int) *ImageCreate {
+	ic.mutation.SetWidth(i)
+	return ic
+}
+
+// SetHeight sets the "height" field.
+func (ic *ImageCreate) SetHeight(i int) *ImageCreate {
+	ic.mutation.SetHeight(i)
+	return ic
+}
+
 // SetID sets the "id" field.
 func (ic *ImageCreate) SetID(u uuid.UUID) *ImageCreate {
 	ic.mutation.SetID(u)
@@ -92,6 +104,22 @@ func (ic *ImageCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (ic *ImageCreate) check() error {
+	if _, ok := ic.mutation.Width(); !ok {
+		return &ValidationError{Name: "width", err: errors.New(`ent: missing required field "Image.width"`)}
+	}
+	if v, ok := ic.mutation.Width(); ok {
+		if err := image.WidthValidator(v); err != nil {
+			return &ValidationError{Name: "width", err: fmt.Errorf(`ent: validator failed for field "Image.width": %w`, err)}
+		}
+	}
+	if _, ok := ic.mutation.Height(); !ok {
+		return &ValidationError{Name: "height", err: errors.New(`ent: missing required field "Image.height"`)}
+	}
+	if v, ok := ic.mutation.Height(); ok {
+		if err := image.HeightValidator(v); err != nil {
+			return &ValidationError{Name: "height", err: fmt.Errorf(`ent: validator failed for field "Image.height": %w`, err)}
+		}
+	}
 	if _, ok := ic.mutation.ReviewID(); !ok {
 		return &ValidationError{Name: "review", err: errors.New(`ent: missing required edge "Image.review"`)}
 	}
@@ -131,6 +159,14 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := ic.mutation.Width(); ok {
+		_spec.SetField(image.FieldWidth, field.TypeInt, value)
+		_node.Width = value
+	}
+	if value, ok := ic.mutation.Height(); ok {
+		_spec.SetField(image.FieldHeight, field.TypeInt, value)
+		_node.Height = value
+	}
 	if nodes := ic.mutation.ReviewIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -155,11 +191,17 @@ func (ic *ImageCreate) createSpec() (*Image, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Image.Create().
+//		SetWidth(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
 //			sql.ResolveWithNewValues(),
 //		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ImageUpsert) {
+//			SetWidth(v+v).
+//		}).
 //		Exec(ctx)
 func (ic *ImageCreate) OnConflict(opts ...sql.ConflictOption) *ImageUpsertOne {
 	ic.conflict = opts
@@ -193,6 +235,42 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetWidth sets the "width" field.
+func (u *ImageUpsert) SetWidth(v int) *ImageUpsert {
+	u.Set(image.FieldWidth, v)
+	return u
+}
+
+// UpdateWidth sets the "width" field to the value that was provided on create.
+func (u *ImageUpsert) UpdateWidth() *ImageUpsert {
+	u.SetExcluded(image.FieldWidth)
+	return u
+}
+
+// AddWidth adds v to the "width" field.
+func (u *ImageUpsert) AddWidth(v int) *ImageUpsert {
+	u.Add(image.FieldWidth, v)
+	return u
+}
+
+// SetHeight sets the "height" field.
+func (u *ImageUpsert) SetHeight(v int) *ImageUpsert {
+	u.Set(image.FieldHeight, v)
+	return u
+}
+
+// UpdateHeight sets the "height" field to the value that was provided on create.
+func (u *ImageUpsert) UpdateHeight() *ImageUpsert {
+	u.SetExcluded(image.FieldHeight)
+	return u
+}
+
+// AddHeight adds v to the "height" field.
+func (u *ImageUpsert) AddHeight(v int) *ImageUpsert {
+	u.Add(image.FieldHeight, v)
+	return u
+}
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
@@ -240,6 +318,48 @@ func (u *ImageUpsertOne) Update(set func(*ImageUpsert)) *ImageUpsertOne {
 		set(&ImageUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWidth sets the "width" field.
+func (u *ImageUpsertOne) SetWidth(v int) *ImageUpsertOne {
+	return u.Update(func(s *ImageUpsert) {
+		s.SetWidth(v)
+	})
+}
+
+// AddWidth adds v to the "width" field.
+func (u *ImageUpsertOne) AddWidth(v int) *ImageUpsertOne {
+	return u.Update(func(s *ImageUpsert) {
+		s.AddWidth(v)
+	})
+}
+
+// UpdateWidth sets the "width" field to the value that was provided on create.
+func (u *ImageUpsertOne) UpdateWidth() *ImageUpsertOne {
+	return u.Update(func(s *ImageUpsert) {
+		s.UpdateWidth()
+	})
+}
+
+// SetHeight sets the "height" field.
+func (u *ImageUpsertOne) SetHeight(v int) *ImageUpsertOne {
+	return u.Update(func(s *ImageUpsert) {
+		s.SetHeight(v)
+	})
+}
+
+// AddHeight adds v to the "height" field.
+func (u *ImageUpsertOne) AddHeight(v int) *ImageUpsertOne {
+	return u.Update(func(s *ImageUpsert) {
+		s.AddHeight(v)
+	})
+}
+
+// UpdateHeight sets the "height" field to the value that was provided on create.
+func (u *ImageUpsertOne) UpdateHeight() *ImageUpsertOne {
+	return u.Update(func(s *ImageUpsert) {
+		s.UpdateHeight()
+	})
 }
 
 // Exec executes the query.
@@ -375,6 +495,11 @@ func (icb *ImageCreateBulk) ExecX(ctx context.Context) {
 //			// the was proposed for insertion.
 //			sql.ResolveWithNewValues(),
 //		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.ImageUpsert) {
+//			SetWidth(v+v).
+//		}).
 //		Exec(ctx)
 func (icb *ImageCreateBulk) OnConflict(opts ...sql.ConflictOption) *ImageUpsertBulk {
 	icb.conflict = opts
@@ -450,6 +575,48 @@ func (u *ImageUpsertBulk) Update(set func(*ImageUpsert)) *ImageUpsertBulk {
 		set(&ImageUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetWidth sets the "width" field.
+func (u *ImageUpsertBulk) SetWidth(v int) *ImageUpsertBulk {
+	return u.Update(func(s *ImageUpsert) {
+		s.SetWidth(v)
+	})
+}
+
+// AddWidth adds v to the "width" field.
+func (u *ImageUpsertBulk) AddWidth(v int) *ImageUpsertBulk {
+	return u.Update(func(s *ImageUpsert) {
+		s.AddWidth(v)
+	})
+}
+
+// UpdateWidth sets the "width" field to the value that was provided on create.
+func (u *ImageUpsertBulk) UpdateWidth() *ImageUpsertBulk {
+	return u.Update(func(s *ImageUpsert) {
+		s.UpdateWidth()
+	})
+}
+
+// SetHeight sets the "height" field.
+func (u *ImageUpsertBulk) SetHeight(v int) *ImageUpsertBulk {
+	return u.Update(func(s *ImageUpsert) {
+		s.SetHeight(v)
+	})
+}
+
+// AddHeight adds v to the "height" field.
+func (u *ImageUpsertBulk) AddHeight(v int) *ImageUpsertBulk {
+	return u.Update(func(s *ImageUpsert) {
+		s.AddHeight(v)
+	})
+}
+
+// UpdateHeight sets the "height" field to the value that was provided on create.
+func (u *ImageUpsertBulk) UpdateHeight() *ImageUpsertBulk {
+	return u.Update(func(s *ImageUpsert) {
+		s.UpdateHeight()
+	})
 }
 
 // Exec executes the query.

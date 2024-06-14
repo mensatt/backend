@@ -1115,6 +1115,10 @@ type ImageMutation struct {
 	op            Op
 	typ           string
 	id            *uuid.UUID
+	width         *int
+	addwidth      *int
+	height        *int
+	addheight     *int
 	clearedFields map[string]struct{}
 	review        *uuid.UUID
 	clearedreview bool
@@ -1227,6 +1231,118 @@ func (m *ImageMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
+// SetWidth sets the "width" field.
+func (m *ImageMutation) SetWidth(i int) {
+	m.width = &i
+	m.addwidth = nil
+}
+
+// Width returns the value of the "width" field in the mutation.
+func (m *ImageMutation) Width() (r int, exists bool) {
+	v := m.width
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWidth returns the old "width" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldWidth(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWidth is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWidth requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWidth: %w", err)
+	}
+	return oldValue.Width, nil
+}
+
+// AddWidth adds i to the "width" field.
+func (m *ImageMutation) AddWidth(i int) {
+	if m.addwidth != nil {
+		*m.addwidth += i
+	} else {
+		m.addwidth = &i
+	}
+}
+
+// AddedWidth returns the value that was added to the "width" field in this mutation.
+func (m *ImageMutation) AddedWidth() (r int, exists bool) {
+	v := m.addwidth
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetWidth resets all changes to the "width" field.
+func (m *ImageMutation) ResetWidth() {
+	m.width = nil
+	m.addwidth = nil
+}
+
+// SetHeight sets the "height" field.
+func (m *ImageMutation) SetHeight(i int) {
+	m.height = &i
+	m.addheight = nil
+}
+
+// Height returns the value of the "height" field in the mutation.
+func (m *ImageMutation) Height() (r int, exists bool) {
+	v := m.height
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldHeight returns the old "height" field's value of the Image entity.
+// If the Image object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *ImageMutation) OldHeight(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldHeight is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldHeight requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldHeight: %w", err)
+	}
+	return oldValue.Height, nil
+}
+
+// AddHeight adds i to the "height" field.
+func (m *ImageMutation) AddHeight(i int) {
+	if m.addheight != nil {
+		*m.addheight += i
+	} else {
+		m.addheight = &i
+	}
+}
+
+// AddedHeight returns the value that was added to the "height" field in this mutation.
+func (m *ImageMutation) AddedHeight() (r int, exists bool) {
+	v := m.addheight
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetHeight resets all changes to the "height" field.
+func (m *ImageMutation) ResetHeight() {
+	m.height = nil
+	m.addheight = nil
+}
+
 // SetReviewID sets the "review" edge to the Review entity by id.
 func (m *ImageMutation) SetReviewID(id uuid.UUID) {
 	m.review = &id
@@ -1300,7 +1416,13 @@ func (m *ImageMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ImageMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 2)
+	if m.width != nil {
+		fields = append(fields, image.FieldWidth)
+	}
+	if m.height != nil {
+		fields = append(fields, image.FieldHeight)
+	}
 	return fields
 }
 
@@ -1308,6 +1430,12 @@ func (m *ImageMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *ImageMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case image.FieldWidth:
+		return m.Width()
+	case image.FieldHeight:
+		return m.Height()
+	}
 	return nil, false
 }
 
@@ -1315,6 +1443,12 @@ func (m *ImageMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case image.FieldWidth:
+		return m.OldWidth(ctx)
+	case image.FieldHeight:
+		return m.OldHeight(ctx)
+	}
 	return nil, fmt.Errorf("unknown Image field %s", name)
 }
 
@@ -1323,6 +1457,20 @@ func (m *ImageMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *ImageMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case image.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWidth(v)
+		return nil
+	case image.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetHeight(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Image field %s", name)
 }
@@ -1330,13 +1478,26 @@ func (m *ImageMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ImageMutation) AddedFields() []string {
-	return nil
+	var fields []string
+	if m.addwidth != nil {
+		fields = append(fields, image.FieldWidth)
+	}
+	if m.addheight != nil {
+		fields = append(fields, image.FieldHeight)
+	}
+	return fields
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ImageMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case image.FieldWidth:
+		return m.AddedWidth()
+	case image.FieldHeight:
+		return m.AddedHeight()
+	}
 	return nil, false
 }
 
@@ -1344,6 +1505,22 @@ func (m *ImageMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *ImageMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case image.FieldWidth:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddWidth(v)
+		return nil
+	case image.FieldHeight:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddHeight(v)
+		return nil
+	}
 	return fmt.Errorf("unknown Image numeric field %s", name)
 }
 
@@ -1369,6 +1546,14 @@ func (m *ImageMutation) ClearField(name string) error {
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *ImageMutation) ResetField(name string) error {
+	switch name {
+	case image.FieldWidth:
+		m.ResetWidth()
+		return nil
+	case image.FieldHeight:
+		m.ResetHeight()
+		return nil
+	}
 	return fmt.Errorf("unknown Image field %s", name)
 }
 

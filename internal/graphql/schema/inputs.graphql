@@ -173,6 +173,12 @@ input DeleteImagesFromReviewInput {
     images: [UUID!]!
 }
 
+input UpdateDimensionsInput {
+    id: UUID!
+    width: Int!
+    height: Int!
+}
+
 
 # Location
 
