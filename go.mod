@@ -3,7 +3,7 @@ module github.com/mensatt/backend
 go 1.22.4
 
 require (
-	entgo.io/ent v0.13.1
+	entgo.io/ent v0.14.0
 	github.com/99designs/gqlgen v0.17.49
 	github.com/getsentry/sentry-go v0.28.1
 	github.com/gin-gonic/gin v1.10.0
